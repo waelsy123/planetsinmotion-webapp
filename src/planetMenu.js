@@ -76,6 +76,7 @@ export class PlanetMenu {
         this.planetForm.focus()
         this.editingIndex = null; // Reset editing state
         const planetNameInput = document.getElementById("planet-name")
+        const colorInput = document.getElementById("planet-color")
 
         /*Fill in the value if we come from edit button*/
         if (index!=null) {
@@ -85,8 +86,7 @@ export class PlanetMenu {
             const eInput = document.getElementById("eccentricity")
             const massInput = document.getElementById("planet-mass")
             const radiusInput = document.getElementById("planet-radius")
-            const colorInput = document.getElementById("planet-color")
-            console.log(this.planets[index].color)
+            
 
             this.savePlanetBtn.textContent = "Edit"
             planetNameInput.value = this.planets[index].planetName
@@ -98,6 +98,7 @@ export class PlanetMenu {
             colorInput.value = this.planets[index].color;
 
         } else {
+            colorInput.value = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
             this.savePlanetBtn.textContent = "Add"
             planetNameInput.value = "Planet " + (this.planets.length + 1)
         }
