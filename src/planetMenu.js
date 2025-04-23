@@ -1,3 +1,4 @@
+import { R_sun, M_J, M_sun} from './constants.js';
 import { Planet, StarPlanetDistanceError } from './planet.js';
 
 const iconPlanetsize = 15
@@ -67,25 +68,39 @@ export class PlanetMenu {
 
     showPlanetForm(index=null) {
 
+        /* Inputs */
+        const periodInput = document.getElementById("planet-period")
+        const iInput = document.getElementById("inclination")
+        const eInput = document.getElementById("eccentricity")
+        const massInput = document.getElementById("planet-mass")
+        const radiusInput = document.getElementById("planet-radius")
+        const planetNameInput = document.getElementById("planet-name")
+        const colorInput = document.getElementById("planet-color")
+
         /* Button to add planet*/
         this.savePlanetBtn = document.getElementById("save-planet-btn"); 
         this.savePlanetListener = () => this.addPlanet(index);
         this.savePlanetBtn.addEventListener("click", this.savePlanetListener);
 
+        this.randomizeBtn = document.getElementById("randomize-planet-btn");
+        this.randomizeBtn.addEventListener("click", () => { 
+            periodInput.value = Math.floor(Math.random() * 500) + 0.01
+            iInput.value = parseFloat(Math.floor(Math.random() * 89) + 1).toFixed(2);
+            eInput.value = parseFloat(Math.random()).toFixed(2);
+            massInput.value = parseFloat(Math.random() * 100 * M_J / M_sun + M_J / M_sun).toFixed(2);
+            radiusInput.value = Math.floor(Math.random() * this.star.R / R_sun / 10) + 1;
+            planetNameInput.value = "Planet " + (this.planets.length + 1)
+            this.errorLabel.classList.remove("hidden")
+        }); 
+
         this.planetForm.classList.remove("hidden");
         this.planetForm.focus()
         this.editingIndex = null; // Reset editing state
-        const planetNameInput = document.getElementById("planet-name")
-        const colorInput = document.getElementById("planet-color")
+        
 
         /*Fill in the value if we come from edit button*/
         if (index!=null) {
             console.log("Editing planet " + index)
-            const periodInput = document.getElementById("planet-period")
-            const iInput = document.getElementById("inclination")
-            const eInput = document.getElementById("eccentricity")
-            const massInput = document.getElementById("planet-mass")
-            const radiusInput = document.getElementById("planet-radius")
             
 
             this.savePlanetBtn.textContent = "Edit"
