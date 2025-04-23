@@ -2,7 +2,7 @@ import {sqrt} from 'mathjs';
 import {getBeta, getAlpha, transitArea} from './trigonometry.js'
 
 
-export class Body{
+export class Body {
     /**
      * Parameters
      * ----------
@@ -140,5 +140,67 @@ export class Body{
         return A
     
         }
+
+
+    
+/**
+ * Calculates the fraction of the star's area eclipsed by a set of planets over time.
+ * 
+ * This method computes the eclipsing areas caused by planets transiting in front of a star.
+ * It accounts for full and partial transits, as well as overlapping eclipses between planets.
+ * 
+ * @param {Array<Object>} planets - An array of planet objects. Each planet object must have the following methods:
+ *   - `getEclipsedArea(star)`: Returns an array representing the area eclipsed by the planet at each time step.
+ *   - `getFullTransits(otherPlanets)`: Returns an array of booleans indicating whether the planet is in full transit with respect to other planets.
+ *   - `getPartialTransits(otherPlanet)`: Returns an array of booleans indicating whether the planet is in partial transit with respect to another planet.
+ *   - `Area`: The area of the planet.
+ *   - `_R`: The radius of the planet.
+ *   - `ry` and `rz`: Arrays representing the y and z coordinates of the planet's position over time.
+ * 
+ * @returns {Array<number>} An array representing the fraction of the star's area that is not eclipsed at each time step.
+ * Each value is calculated as `1 - (eclipsed area / total star area)`.
+ */
+ getEclipsingAreas(planets) {
+    const datapoints = this.rx.length;
+    var previousPlanets = new Array(planets.length)
+    var A = new Array(datapoints).fill(0);
+
+    /*Sort planets by size*/
+    const sortedPlanets = planets.slice().sort((a, b) => b.R - a.R);
+
+    sortedPlanets.forEach((planet, planetIndex) => {
+        /* Get eclipses due to this planet*/
+        const Aplanet = planet.getEclipsedArea(this);
+        A = A.map((area, index) => area + Aplanet[index]);
+
+        /* Get eclipses due to other planets and subtract them */
+        previousPlanets.forEach((prevPlanet) => {
+            const fullTransits = planet.getFullTransits(previousPlanets);
+            const fullTransitsStar = planet.getFullTransits(this);
+            const fullPartialStar = planet.getFullTransits(this);
+            fullTransits.forEach((transit, index) => {
+                if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
+                    A[index] -= planet.Area; // Full transit area is the area of the planet
+                }   
+            });
+            
+            const partialtransit = prevPlanet.getPartialTransits(planet);
+            partialtransit.forEach((transit, index) => {
+                if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
+                    const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
+                    const alpha = getAlpha(prevPlanet._R, planet._R, beta)  
+                    A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                }   
+
+            });
+            
+        });
+        /*Append planet to the previous planets*/
+        previousPlanets[planetIndex] = planet;
+});
+    const fraction = A.map((area) => 1 - area / this.Area);
+    console.log("fraction", fraction)
+    return fraction
+}
     
 }
