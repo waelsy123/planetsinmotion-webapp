@@ -13,8 +13,6 @@ export class LightcurveMenu {
         // Initialize menu elements
         this.initLightcurve(planets);
 
-        
-
     }
 
 
@@ -49,6 +47,7 @@ export class LightcurveMenu {
 
             this.onUpdate(); // Trigger simulation update
         });
+
 
         // Add listener to the export button
         this.exportButton = document.getElementById("export-lightcurve");
