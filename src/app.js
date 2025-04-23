@@ -2,7 +2,7 @@ import {StarMenu} from './starMenu.js'
 import { PlanetMenu } from './planetMenu.js';
 import { LightcurveMenu } from './lightcurveMenu.js';
 import {FrameMenu} from './frameMenu.js'
-import { getBeta, getAlpha, transitArea } from './trigonometry.js';
+import { maxDependencies } from 'mathjs';
 
 const faceoncanvas = document.getElementById("faceoncanvas")
 const edgeoncanvas = document.getElementById("edgeoncanvas")
@@ -14,17 +14,75 @@ linecontext.lineWidth = 1.5
 
 let i = 0;
 
+function drawTicks(context, canvas, maxDistance, isXAxis = true) {
+    const tickCount = 4; // Number of ticks
+    const tickLength = 14; // Length of each tick in pixels
+    const fontSize = 12; // Font size for labels
+    const padding = 20; // Padding for labels
+
+    context.font = `${fontSize}px Arial`;
+    context.fillStyle = "white";
+    context.strokeStyle = "white";
+    context.lineWidth = 1;
+
+    const tickInterval = (parseInt(maxDistance) + 1) / tickCount;
+
+    for (let i = 0; i <= tickCount; i++) {
+        const value = i * tickInterval;
+        const position = (value / maxDistance) * (canvas.width / 2);
+
+        if (isXAxis) {
+            const ypos = canvas.height
+            const x = canvas.width / 2 + position;
+            const xNeg = canvas.width / 2 - position;
+
+            // Positive tick
+            context.beginPath();
+            context.moveTo(x, ypos - tickLength / 2);
+            context.lineTo(x, ypos + tickLength / 2);
+            context.stroke();
+
+            // Negative tick
+            context.beginPath();
+            context.moveTo(xNeg, ypos - tickLength / 2);
+            context.lineTo(xNeg, ypos + tickLength / 2);
+            context.stroke();
+
+        } else {
+            const xpos = 0
+            const y = canvas.height / 2 - position;
+            const yNeg = canvas.height / 2 + position;
+
+            // Positive tick
+            context.beginPath();
+            context.moveTo(xpos - tickLength / 2, y);
+            context.lineTo(xpos  + tickLength / 2, y);
+            context.stroke();
+
+            // Negative tick
+            context.beginPath();
+            context.moveTo(xpos - tickLength / 2, yNeg);
+            context.lineTo(xpos + tickLength / 2, yNeg);
+            context.stroke();
+
+        }
+    }
+}
+
 // Animate the frames
-const animate = (star, planets, ratio, fraction, timesDays, datapoints) => {
+const animate = (star, planets, ratio, fraction, timesDays, datapoints, maxDistance) => {
 
     
-    const bodies = [star, ...planets];
     faceoncontext.globalCompositeOperation = "destination-over";
-    faceoncontext.clearRect(0, 0, faceoncanvas.width, 
-        faceoncanvas.height);
-
-    // Draw star face on
-    // Sort planets for edge-on view (x-direction)
+    faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
+    
+    // Draw ticks
+    drawTicks(faceoncontext, faceoncanvas, maxDistance, true); // X-axis
+    drawTicks(faceoncontext, faceoncanvas, maxDistance, false); // Y-axis
+    
+    
+    const bodies = [star, ...planets];
+    // Sort bodies for edge-on view (x-direction)
     const sortedBodiesFaceOn = bodies.slice().sort((a, b) => b.rz[i] - a.rz[i]);
            
     // Draw planets for face-on view
@@ -36,7 +94,7 @@ const animate = (star, planets, ratio, fraction, timesDays, datapoints) => {
     edgeoncontext.clearRect(0, 0, edgeoncanvas.width, 
         edgeoncanvas.height);
 
-    // Sort planets for face-on view (z-direction)
+    // Sort bodies for face-on view (z-direction)
     const sortedBodiesEdgeOn = bodies.slice().sort((a, b) => b.rx[i] - a.rx[i]);
     
     // Draw bodies for edge-on view
@@ -109,7 +167,16 @@ function init() {
         lightcurveMenu.calculateTimes(planetMenu.planets)
         starMenu.setTimes(lightcurveMenu.times)
         planetMenu.setTimes(lightcurveMenu.times)
+        /* Uodate buttons state */        
+        if (lightcurveMenu.exportButton.disabled && planetMenu.planets.length > 0) {
+            lightcurveMenu.exportButton.disabled = false // Enable the button
+            frameMenu.saveAnimationButton.disabled = false // Enable the button
+        } else if (!lightcurveMenu.exportButton.disabled && planetMenu.planets.length == 0) {
+            lightcurveMenu.exportButton.disabled = true // Disable the button
+            frameMenu.saveAnimationButton.disabled = true // Disable the button
+        }
         restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms); // Restart the simulation
+
     }, starMenu.star);
 
     if (!lightcurveMenu) {
@@ -120,7 +187,6 @@ function init() {
             planetMenu.setTimes(lightcurveMenu.times)
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);
         })
-
     }
 
     if (!frameMenu) {
@@ -140,26 +206,40 @@ function init() {
         pauseAnimation()
     });
 
+    lightcurveMenu.exportButton.addEventListener("click", () => {exportLightcurve(lightcurveMenu.timesDays, fraction)});
+    frameMenu.saveAnimationButton.addEventListener("click" , () => {saveAnimation()});
+
 }
 
 
 function exportLightcurve(timesDays, fraction) {
     // Prepare the lightcurve data
-    const header = "Time (days),RelativeFlux\n";
-    const data = timesDays.map((time, index) => `${time},${fraction[index]}`).join("\n");
+    const header = "Time (days),RelativeFlux";
+    const data = timesDays.map((time, index) => `${time.toFixed(4)},${fraction[index].toFixed(5)}`).join("\n");
     const csvContent = `${header}\n${data}`; // Combine header and data
     const blob = new Blob([csvContent], { type: "text/csv" });
-
+    
     // Create a download link
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "lightcurve.csv"; // Default filename
     a.style.display = "none";
+    console.log("Exporting lightcurve", a)
 
     // Append the link to the document and trigger the download
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+}
+
+function saveAnimation(){
+    const canvas = document.getElementById("edgeoncanvas");
+    const link = document.createElement("a");
+    link.download = "simulation.gif";
+    canvas.toBlob((blob) => {
+        link.href = URL.createObjectURL(blob);
+        link.click();
+    }, "image/gif");
 }
 
 function restartAnimation() {
@@ -197,20 +277,17 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start=0) {
     const screenmin = Math.min(faceoncanvas.width, faceoncanvas.height)
     const ratio = screenmin / 2 / (planetMenu.maxDistance);
     
+    
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
-        const fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
+        fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
         const animatePlanets = () => {
-            animate(starMenu.star, planetMenu.planets, ratio, fraction, lightcurveMenu.timesDays, datapoints); 
+            animate(starMenu.star, planetMenu.planets, ratio, fraction, lightcurveMenu.timesDays, 
+                datapoints, planetMenu.maxDistance); 
         };
         id = window.setInterval(animatePlanets, ms);
-        /*Active export button*/
-        enableExportButton(lightcurveMenu.exportButton, () => {
-            exportLightcurve(lightcurveMenu.timesDays, fraction);
-        });
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     }  else {
-        disableExportButton(lightcurveMenu.exportButton);
         faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
         edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
     }
@@ -220,22 +297,12 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start=0) {
     }
 }
 
-
-function enableExportButton(button, exportCallback) {
-    button.disabled = false // Enable the button
-    button.removeEventListener("click", exportCallback); // Ensure no duplicate listeners
-    button.addEventListener("click", exportCallback); // Add the new listener
-}
-
-function disableExportButton(button) {
-    button.disabled = true; // Disable the button
-}
-
 let planetMenu;
 let starMenu;
 let lightcurveMenu;
 let frameMenu;
 let id;
+let fraction;
 init();
 
 
