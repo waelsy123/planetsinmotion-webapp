@@ -13,6 +13,8 @@ export class LightcurveMenu {
         // Initialize menu elements
         this.initLightcurve(planets);
 
+        
+
     }
 
 
@@ -23,10 +25,9 @@ export class LightcurveMenu {
         const orbitsInput = document.getElementById("orbits");
         this.orbits = parseInt(orbitsInput.value);
 
-        this.calculateTimes(planets)
+        this.calculateTimes(planets);
 
         datapointsInput.addEventListener("input", (event) => {
-
             const min = parseFloat(event.target.min);
             if (event.target.value < min) {
                 event.target.value = min; // Reset to minimum
@@ -36,10 +37,7 @@ export class LightcurveMenu {
             this.onUpdate(); // Trigger simulation update
         });
 
-
         orbitsInput.addEventListener("input", (event) => {
-
-
             const min = parseFloat(event.target.min);
             if (event.target.value < min) {
                 event.target.value = min; // Reset to minimum
@@ -47,12 +45,13 @@ export class LightcurveMenu {
 
             this.orbits = parseInt(event.target.value);
 
-
             this.calculateTimes(planets);
 
             this.onUpdate(); // Trigger simulation update
         });
 
+        // Add listener to the export button
+        this.exportButton = document.getElementById("export-lightcurve");
 
     }
 
