@@ -16,6 +16,8 @@ let i = 0;
 
 // Animate the frames
 const animate = (star, planets, ratio, fraction, timesDays, datapoints) => {
+
+    
     const bodies = [star, ...planets];
     faceoncontext.globalCompositeOperation = "destination-over";
     faceoncontext.clearRect(0, 0, faceoncanvas.width, 
@@ -97,7 +99,7 @@ function init() {
             planetMenu.setStar(starMenu.star)
             starMenu.setTimes(lightcurveMenu.times)
             planetMenu.setTimes(lightcurveMenu.times)
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms)
+            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
         });
     }
     
@@ -124,7 +126,7 @@ function init() {
     if (!frameMenu) {
         frameMenu = new FrameMenu(() => {
             clearInterval(id);
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);
+            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, i);
         });
     }
        
@@ -140,23 +142,30 @@ function init() {
 
 }
 
+
+function exportLightcurve(timesDays, fraction) {
+    // Prepare the lightcurve data
+    const header = "Time (days),RelativeFlux\n";
+    const data = timesDays.map((time, index) => `${time},${fraction[index]}`).join("\n");
+    const csvContent = `${header}\n${data}`; // Combine header and data
+    const blob = new Blob([csvContent], { type: "text/csv" });
+
+    // Create a download link
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "lightcurve.csv"; // Default filename
+    a.style.display = "none";
+
+    // Append the link to the document and trigger the download
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
 function restartAnimation() {
     console.log("Restarting animation");
     if (!id) {
-        const datapoints = lightcurveMenu.datapoints;
-        const screenmin = Math.min(faceoncanvas.width, faceoncanvas.height);
-        const ratio = screenmin / 2 / planetMenu.maxDistance;
-
-        const fraction = planetMenu.planets.length > 0
-            ? planetMenu.planets.map((planet) => planet.getEclipsedArea(starMenu.star))
-            : [];
-
-        const animatePlanets = () => {
-            animate(starMenu.star, planetMenu.planets, ratio, fraction, 
-                lightcurveMenu.timesDays, datapoints, frameMenu.ms);
-        };
-
-        id = window.setInterval(animatePlanets, frameMenu.ms); // Restart the animation
+        restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, i)
     }
     const mainCanvas = document.getElementById("main-canvas-container")
     // Change the event listener back to pause the animation
@@ -170,7 +179,6 @@ function pauseAnimation() {
         clearInterval(id); // Stop the animation
         id = null; // Reset the interval ID
     }
-
     // Change the event listener to restart the animation
     const mainCanvas = document.getElementById("main-canvas-container")
     mainCanvas.removeEventListener("click", pauseAnimation);
@@ -178,71 +186,51 @@ function pauseAnimation() {
 }
 
 
-function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms) {
+function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start=0) {
+    i = start
     console.log("Restarting simu")
-    i = 0
+    // Clear lightcurve  the canvas if we restart simulation from beginning///
+    if (i==0) {
+        linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height);   
+    }
     const datapoints = lightcurveMenu.datapoints
-    linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height);   
     const screenmin = Math.min(faceoncanvas.width, faceoncanvas.height)
     const ratio = screenmin / 2 / (planetMenu.maxDistance);
     
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
-        var previousPlanets = new Array(planetMenu.planets.length)
-        var A = new Array(datapoints).fill(0);
-
-        /*Sort planets by size*/
-        const sortedPlanets = planetMenu.planets.slice().sort((a, b) => b.R - a.R);
-
-        sortedPlanets.forEach((planet, planetIndex) => {
-            /* Get eclipses due to this planet*/
-            const Aplanet = planet.getEclipsedArea(starMenu.star);
-            A = A.map((area, index) => area + Aplanet[index]);
-
-            /* Get eclipses due to other planets and subtract them */
-            previousPlanets.forEach((prevPlanet) => {
-                const fullTransits = planet.getFullTransits(previousPlanets);
-                const fullTransitsStar = planet.getFullTransits(starMenu.star);
-                const fullPartialStar = planet.getFullTransits(starMenu.star);
-                fullTransits.forEach((transit, index) => {
-                    if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
-                        A[index] -= planet.Area; // Full transit area is the area of the planet
-                    }   
-                });
-                
-                const partialtransit = prevPlanet.getPartialTransits(planet);
-                partialtransit.forEach((transit, index) => {
-                    if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
-                        const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                        const alpha = getAlpha(prevPlanet._R, planet._R, beta)  
-                        A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
-                    }   
-
-                });
-                
-            });
-            /*Append planet to the previous planets*/
-            previousPlanets[planetIndex] = planet;
-    });
-        const fraction = A.map((area) => 1 - area / starMenu.star.Area);
-        console.log("fraction", fraction)
+        const fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
         const animatePlanets = () => {
             animate(starMenu.star, planetMenu.planets, ratio, fraction, lightcurveMenu.timesDays, datapoints); 
         };
         id = window.setInterval(animatePlanets, ms);
+        /*Active export button*/
+        enableExportButton(lightcurveMenu.exportButton, () => {
+            exportLightcurve(lightcurveMenu.timesDays, fraction);
+        });
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     }  else {
+        disableExportButton(lightcurveMenu.exportButton);
         faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
         edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
-        
     }
     //Clear simulation//
     if (!id) {
         clearInterval(id);
     }
-    
-
 }
+
+
+function enableExportButton(button, exportCallback) {
+    button.disabled = false // Enable the button
+    button.removeEventListener("click", exportCallback); // Ensure no duplicate listeners
+    button.addEventListener("click", exportCallback); // Add the new listener
+}
+
+function disableExportButton(button) {
+    button.disabled = true; // Disable the button
+}
+
 let planetMenu;
 let starMenu;
 let lightcurveMenu;
