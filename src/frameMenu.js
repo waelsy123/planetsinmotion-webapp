@@ -16,6 +16,9 @@ export class FrameMenu {
             this.ms = parseInt(event.target.value);
             this.onUpdate(); // Trigger simulation update
         });
+
+        this.saveAnimationButton = document.getElementById("save-animation-btn");
+
     }
 
 }
