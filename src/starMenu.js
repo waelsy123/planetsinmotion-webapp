@@ -15,7 +15,6 @@ export class StarMenu {
         const starColorSelect = document.getElementById("star-color");
         const starIcon = document.getElementById("star-icon");
         
-
         // Add listeners for star inputs
         starMassInput.addEventListener("input", (event) => {
             const newMass = parseFloat(event.target.value);
