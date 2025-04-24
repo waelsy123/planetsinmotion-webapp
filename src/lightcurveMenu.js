@@ -52,9 +52,7 @@ export class LightcurveMenu {
 
     calculateTimes(planets){
         const maxP = Math.max(...planets.map((planet) => planet._P));
-        console.log("maxP", maxP / DaysToSeconds)
         this.times = linspace(0, this.orbits * maxP, this.datapoints);
-        console.log("orbits", this.orbits)
         this.timesDays = this.times.map((t) => t / DaysToSeconds);
         console.log("Time days", this.timesDays)
     }
