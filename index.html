@@ -240,13 +240,26 @@
         }
 
         .planet-form-content {
-            position: relative;
             background-color: #222;
-            padding: 20px;
-            width: 400px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             /* Add a shadow for better visibility */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             border-radius: 5px;
+            flex-direction: column;
+        }
+
+        .planet-form-main-panel {
+            margin: 10px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 15px; /* gap between menu and canvas */
+        }
+
+        .planet-form-canvas {
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .form-controls {
@@ -257,7 +270,6 @@
             /* Space between buttons */
             margin-top: 20px;
         }
-
 
         /* Buttons */
         .planet-form-btn {
@@ -272,7 +284,6 @@
         .planet-form-btn:hover {
             background-color: #666;
         }
-
 
         .error-message {
             display: flex;
@@ -306,16 +317,14 @@
 
         /* Close Button */
         .close-btn {
-            position: absolute;
-            top: 5px;
-            left: 5px;
+            top: 0px;
+            left: 0px;
             background: none;
-            border: white;
+            border:white;
             border-radius: 5px;
             color: white;
-            font-size: 25px;
+            font-size: 30px;
             cursor: pointer;
-
         }
 
         .close-btn:hover {
@@ -471,70 +480,73 @@
         <div class="planet-form-content">
             <!-- Close Button -->
             <button id="close-planet-btn" class="close-btn">×</button>
-            <div class="menu-container">
-                <!-- Objects Menu -->
-                <div class="menu">
-                    <!-- Planet Section -->
-                    <div class="menu-section">
-
-                        <label class="menu-label">Planet</label>
-                        <div class="menu-row">
-                            <label for="planet-name">Name:</label>
-                            <input type="text" id="planet-name" />
-                        </div>
-                        <div class="menu-row">
-                            <label for="planet-mass">Mass (M<sub>☉</sub>):</label>
-                            <input type="number" id="planet-mass" min="0.0" step="0.1" value="1" max="100000000" />
-                        </div>
-
-                        <div class="menu-row">
-                            <label for="planet-radius">Radius (R<sub>☉</sub>):</label>
-                            <input type="number" id="planet-radius" min="0.0" step="0.1" value="100" max="100000000" />
-                        </div>
-
-                        <div class="menu-row">
-                            <label for="planet-color">Color:</label>
-                            <input type="color" id="planet-color">
-                            <!--
-                            <option value="red">Red</option>
-                            <option value="blue">Blue</option>
-                            <option value="yellow">Yellow</option>
-                            <option value="white">White</option>
-                            <option value="orange">Orange</option>
-                            <option value="green">Green</option>
-                        </select>
-                        </div>
-                        -->
-                        </div>
-
-                        <!-- Orbit Section -->
+            <div class="planet-form-main-panel">
+                <div class="menu-container">
+                    <!-- Objects Menu -->
+                    <div class="menu">
+                        <!-- Planet Section -->
                         <div class="menu-section">
-                            <label class="menu-label">Orbit</label>
+
+                            <label class="menu-label">Planet</label>
+                            <div class="menu-row">
+                                <label for="planet-name">Name:</label>
+                                <input type="text" id="planet-name" />
+                            </div>
+                            <div class="menu-row">
+                                <label for="planet-mass">Mass (M<sub>☉</sub>):</label>
+                                <input type="number" id="planet-mass" min="0.0" step="0.1" value="1" max="100000000" />
+                            </div>
 
                             <div class="menu-row">
-                                <label for="period"><i>P</i> (days):</label>
-                                <input type="number" min="0.1" step="1" id="planet-period" value="5" max="1000000">
+                                <label for="planet-radius">Radius (R<sub>☉</sub>):</label>
+                                <input type="number" id="planet-radius" min="0.0" step="0.1" value="100" max="100000000" />
                             </div>
+
                             <div class="menu-row">
-                                <label for="inclination"><i>i</i> (°):</label>
-                                <input type="number" min="-90" step="1" max="90" value="0" id="inclination">
+                                <label for="planet-color">Color:</label>
+                                <input type="color" id="planet-color">
+                                <!--
+                                <option value="red">Red</option>
+                                <option value="blue">Blue</option>
+                                <option value="yellow">Yellow</option>
+                                <option value="white">White</option>
+                                <option value="orange">Orange</option>
+                                <option value="green">Green</option>
+                            </select>
                             </div>
-                            <div class="menu-row">
-                                <label for="Eccentricity">e:</label>
-                                <input type="number" min="0" step="0.1" max="1" value="0" id="eccentricity">
+                            -->
                             </div>
-                        </div>
-                        <!-- Controls -->
-                        <div class="form-controls">
-                            <button id="cancel-planet-btn" class="planet-form-btn">Cancel</button>
-                            <button id="randomize-planet-btn" class="planet-form-btn">Randomize</button>
-                            <button id="save-planet-btn" class="planet-form-btn">Add</button>
+
+                            <!-- Orbit Section -->
+                            <div class="menu-section">
+                                <label class="menu-label">Orbit</label>
+
+                                <div class="menu-row">
+                                    <label for="period"><i>P</i> (days):</label>
+                                    <input type="number" min="0.1" step="1" id="planet-period" value="5" max="1000000">
+                                </div>
+                                <div class="menu-row">
+                                    <label for="inclination"><i>i</i> (°):</label>
+                                    <input type="number" min="-90" step="1" max="90" value="0" id="inclination">
+                                </div>
+                                <div class="menu-row">
+                                    <label for="Eccentricity">e:</label>
+                                    <input type="number" min="0" step="0.1" max="1" value="0" id="eccentricity">
+                                </div>
+                            </div>
+                            <!-- Controls -->
+                            <div class="form-controls">
+                                <button id="cancel-planet-btn" class="planet-form-btn">Cancel</button>
+                                <button id="randomize-planet-btn" class="planet-form-btn">Randomize</button>
+                                <button id="save-planet-btn" class="planet-form-btn">Add</button>
+                            </div>
                         </div>
                     </div>
-                    <label class="error-message" id="planet-error"></label>
                 </div>
-
+                
+                <canvas id="planet-canvas" width="250px" height="250px"></canvas>
             </div>
+            <label class="error-message" id="planet-error"></label>
         </div>
 
         <script type="module" src="./src/app.js"></script>
