@@ -1,5 +1,5 @@
 import { getSemiMajorAxis, trueAnomaly, meanAnomaly, solveEccentricAnomaly, getRadialDistance } from './orbits.js';
-import { pi, sin, cos } from 'mathjs';
+import { pi, sin, cos, sqrt } from 'mathjs';
 import {R_sun, M_sun, DaysToSeconds, AU} from './constants.js'
 import {Body} from './body.js'
 
@@ -10,10 +10,11 @@ export class Planet extends Body{
      * @param {number} i - Inclination of the orbit, 0 indicating the planet orbits coplanar to the stellar ecliptic. Default: 0
      * @param {number} omega0 - Argument of periapsis. Phase at which the planet is farthest from the star. Default: 0
      * @param {number} Omega0 - Longitude of the ascending node. Default: pi/2
+     * @param {number} phase - Inital orbital phase
      * @param {Star} star - Host star body
      * @param {string} color - Color of the planet
      */
-    constructor(M, R, P, star, i=0, e=0, omega0=0, Omega0=pi/2, phase0=0, color='blue', planetName="Planet 1") {
+    constructor(M, R, P, star, i=0, e=0., omega0=0, Omega0=pi/2, phase0=0, color='blue', planetName="Planet 1") {
         super(M * M_sun, R * R_sun, color);
         this.checkInputParams(M, R, P, i, e, omega0, Omega0, star);
         this._e = e;
@@ -27,10 +28,16 @@ export class Planet extends Body{
         this.color = color
         this.planetName = planetName
         this._a = getSemiMajorAxis(star.M, this._M, this._P)
+        this._b = this._a * sqrt(1 - this._e**2);
         
-        this.rmax = this._a * (1  + this._e);
-        this.rmin = this._a * (1 - this._e)
+        this._rmax = this.a * (1. + this.e);
+        this.rmin = this.a * (1. - this._e)
         console.log(`Planet max distance: ${(this.rmax / AU).toFixed(2)} AU`);
+    }
+
+
+    get rmax() {
+        return this._rmax
     }
 
     set planetName(planetName) {
@@ -51,6 +58,12 @@ export class Planet extends Body{
         }
 
     }
+    set phase0(phase0){
+        return this._phase0 = phase0
+    }
+    get phase0(){
+        return this._phase0
+    }
 
     /**
      * @param {number} newMs
@@ -63,8 +76,9 @@ export class Planet extends Body{
         } else {
             this._Ms = newMs
             this._a = a
-            this.rmin = rmin
-            this.rmax = this._a * (1 + this._e);
+            this._b = this._a * sqrt(1 - this._e**2);
+            this._rmin = rmin
+            this._rmax = this._a * (1 + this._e);
         }
     }
 
@@ -87,7 +101,8 @@ export class Planet extends Body{
         } else {
             this._e = newe
             this.rmin = rmin
-            this.rmax = this._a * (1 + this._e);
+            this._rmax =  this._a * (1 + this._e);
+            this._b = this._a * sqrt(1 - this._e**2);
         }
     }
 
@@ -103,8 +118,9 @@ export class Planet extends Body{
         } else {
             this._M = newM
             this._a = a
+            this._b = this._a * sqrt(1 - this._e**2);
             this.rmin = rmin
-            this.rmax = a * (1 + this._e);
+            this._rmax =  a * (1 + this._e);
         }
     }
 
@@ -120,8 +136,9 @@ export class Planet extends Body{
         } else {
             this._P = newP;
             this._a = a;
+            this._b = this._a * sqrt(1 - this._e**2);
             this.rmin = rmin
-            this.rmax = a * (1 + this._e);
+            this._rmax =  a * (1 + this._e);
             
         }
     }
@@ -136,6 +153,14 @@ export class Planet extends Body{
 
     get e() {
         return this._e
+    }
+
+    get a() {
+        return this._a
+    }
+
+    get b() {
+        return this._b
     }
 
     set i(i) {
@@ -158,6 +183,14 @@ export class Planet extends Body{
     }
 
     checkInputParams(M, R, P, i, e, omega0, Omega0, star){
+
+        if (M * M_sun > star.M) {
+            throw new PlanetDimensionsError(`Planet cannot be heavier than host star!`);
+        }
+
+        if (R * R_sun > star.R) {
+            throw new PlanetDimensionsError(`Planet cannot be larger than host star!`);
+        }
 
         if (!(-90<=i && i<=90)) {
             throw new Error(`Inclination ${i.toFixed(1)} must be between -90 and 90!`);
@@ -226,5 +259,12 @@ export class StarPlanetDistanceError extends Error {
         this.name = "StarPlanetDistanceError"; // Set the error name
         this.rmin = rmin; // Minimum distance between the star and the planet
         this._Rs = Rs; // Stellar radius
+    }
+
+}
+
+export class PlanetDimensionsError extends Error {
+    constructor(message) {
+        super(message);
     }
 }
