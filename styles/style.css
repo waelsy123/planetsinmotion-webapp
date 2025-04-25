@@ -1,0 +1,442 @@
+
+        /* Hidden Form to Add planet */
+        .planet-form {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .planet-form-content {
+            /* Add a shadow for better visibility */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            border-width: 1px;
+            border-style: solid;
+            border-color: white;
+        }
+
+        .planet-form-main-panel {
+            margin: 20px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+            /* gap between menu and canvas */
+        }
+
+        .planet-form-canvas {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .form-controls {
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            gap: 10px;
+            /* Space between buttons */
+            margin-top: 20px;
+        }
+
+        /* Buttons */
+        .planet-form-btn {
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        .planet-form-btn:hover {
+            background-color: #666;
+        }
+
+        .planet-form-error-message {
+            display: flex;
+            color: red !important;
+            font-style: italic;
+            font-size: 16px;
+            justify-content: center;
+            align-items: center;
+            white-space: wrap;
+            margin: 15px;
+        }
+
+        .planet-form:target {
+            display: flex;
+        }
+
+        .planet-btns {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            /* Smooth transition for hover effect */
+        }
+
+        .planet-btns img {
+            display: block;
+            transition: transform 0.2s ease;
+        }
+
+        .planet-btns:hover img {
+            transform: scale(1.2);
+            /* Smooth scaling effect */
+        }
+
+        /* Close Button */
+        .close-btn {
+            top: 0px;
+            left: 0px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            color: #f00;
+        }
+
+        .hidden {
+            display: none;
+        }
+        body {
+            justify-content: center;
+            align-items: center;
+            margin: 1px;
+            /* Top margin with the browser menu */
+            height: 100vh;
+            /* Full viewport height */
+            width: 99.9vw;
+            ;
+            background-color: black;
+        }
+
+        .top-banner {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-bottom-color: white;
+            border-bottom-style: solid;
+            border-bottom-width: 0px;
+            color: white;
+            padding: 10px 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            margin-bottom: 10px;
+        }
+
+        .banner-button {
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .banner-button:hover {
+            background-color: #555;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px auto 250px;
+            /* Left menu + Main content + menu */
+            gap: 25px;
+            /* Space between columns */
+            align-items: start;
+            height: 100%;
+            /* Full height of the viewport */
+            width: 100%;
+            /* Full width of the viewport */
+            padding: 10px;
+            /* A bit of room between the screen edges and the content */
+            box-sizing: border-box;
+            /* Include padding and border in the element's total width */
+        }
+
+        .main-canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            gap: 20px;
+            /* Space between top and bottom canvas */
+        }
+
+        .top-canvas-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 50px;
+
+            /* Space between the two top canvases */
+        }
+
+        /* Outer container for y-axis, canvas, and x-axis */
+        .axis-canvas-container {
+            display: flex;
+            font-size: 22px;
+            display: flex;
+            flex-direction: row;
+            /* Arrange y-axis and row-container horizontally */
+            align-items: center;
+            justify-content: center;
+            color: white;
+            gap: 10px;
+            /* Space between y-axis and canvas */
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Row container for canvas and x-axis */
+        .x-axis-column-container {
+            display: flex;
+            flex-direction: column;
+            /* Arrange canvas and x-axis vertically */
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            gap: 10px;
+            /* Space between canvas and x-axis */
+        }
+
+        .top-canvas {
+
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            cursor: pointer;
+            max-width: 100%;
+            max-height: 100%;
+            background-color: black;
+            border: 2px solid white;
+        }
+
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            /* spacing between elements and "walls" of menu */
+            border: 2px solid white;
+            border-radius: 5px;
+            background-color: #222;
+            width: 100%;
+            /* Full width of the column */
+            box-sizing: border-box;
+            /* Include padding and border in the element's total width, makes both menus appear equally "wide" */
+        }
+
+        .left-menu-container,
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            color: white;
+            gap: 20px;
+            /* Vertical space between menus */
+        }
+
+        .menu-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            /* Space between inputs */
+            width: 100%;
+        }
+
+        .label-body {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            /* Space between inputs */
+            width: 100%;
+            white-space: nowrap;
+            /* Prevent label text from wrapping */
+        }
+
+        .menu-row {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 10px;
+            /* Horizontal spacing between label and input */
+            align-items: center;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+
+        .menu label {
+            font-size: 16px;
+            /* Size of all the labels inside the menu */
+            font-style: bold;
+            width: 30%;
+            white-space: nowrap;
+            /* Prevent label text from wrapping */
+        }
+
+        .menu input,
+        .menu select {
+            font-size: 16px;
+            /* Size of the input font */
+            /*padding: 5px;*/
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #333;
+            color: white;
+            width: 35%;
+        }
+
+        .menu input:focus,
+        .menu select:focus {
+            outline: none;
+            border-color: #666;
+        }
+
+        .dot-planet-container {
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            display: inline-block;
+        }
+
+        .dot-planet {
+            align-items: center;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            padding: 15px;
+        }
+
+        .dot-star {
+            background-color: yellow;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-top: 20px;
+            margin-bottom: 2px;
+        }
+
+        /* Scrollable Planet List */
+        .planet-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* Planet Item */
+        .planet-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .menu-label {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            margin-top: 20px;
+        }
+
+        .axis-label {
+            width: 100%;
+            height: 20px;
+            color: white;
+            text-align: center;
+            justify-content: center;
+            font-family: "DejaVu Sans";
+        }
+
+
+        .y-axis-label {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .button-cursor {
+            cursor: pointer;
+        }
+
+        .information-form {
+            /* Add a shadow for better visibility */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
+            flex-direction: column;
+        }
+
+        .information-container {
+            position: relative;
+            padding: 10px;
+            margin: 10px;
+            color: white;
+            font-size: 18px;
+            border: 1px solid white;
+            border-radius: 5px;
+            flex-direction: column;
+            display: flex;
+            width: 850px;
+            overflow-y: auto;
+        }
+
+        .information-title {
+            text-align: center;
+            font-size: 26px;
+        }
+
+        .information-content{ 
+            justify-content: left;
+            font-size: 20px;
+        }
+        /* links */
+        a {
+            color: #00bfff;
+            text-decoration: none;
+            font-weight: bold;
+
+        }
+        a:visited {
+            color:pink;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #1e90ff;
+            text-decoration: underline;
+        }
