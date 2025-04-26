@@ -141,6 +141,45 @@ export class Body {
     
         }
 
+    draw(context, center, scale, i, faceon=true) {
+        context.save()
+        context.fillStyle = this.color
+        context.beginPath();
+
+        const x = this.ry[i] * scale
+        var y = scale;
+        if (faceon) {
+            y *= this.rx[i]
+        } else {
+            y *= this.rz[i]
+        }
+
+        const bodyX = center[0] + x
+        const bodyY = center[1] + y
+        context.arc(bodyX, bodyY, this._R * scale, 0, 2 * Math.PI);
+        
+        context.fill();
+        context.closePath();
+
+        // Create a radial gradient for the shadow
+        const gradient = context.createRadialGradient(
+            bodyX, bodyY, 0, // Inner circle (center of the planet)
+            bodyX, bodyY, this._R * scale // Outer circle (edge of the planet)
+        );
+        gradient.addColorStop(0, "rgba(0, 0, 0, 0.01)"); // Lighter shadow at the center
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0.5)");   // Darker shadow at the edges
+
+        // Apply the shadow gradient
+        context.fillStyle = gradient;
+        context.globalCompositeOperation = "multiply"; // Blend the shadow with the planet's color
+        context.beginPath();
+        context.arc(bodyX, bodyY, this._R * scale, 0, 2 * Math.PI);
+        context.fill();
+        context.closePath();
+        context.restore()
+        
+    }
+
 
     
 /**
