@@ -1,119 +1,56 @@
 import {StarMenu} from './starMenu.js'
-import { PlanetMenu } from './planetMenu.js';
-import { LightcurveMenu } from './lightcurveMenu.js';
+import {PlanetMenu } from './planetMenu.js';
+import {LightcurveMenu } from './lightcurveMenu.js';
 import {FrameMenu} from './frameMenu.js'
-import {drawBody} from './utils.js'
+import {InfoDisplay} from './infoDisplay.js'
+import {LightcurveHandler} from './lightcurveHandler.js'
+import {OrbitAnimatorCanvasHandler} from './orbitAnimatorCanvasHandler.js'
+import {AU} from './constants.js'
 import fixWebmDuration from "fix-webm-duration";
 
-const faceoncanvas = document.getElementById("faceoncanvas")
-const edgeoncanvas = document.getElementById("edgeoncanvas")
-const linecanvas = document.getElementById("linecanvas")
-const faceoncontext = faceoncanvas.getContext('2d');
-const edgeoncontext = edgeoncanvas.getContext('2d');
-const linecontext = linecanvas.getContext('2d');
-linecontext.lineWidth = 1.8
+
+//const faceoncanvas = document.getElementById("faceoncanvas")
+//const faceoncontext = faceoncanvas.getContext('2d');
+//const edgeoncanvas = document.getElementById("edgeoncanvas")
+//const linecanvas = document.getElementById("linecanvas")
+//const edgeoncontext = edgeoncanvas.getContext('2d');
+//const linecontext = linecanvas.getContext('2d');
+//linecontext.lineWidth = 1.8
 
 
 let planetMenu;
 let starMenu;
 let lightcurveMenu;
 let frameMenu;
+let helpMenu;
+let aboutMenu;
 let id;
 let fraction;
+let lightcurveHandler;
+let faceOnCanvasHandler;
+let edgeOnCanvasHandler;
 let i = 0;
 
-function drawTicks(context, canvas, maxDistance, isXAxis = true) {
-    const tickCount = 4; // Number of ticks
-    const tickLength = 14; // Length of each tick in pixels
-    const fontSize = 12; // Font size for labels
-    const padding = 20; // Padding for labels
-
-    context.font = `${fontSize}px Arial`;
-    context.fillStyle = "white";
-    context.strokeStyle = "white";
-    context.lineWidth = 1;
-
-    const tickInterval = (parseInt(maxDistance) + 1) / tickCount;
-
-    for (let i = 0; i <= tickCount; i++) {
-        const value = i * tickInterval;
-        const position = (value / maxDistance) * (canvas.width / 2);
-
-        if (isXAxis) {
-            const ypos = canvas.height
-            const x = canvas.width / 2 + position;
-            const xNeg = canvas.width / 2 - position;
-
-            // Positive tick
-            context.beginPath();
-            context.moveTo(x, ypos - tickLength / 2);
-            context.lineTo(x, ypos + tickLength / 2);
-            context.stroke();
-
-            // Negative tick
-            context.beginPath();
-            context.moveTo(xNeg, ypos - tickLength / 2);
-            context.lineTo(xNeg, ypos + tickLength / 2);
-            context.stroke();
-
-        } else {
-            const xpos = 0
-            const y = canvas.height / 2 - position;
-            const yNeg = canvas.height / 2 + position;
-
-            // Positive tick
-            context.beginPath();
-            context.moveTo(xpos - tickLength / 2, y);
-            context.lineTo(xpos  + tickLength / 2, y);
-            context.stroke();
-
-            // Negative tick
-            context.beginPath();
-            context.moveTo(xpos - tickLength / 2, yNeg);
-            context.lineTo(xpos + tickLength / 2, yNeg);
-            context.stroke();
-
-        }
-    }
-}
-
 // Animate the frames
-const animate = (star, planets, ratio, fraction, timesDays, datapoints, maxDistance) => {
-
-    
-    faceoncontext.globalCompositeOperation = "destination-over";
-    faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
-    
-    // Draw ticks
-    //drawTicks(faceoncontext, faceoncanvas, maxDistance, true); // X-axis
-    //drawTicks(faceoncontext, faceoncanvas, maxDistance, false); // Y-axis
-    
+const animate = (star, planets, datapoints) => {
     
     const bodies = [star, ...planets];
     // Sort bodies for edge-on view (x-direction)
-    const sortedBodiesFaceOn = bodies.slice().sort((a, b) => b.rz[i] - a.rz[i]);
-           
-    // Draw planets for face-on view
-    sortedBodiesFaceOn.forEach((body) => {
-        drawBody(faceoncontext, faceoncanvas, body.ry[i], body.rx[i], body, ratio)
-    });
-
-    edgeoncontext.globalCompositeOperation = "destination-over";
-    edgeoncontext.clearRect(0, 0, edgeoncanvas.width, 
-        edgeoncanvas.height);
+    const sortedBodiesFaceOn = bodies.slice().sort((a, b) => a.rz[i] - b.rz[i]);
+    faceOnCanvasHandler.drawBodies(sortedBodiesFaceOn, i, true)
 
     // Sort bodies for face-on view (z-direction)
-    const sortedBodiesEdgeOn = bodies.slice().sort((a, b) => b.rx[i] - a.rx[i]);
+    const sortedBodiesEdgeOn = bodies.slice().sort((a, b) => a.rx[i] - b.rx[i]);
     
-    // Draw bodies for edge-on view
-    sortedBodiesEdgeOn.forEach((body) => {
-        drawBody(edgeoncontext, edgeoncanvas, body.ry[i], body.rz[i], body, ratio)
-    });
+    edgeOnCanvasHandler.drawBodies(sortedBodiesEdgeOn, i)
 
-    drawLightcurve(linecontext, timesDays, fraction, star.color, i);
+    //drawLightcurve(linecontext, timesDays, fraction, star.color, i);
+    lightcurveHandler.drawLightcurved3(star.color, i)
+
     i = (i + 1) % datapoints;
 };
 
+/**
 function drawLightcurve(linecontext, timesDays, fraction, color, j) {
     // Define the axis ranges
     const xMin = Math.min(...timesDays);
@@ -144,9 +81,22 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
     linecontext.restore();
 
 }
-
-
+ */
 function init() {
+
+    if (!lightcurveHandler) {
+        const margin  = {top:20, bottom:40, left:100, right:100}
+        lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1260, 500, margin)
+    }
+
+    if(!faceOnCanvasHandler) {
+        faceOnCanvasHandler = new OrbitAnimatorCanvasHandler("faceoncanvas")
+    }
+    
+    if (!edgeOnCanvasHandler) {
+        edgeOnCanvasHandler = new OrbitAnimatorCanvasHandler("edgeoncanvas")
+
+    }
 
     if (!starMenu) {
         starMenu = new StarMenu(() => {
@@ -157,6 +107,7 @@ function init() {
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
         });
     }
+
     
     if (!planetMenu) {
         planetMenu = new PlanetMenu(() => {
@@ -167,14 +118,20 @@ function init() {
         /* Uodate buttons state */        
         if (planetMenu.planets.length > 0) {
             lightcurveMenu.exportButton.disabled = false // Enable the button
+            lightcurveMenu.exportButton.style.cursor = "pointer"
             frameMenu.saveAnimationButton.disabled = false // Enable the button
+            frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
         } else if (planetMenu.planets.length == 0) {
             lightcurveMenu.exportButton.disabled = true // Disable the button
+            lightcurveMenu.exportButton.style.cursor = "auto"
             frameMenu.saveAnimationButton.disabled = true // Disable the button
+            frameMenu.saveAnimationButton.style.cursor = "auto"
         }
         restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms); // Restart the simulation
 
     }, starMenu.star);
+     
+    } 
 
     if (!lightcurveMenu) {
         lightcurveMenu = new LightcurveMenu(planetMenu.planets, () => {
@@ -192,8 +149,14 @@ function init() {
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, i);
         });
     }
-       
-    } 
+
+    if (!aboutMenu) {
+        aboutMenu = new InfoDisplay("about")
+    }
+    if(!helpMenu) {
+        helpMenu = new InfoDisplay("manual")
+    }
+      
     starMenu.setTimes(lightcurveMenu.times)
     planetMenu.setTimes(lightcurveMenu.times)
     restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms)
@@ -202,15 +165,30 @@ function init() {
     mainCanvas.addEventListener("click", (event) => {
         pauseAnimation()
     });
+    // Pause animation on space bar pressing
+    document.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+            event.preventDefault(); // Prevent the default behavior of the space bar (e.g., scrolling)
+            if (id) {
+                pauseAnimation(); // Pause the animation if it's running
+            } else {
+                restartAnimation(); // Restart the animation if it's paused
+            }
+        }
+    });
     
     lightcurveMenu.exportButton.addEventListener("click", () => {exportLightcurve(lightcurveMenu.timesDays, fraction)});
     lightcurveMenu.exportButton.disabled = true
     frameMenu.saveAnimationButton.disabled = true
     frameMenu.saveAnimationButton.addEventListener("click" , () => {
     frameMenu.saveAnimationButton.disabled=true; // Disable the button for now
-    saveAnimation()});
+    //saveAnimation()});
+
+    recordSVGAnimation(lightcurveHandler, "lightcurve", "video/webm")});
+
 
 }
+
 
 function exportLightcurve(timesDays, fraction) {
     // Prepare the lightcurve data
@@ -246,9 +224,9 @@ function downloadVideo(blob, name) {
   }
 
   async function saveAnimation(format = "video/webm") {
-    const canvass = [faceoncanvas, edgeoncanvas, linecanvas];
+    const canvass = [edgeoncanvas];
     const names = ["faceon", "edgeon", "lightcurve"];
-    const duration = lightcurveMenu.times.length * frameMenu.ms + frameMenu.ms;
+    const duration = lightcurveMenu.datapoints * frameMenu.ms + frameMenu.ms;
     frameMenu.saveAnimationButton.style.cursor = "wait";
     for (let index = 0; index < canvass.length; index++) {
         const canvas = canvass[index];
@@ -262,16 +240,83 @@ function downloadVideo(blob, name) {
         await recordCanvas(canvas, name, format, duration);
     }
 
-    frameMenu.saveAnimationButton.style.cursor = "auto";
+    frameMenu.saveAnimationButton.style.cursor = "pointer";
     frameMenu.saveAnimationButton.disabled = false;
 
     console.log("All simulations saved.");
 }
 
+async function recordSVGAnimation(svgElement, name, format) {
+
+    const duration = frameMenu.ms * lightcurveMenu.datapoints
+    return new Promise((resolve) => {
+        const recordedChunks = [];
+
+        // Create an offscreen canvas
+        const canvas = document.createElement("canvas");
+        canvas.width = svgElement.width;
+        canvas.height = svgElement.height;
+        const ctx = canvas.getContext("2d");
+
+        // Capture the canvas stream
+        const canvasStream = canvas.captureStream(frameMenu.ms);
+        const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: format });
+
+        mediaRecorder.ondataavailable = (evt) => {
+            if (evt.data.size > 0) {
+                recordedChunks.push(evt.data);
+            }
+        };
+
+        mediaRecorder.onstart = () => {
+            console.log(`${name} recording started...`);
+        };
+
+        mediaRecorder.onstop = async () => {
+            console.log(`${name} recording stopped.`);
+
+            const webBlob = new Blob(recordedChunks, { type: format });
+            const fixedBlob = await fixWebmDuration(webBlob, duration);
+
+            downloadVideo(fixedBlob, name);
+
+            resolve();
+        };
+
+        mediaRecorder.start();
+
+        // Animate by drawing the SVG to the canvas repeatedly
+        const startTime = Date.now();
+        const drawFrame = () => {
+            const elapsed = Date.now() - startTime;
+            if (elapsed >= duration) {
+                mediaRecorder.stop();
+                return;
+            }
+
+            const svgData = new XMLSerializer().serializeToString(svgElement.svg.node());
+            const img = new Image();
+            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(svgBlob);
+
+            img.onload = () => {
+                ctx.clearRect(0, 0, svgElement.width, svgElement.height);
+                ctx.drawImage(img, 0, 0, svgElement.width, svgElement.height);
+                URL.revokeObjectURL(url);
+            };
+            img.src = url;
+
+            requestAnimationFrame(drawFrame);
+        };
+
+        drawFrame();
+    });
+}
+
+
 function recordCanvas(canvas, name, format, duration) {
     return new Promise((resolve) => {
         const recordedChunks = [];
-        console.log("frameMenu ms, record canvas", frameMenu.ms)
         const canvasStream = canvas.captureStream(frameMenu.ms); // Capture the canvas stream
         const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: format });
 
@@ -290,7 +335,6 @@ function recordCanvas(canvas, name, format, duration) {
 
             const webBlob = new Blob(recordedChunks, { type: format });
             const fixedBlob = await fixWebmDuration(webBlob, duration);
-            console.log(duration)
 
             // Download the fixed blob
             downloadVideo(fixedBlob, name);
@@ -310,7 +354,6 @@ function recordCanvas(canvas, name, format, duration) {
         }, duration);
     });
 }
-
 
 
 function restartAnimation() {
@@ -342,25 +385,35 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start=0) {
     console.log("Restarting simu")
     // Clear lightcurve  the canvas if we restart simulation from beginning///
     if (i==0) {
-        linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height);   
+        //linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height); 
+        lightcurveHandler.clear()
     }
     const datapoints = lightcurveMenu.datapoints
-    const screenmin = Math.min(faceoncanvas.width, faceoncanvas.height)
+    const screenmin = Math.min(edgeoncanvas.width, edgeoncanvas.height)
     const ratio = screenmin / 2 / (planetMenu.maxDistance);
+    
     
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
         fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
         const animatePlanets = () => {
-            animate(starMenu.star, planetMenu.planets, ratio, fraction, lightcurveMenu.timesDays, 
+            animate(starMenu.star, planetMenu.planets, 
                 datapoints, planetMenu.maxDistance); 
         };
-        console.log("ms", ms)
+        lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction)
+        const xdomain = [-planetMenu.maxDistance / AU, planetMenu.maxDistance  / AU]
+        const ydomain = [-planetMenu.maxDistance / AU, planetMenu.maxDistance  / AU]
+        
+        faceOnCanvasHandler.setDomains(xdomain, ydomain, true)
+        edgeOnCanvasHandler.setDomains(xdomain, ydomain, false)
         id = window.setInterval(animatePlanets, ms);
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     }  else {
-        faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
-        edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
+        lightcurveHandler.clear()
+        faceOnCanvasHandler.clear()
+        edgeOnCanvasHandler.clear()
+        //faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
+        //edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
     }
     //Clear simulation//
     if (!id) {

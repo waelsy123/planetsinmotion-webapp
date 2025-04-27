@@ -5,367 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exoplanet Transit Animation</title>
+    <link rel="stylesheet" href="./styles/style.css"> <!-- Link to your CSS file -->
     <style>
-        body {
-            justify-content: center;
-            align-items: center;
-            margin: 1px;
-            /* Top margin with the browser menu */
-            height: 100vh;
-            /* Full viewport height */
-            width: 100vw;
-            ;
-            background-color: black;
-        }
 
-        .main-container {
-            display: grid;
-            grid-template-columns: 250px auto 250px;
-            /* Left menu + Main content + menu */
-            gap: 25px;
-            /* Space between columns */
-            align-items: start;
-            height: 100%;
-            /* Full height of the viewport */
-            width: 100%;
-            /* Full width of the viewport */
-            padding: 10px;
-            /* A bit of room between the screen edges and the content */
-            box-sizing: border-box;
-            /* Include padding and border in the element's total width */
-        }
-
-        .main-canvas-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            gap: 20px;
-            /* Space between top and bottom canvas */
-        }
-
-        .top-canvas-container {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 50px;
-            
-            /* Space between the two top canvases */
-        }
-
-        /* Outer container for y-axis, canvas, and x-axis */
-        .axis-canvas-container {
-            display: flex;
-            font-size: 22px;
-            display: flex;
-            flex-direction: row;
-            /* Arrange y-axis and row-container horizontally */
-            align-items: center;
-            justify-content: center;
-            color: white;
-            gap: 10px;
-            /* Space between y-axis and canvas */
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Row container for canvas and x-axis */
-        .x-axis-column-container {
-            display: flex;
-            flex-direction: column;
-            /* Arrange canvas and x-axis vertically */
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            gap: 10px;
-            /* Space between canvas and x-axis */
-        }
-
-        .top-canvas {
-
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            cursor: pointer;
-            max-width: 100%;
-            max-height: 100%;
-            background-color: black;
-            border: 2px solid white;
-        }
-
-
-        .menu {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            /* spacing between elements and "walls" of menu */
-            border: 2px solid white;
-            border-radius: 5px;
-            background-color: #222;
-            width: 100%;
-            /* Full width of the column */
-            box-sizing: border-box;
-            /* Include padding and border in the element's total width, makes both menus appear equally "wide" */
-        }
-
-        .left-menu-container,
-        .menu-container {
-            display: flex;
-            flex-direction: column;
-            color: white;
-            gap: 20px;
-            /* Vertical space between menus */
-        }
-
-        .menu-section {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            /* Space between inputs */
-            width: 100%;
-        }
-
-        .label-body {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 10px;
-            /* Space between inputs */
-            width: 100%;
-            white-space: nowrap;
-            /* Prevent label text from wrapping */
-        }
-
-        .menu-row {
-            display: flex;
-            align-items: center;
-            flex-direction: row;
-            justify-content: space-between;
-            gap: 10px;
-            /* Horizontal spacing between label and input */
-            align-items: center;
-            width: 100%;
-            margin-bottom: 2px;
-        }
-
-        .menu label {
-            font-size: 16px;
-            /* Size of all the labels inside the menu */
-            font-style: bold;
-            width: 30%;
-            white-space: nowrap;
-            /* Prevent label text from wrapping */
-        }
-
-        .menu input,
-        .menu select {
-            font-size: 16px;
-            /* Size of the input font */
-            /*padding: 5px;*/
-            border: 1px solid #444;
-            border-radius: 5px;
-            background-color: #333;
-            color: white;
-            width: 35%;
-        }
-
-        .menu input:focus,
-        .menu select:focus {
-            outline: none;
-            border-color: #666;
-        }
-
-        .dot-planet-container {
-            align-items: center;
-            width: 40px;
-            height: 40px;
-            display: inline-block;
-        }
-
-        .dot-planet {
-            align-items: center;
-            border-radius: 50%;
-            width: 15px;
-            height: 15px;
-            padding: 15px;
-        }
-
-        .dot-star {
-            background-color: yellow;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            margin-top: 20px;
-            margin-bottom: 2px;
-        }
-
-        /* Scrollable Planet List */
-        .planet-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        /* Planet Item */
-        .planet-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 5px;
-            border-radius: 5px;
-            color: white;
-        }
-
-        /* Hidden Form */
-        .planet-form {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        .planet-form-content {
-            background-color: #222;
-            /* Add a shadow for better visibility */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            flex-direction: column;
-        }
-
-        .planet-form-main-panel {
-            margin: 10px;
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            gap: 15px; /* gap between menu and canvas */
-        }
-
-        .planet-form-canvas {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .form-controls {
-            display: flex;
-            justify-content: center;
-            flex-direction: row;
-            gap: 10px;
-            /* Space between buttons */
-            margin-top: 20px;
-        }
-
-        /* Buttons */
-        .planet-form-btn {
-            background-color: #444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-
-        .planet-form-btn:hover {
-            background-color: #666;
-        }
-
-        .error-message {
-            display: flex;
-            color: red !important;
-            font-style: italic;
-            font-size: 16px;
-            justify-content: center;
-            align-items: center;
-            white-space: wrap;
-            margin: 15px;
-        }
-
-        .planet-form:target {
-            display: flex;
-        }
-
-        .planet-btns {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            transition: background-color 0.2s ease;
-            /* Smooth transition for hover effect */
-        }
-
-        .planet-btns img {
-            display: block;
-            transition: transform 0.2s ease;
-            /* Smooth scaling effect */
-        }
-
-        /* Close Button */
-        .close-btn {
-            top: 0px;
-            left: 0px;
-            background: none;
-            border:white;
-            border-radius: 5px;
-            color: white;
-            font-size: 30px;
-            cursor: pointer;
-        }
-
-        .close-btn:hover {
-            color: #f00;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .menu-label {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 2px;
-            margin-top: 20px;
-        }
-
-        .axis-label {
-            width: 100%;
-            height: 20px;
-            color: white;
-            text-align: center;
-            justify-content: center;
-            font-family: "DejaVu Sans";
-        }
-
-
-        .y-axis-label {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-            text-align: center;
-            align-items: center;
-            justify-content: center;
-        }
     </style>
 </head>
 
 <body>
+    <!-- Top Banner -->
+    <div class="top-banner">
+        <button id="manual-button" class="banner-button">Manual</button>
+        <button id="about-button" class="banner-button">About</button>
+    </div>
     <div class="main-container">
         <!-- Left Menus -->
         <div class="left-menu-container">
@@ -374,7 +25,7 @@
                 <div class="menu-section">
                     <label><strong>Lightcurve</strong></label>
                     <div class="menu-row">
-                        <label for="datapoints">N:</label>
+                        <label for="datapoints"><i>N</i>:</label>
                         <input type="number" min="1" step="10" max="5000" value="100" id="datapoints">
                     </div>
                     <div class="menu-row">
@@ -402,19 +53,20 @@
             <div class="top-canvas-container">
                 <div class="axis-canvas-container">
                     <!-- Y-axis label-->
-                    <label class="x-axis-label y-axis-label">z (re-scaled)</label>
+                    <label class="x-axis-label y-axis-label">z (AU)</label>
                     <div class="x-axis-column-container">
                         <label class="x-axis-label">Edge-on</label>
-                        <canvas id="edgeoncanvas" width="600px" height="600px"></canvas>
-                        <label class="x-axis-label">y (re-scaled)</label>
+                        <div id="edgeoncanvas"></div>
+                        <label class="x-axis-label">y (AU)</label>
                     </div>
                 </div>
                 <div class="axis-canvas-container">
-                    <label class="x-axis-label y-axis-label">x (re-scaled)</label>
+                    <label class="x-axis-label y-axis-label">x (AU)</label>
                     <div class="x-axis-column-container">
                         <label class="x-axis-label">Face-on</label>
-                        <canvas id="faceoncanvas" width="600px" height="600px"></canvas>
-                        <label class="x-axis-label">y (re-scaled)</label>
+                       <!-- <canvas id="faceoncanvas" width="600px" height="600px"></canvas>-->
+                       <div id="faceoncanvas"></div>
+                        <label class="x-axis-label">y (AU)</label>
                     </div>
                 </div>
             </div>
@@ -422,11 +74,24 @@
                 <div class="axis-canvas-container">
                     <label class="x-axis-label y-axis-label">Relative Flux (%)</label>
                     <div class="x-axis-column-container">
-                        <canvas id="linecanvas" width="1260px" height="400px"></canvas>
+                        <!--<canvas id="linecanvas" width="1260px" height="400px"></canvas>-->
+                        <div id="d3-lightcurve-container"></div>
                         <label class="x-axis-label">Time (Days)</label>
                     </div>
                 </div>
             </div>
+            <!-- New D3.js Lightcurve Container 
+            <div class="low-canvas-container">
+                <div class="axis-canvas-container">
+                    <label class="x-axis-label y-axis-label">Relative Flux (%)</label>
+                    <div class="x-axis-column-container">
+                        <div id="d3-lightcurve-container" width="100%" height="400px"></div>
+                        <label class="x-axis-label">Time (Days)</label>
+                    </div>
+                </div>
+                
+</div>
+-->
         </div>
 
         <div class="menu-container">
@@ -451,15 +116,6 @@
                     <div class="menu-row">
                         <label for="star-color">Color:</label>
                         <input type="color" id="star-color" value="#FFFF00">
-                        <!--
-                            <option value="yellow" selected>Yellow</option>
-                            <option value="red">Red</option>
-                            <option value="blue">Blue</option>
-                            <option value="white">White</option>
-                            <option value="orange">Orange</option>
-                            <option value="green">Green</option>
-                        </select>
-                        -->
                     </div>
                 </div>
 
@@ -471,7 +127,7 @@
                     <div id="planet-list" class="planet-list">
                         <!-- Planet items will be dynamically added here -->
                     </div>
-                    <button id="add-planet-btn">+</button>
+                    <button class="button-cursor" id="add-planet-btn">+</button>
                 </div>
             </div>
 
@@ -502,22 +158,13 @@
 
                             <div class="menu-row">
                                 <label for="planet-radius">Radius (R<sub>☉</sub>):</label>
-                                <input type="number" id="planet-radius" min="0.0" step="0.1" value="100" max="100000000" />
+                                <input type="number" id="planet-radius" min="0.0" step="0.1" value="100"
+                                    max="100000000" />
                             </div>
 
                             <div class="menu-row">
                                 <label for="planet-color">Color:</label>
                                 <input type="color" id="planet-color">
-                                <!--
-                                <option value="red">Red</option>
-                                <option value="blue">Blue</option>
-                                <option value="yellow">Yellow</option>
-                                <option value="white">White</option>
-                                <option value="orange">Orange</option>
-                                <option value="green">Green</option>
-                            </select>
-                            </div>
-                            -->
                             </div>
 
                             <!-- Orbit Section -->
@@ -526,7 +173,7 @@
 
                                 <div class="menu-row">
                                     <label for="period"><i>P</i> (days):</label>
-                                    <input type="number" min="0.1" step="1" id="planet-period" value="5" max="1000000">
+                                    <input type="number" min="0.1" step="1" id="planet-period" value="5" max="10000000">
                                 </div>
                                 <div class="menu-row">
                                     <label for="inclination"><i>i</i> (°):</label>
@@ -538,7 +185,7 @@
                                 </div>
                                 <div class="menu-row">
                                     <label for="phase"><i>ɸ</i>:</label>
-                                    <input type="number" min="0" step="0.1" max="1" value="0" id="phase">
+                                    <input type="number" min="0" step="0.1" max="1" value="0.5" id="phase">
                                 </div>
                             </div>
                             <!-- Controls -->
@@ -550,13 +197,47 @@
                         </div>
                     </div>
                 </div>
-                
-                <canvas id="planet-canvas" width="250px" height="250px"></canvas>
-            </div>
-            <label class="error-message" id="planet-error"></label>
-        </div>
+                <div class="planet-form-canvas">
+                    <canvas id="planet-canvas" style="cursor: auto;" width="300px" height="300px"></canvas>
+                    <!--
+                    <div class="menu" style="background-color: black;">
+                    <div class="menu-row">
+                        
+                        <label for="log-scale">log-scale</label>
+                        <input id="planet-form-log-scale" type="checkbox" onclick='updateLogScale(this);'>
 
-        <script type="module" src="./src/app.js"></script>
+                    </div>
+                </div>
+                -->
+                </div>
+            </div>
+            <label class="planet-form-error-message" id="planet-error"></label>
+        </div>
+    </div>
+
+
+    <div class="planet-form hidden" id="about-content">
+        <div class="information-form">
+            <button id="close-about-btn" class="close-btn">×</button>
+            <div class="information-container">
+                <label class="information-title">Welcome to the Exoplanet Transit Animator!</label>
+                <label id="about-text" class="information-content"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="planet-form hidden" id="manual-content">
+        <div class="information-form">
+            <button id="close-manual-btn" class="close-btn">×</button>
+            <div class="information-container">
+                <label class="information-title">Manual</label>
+                <label id="manual-text" class="information-content"></label>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+    <link rel="stylesheet" href="./styles/style.css">
 </body>
 
 </html>

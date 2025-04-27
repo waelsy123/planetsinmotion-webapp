@@ -32,10 +32,26 @@
         }
 
         .planet-form-canvas {
+            position: relative;
+            color: white;
             display: flex;
+            gap: 10px;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
         }
+
+        #buttonWrapper {
+            position: absolute;
+            width: 30px;
+            top: 5px;
+            right: 5px;
+          }
+          input[type="button"] {
+            padding: 5px;
+            width: 30px;
+            margin: 0px 0px 2px 0px;
+          }
 
         .form-controls {
             display: flex;
@@ -237,6 +253,27 @@
             border: 2px solid white;
         }
 
+          /* Make all axis text bigger and cleaner */
+        .axis path,
+        .axis line {
+            stroke: white;
+            stroke-width: 2;
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            font-size: 22px; /* Bigger font for tick labels */
+            fill: white;
+            font-family: "DejaVu Sans";
+        }
+
+        /* Optionally style your lightcurve line too */
+        .line {
+            fill: none;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+
 
         .menu {
             display: flex;
@@ -374,6 +411,7 @@
         }
 
         .axis-label {
+            font-size: 28px;
             width: 100%;
             height: 20px;
             color: white;
