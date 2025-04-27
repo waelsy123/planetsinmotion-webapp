@@ -2,6 +2,7 @@ import { getSemiMajorAxis, trueAnomaly, meanAnomaly, solveEccentricAnomaly, getR
 import { pi, sin, cos, sqrt } from 'mathjs';
 import {R_sun, M_sun, DaysToSeconds, AU} from './constants.js'
 import {Body} from './body.js'
+import {darkenColor} from './utils.js'
 
 export class Planet extends Body{
     /**
@@ -34,7 +35,9 @@ export class Planet extends Body{
         this.rmin = this.a * (1. - this._e)
         console.log(`Planet max distance: ${(this.rmax / AU).toFixed(2)} AU`);
     }
-
+    get phase0() {
+        return this.phase0
+    }
 
     get rmax() {
         return this._rmax
@@ -247,6 +250,54 @@ export class Planet extends Body{
         this.rx = r.map((r_i, index) => r_i * (cosOmega * cosnu[index] * cosi - sinOmega * sinnu[index])); // line of sight direction
         this.ry = r.map((r_i, index) => r_i * (sinOmega * cosnu[index] * cosi + cosOmega * sinnu[index]));
         this.rz = r.map((r_i, index) => -r_i * cosnu[index] * sini);
+    }
+
+    draw(context, center, scale, i, faceon=true) {
+        context.save()
+        context.globalAlpha = 1
+
+        const x = this.ry[i] * scale
+        var y = scale;
+        var z  = scale
+        if (faceon) {
+            y *= this.rx[i]
+            z *= this.rz[i]
+        } else {
+            y *= this.rz[i]
+            z *= -this.rx[i]
+        }
+
+        const planetX = center[0] + x
+        const planetY = center[1] + y
+        const theta = Math.atan2(y, x)
+        const r = Math.sqrt(x**2 + y**2 + z**2)
+        const phi = Math.acos(Math.sqrt(x**2 + y**2) / r)
+        const startangle =  ((theta + 3 * Math.PI / 2) + Math.sign(z) * phi)
+        const endangle = ((theta + Math.PI / 2) - Math.sign(z) * phi)
+
+        /// Shadow part
+        // Apply the shadow gradient
+        context.fillStyle = darkenColor(this.color, 50)
+
+        context.beginPath();
+        context.arc(planetX, 
+            planetY, this._R * scale, endangle, startangle, true);
+        context.fill();
+        context.closePath();
+
+        ///Bright part
+        context.restore()
+        context.fillStyle = this.color
+        //context.globalAlpha = 1
+        context.beginPath();
+        context.arc(planetX, 
+            planetY, this._R * scale, 
+           endangle, startangle, false);
+    
+        context.fill();
+        context.closePath();
+        context.restore()
+        
     }
 
     
