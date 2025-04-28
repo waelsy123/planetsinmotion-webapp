@@ -1,4 +1,4 @@
-
+import { ToolTipLabel } from "./toolTipLabel.js";
 
 export class FrameMenu {
     constructor(onUpdate) {
@@ -11,14 +11,22 @@ export class FrameMenu {
 
     initFrame() {
         const msInput = document.getElementById("ms");
+        this.msLabel = new ToolTipLabel("frame-rate")
         this.ms = parseInt(msInput.value);
         msInput.addEventListener("input", (event) => {
             this.ms = parseInt(event.target.value);
-            this.onUpdate(); // Trigger simulation update
+            this.onUpdate(this.ms); // Trigger simulation update
         });
 
         this.saveAnimationButton = document.getElementById("save-animation-btn");
 
     }
+
+
+    setLanguage(translations) {
+        this.msLabel.setLanguage(translations)
+    }
+
+    
 
 }
