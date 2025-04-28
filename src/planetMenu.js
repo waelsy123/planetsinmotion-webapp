@@ -233,7 +233,6 @@ export class PlanetMenu {
 
         this.planetForm.classList.remove("hidden");
         this.planetForm.focus()
-        this.editingIndex = null; // Reset editing state
 
 
         /*Fill in the value if we come from edit button*/
@@ -246,7 +245,7 @@ export class PlanetMenu {
             this.periodInput.value = this.planets[index].P
             this.eInput.value = this.planets[index].e
             this.iInput.value = this.planets[index].i
-            this.Omega0Input.value = this.planet[index].Omega0
+            this.Omega0Input.value = this.planets[index].Omega0
             this.massInput.value = this.planets[index].M
             this.phaseInput.value = this.planets[index].phase0
             this.radiusInput.value = this.planets[index].R
@@ -281,16 +280,18 @@ export class PlanetMenu {
 
         const randomNumber = Math.random();
         // Planet
-        this.planetNameInput.value = "Planet " + (this.planets.length + 1)
         this.massInput.value = parseFloat(randomNumber * 100 * M_J / M_sun + M_J / M_sun).toFixed(2);
         this.radiusInput.value = parseFloat((randomNumber * this.star.R / R_sun / 10) + 1).toFixed(2);
 
         // Orbit
         this.periodInput.value = Math.floor(randomNumber * 500) + 0.01
         this.iInput.value = parseFloat(Math.floor(randomNumber * 89) + 1).toFixed(2);
-        this.eInput.value = parseFloat(randomNumber.toFixed(2));
-        this.phaseInput.value = randomNumber.toFixed(2);
-        this.Omega0Input.value = randomNumber.toFixed(2);
+        const randome = Math.random();
+        this.eInput.value = parseFloat(randome.toFixed(2));
+        const randomPhase = Math.random();
+        this.phaseInput.value = randomPhase.toFixed(2);
+        const randomOmega0 = Math.random();
+        this.Omega0Input.value = randomOmega0.toFixed(2);
     }
 
     closePlanetForm() {
