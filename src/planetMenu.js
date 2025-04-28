@@ -21,8 +21,10 @@ export class PlanetMenu {
 
 
     setLanguage(translations) {
-        this.OmegaLabel.setLanguage(translations)
-        this.phaseLabel.setLanguage(translations)
+
+        this.labels.forEach(label => {
+            label.setLanguage(translations)
+        });
     }
     /**
      * This method is just in case we want add zoom capabilities, otherwise ignore
@@ -73,10 +75,10 @@ export class PlanetMenu {
         // Orbit
         this.planetNameInput = document.getElementById("planet-name")
         this.periodInput = document.getElementById("planet-period")
-        this.iInput = document.getElementById("inclination")
+        this.iInput = document.getElementById("inclination-input")
         this.phaseInput = document.getElementById("phase-input")
         this.Omega0Input = document.getElementById("longitude-ascending-node-input")
-        this.eInput = document.getElementById("eccentricity")
+        this.eInput = document.getElementById("eccentricity-input")
 
         // Planet
         this.massInput = document.getElementById("planet-mass")
@@ -110,7 +112,7 @@ export class PlanetMenu {
             });
         });
 
-        this.colorInput.addEventListener("input", (event) => {
+        this.colorInput.addEventListener("input", () => {
             this.createPlanet();
             this.drawOrbit()
         });
@@ -127,8 +129,12 @@ export class PlanetMenu {
         */
 
         // Tooltip elements
-        this.OmegaLabel = new ToolTipLabel("longitude-ascending-node")
-        this.phaseLabel = new ToolTipLabel("phase")
+        const OmegaLabel = new ToolTipLabel("longitude-ascending-node")
+        const phaseLabel = new ToolTipLabel("phase")
+        const eccentricityLabel = new ToolTipLabel("eccentricity")
+        const inclinationLabel = new ToolTipLabel("inclination")
+
+        this.labels = [OmegaLabel, phaseLabel, eccentricityLabel, inclinationLabel]
 
     }
 
@@ -141,8 +147,9 @@ export class PlanetMenu {
         const phase = parseFloat(this.phaseInput.value);
         const Omega0 = parseFloat(this.Omega0Input.value);
         const color = this.colorInput.value
+        const name = this.planetList.value
         try {
-            this.planet = new Planet(M, R, P, this.star, i, e, 0, Omega0, phase, color);
+            this.planet = new Planet(M, R, P, this.star, i, e, 0, Omega0, phase, color, name);
             this.errorLabel.classList.add("hidden")
             return true
         } catch (error) {
@@ -217,7 +224,7 @@ export class PlanetMenu {
 
         this.randomizeBtn.addEventListener("click", () => {
             //Randomize inputs
-            randomizeInputs()
+            this.randomizeInputs()
 
             this.errorLabel.classList.remove("hidden")
             this.createPlanet();
@@ -273,14 +280,17 @@ export class PlanetMenu {
     randomizeInputs() {
 
         const randomNumber = Math.random();
+        // Planet
+        this.planetNameInput.value = "Planet " + (this.planets.length + 1)
+        this.massInput.value = parseFloat(randomNumber * 100 * M_J / M_sun + M_J / M_sun).toFixed(2);
+        this.radiusInput.value = parseFloat((randomNumber * this.star.R / R_sun / 10) + 1).toFixed(2);
+
+        // Orbit
         this.periodInput.value = Math.floor(randomNumber * 500) + 0.01
         this.iInput.value = parseFloat(Math.floor(randomNumber * 89) + 1).toFixed(2);
         this.eInput.value = parseFloat(randomNumber.toFixed(2));
-        this.massInput.value = parseFloat(randomNumber * 100 * M_J / M_sun + M_J / M_sun).toFixed(2);
         this.phaseInput.value = randomNumber.toFixed(2);
         this.Omega0Input.value = randomNumber.toFixed(2);
-        this.radiusInput.value = Math.floor(randomNumber * this.star.R / R_sun / 10) + 1;
-        this.planetNameInput.value = "Planet " + (this.planets.length + 1)
     }
 
     closePlanetForm() {
