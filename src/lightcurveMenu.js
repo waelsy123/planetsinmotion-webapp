@@ -55,10 +55,6 @@ export class LightcurveMenu {
             this.onUpdate(); // Trigger simulation update
         });
 
-
-        // Add listener to the export button
-        this.exportButton = document.getElementById("export-lightcurve");
-
     }
 
     calculateTimes(planets){
@@ -66,6 +62,27 @@ export class LightcurveMenu {
         this.times = linspace(0, this.orbits * maxP, this.datapoints);
         this.timesDays = this.times.map((t) => t / DaysToSeconds);
         console.log("Time days", this.timesDays)
+    }
+   
+
+    exportLightcurve(timesDays, fraction) {
+        // Prepare the lightcurve data
+        const header = "Time (days),RelativeFlux";
+        const data = timesDays.map((time, index) => `${time.toFixed(4)},${fraction[index].toFixed(5)}`).join("\n");
+        const csvContent = `${header}\n${data}`; // Combine header and data
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        
+        // Create a download link
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "lightcurve.csv"; // Default filename
+        a.style.display = "none";
+        console.log("Exporting lightcurve", a)
+
+        // Append the link to the document and trigger the download
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
 }

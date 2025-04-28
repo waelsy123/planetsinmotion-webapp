@@ -29,6 +29,7 @@ let fraction;
 let lightcurveHandler;
 let faceOnCanvasHandler;
 let edgeOnCanvasHandler;
+let exportButton;
 let i = 0;
 
 async function loadLanguage(lang="en") {
@@ -125,13 +126,13 @@ function init() {
         planetMenu.setTimes(lightcurveMenu.times)
         /* Uodate buttons state */        
         if (planetMenu.planets.length > 0) {
-            lightcurveMenu.exportButton.disabled = false // Enable the button
-            lightcurveMenu.exportButton.style.cursor = "pointer"
+            exportButton.disabled = false // Enable the button
+            exportButton.style.cursor = "pointer"
             frameMenu.saveAnimationButton.disabled = false // Enable the button
             frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
         } else if (planetMenu.planets.length == 0) {
-            lightcurveMenu.exportButton.disabled = true // Disable the button
-            lightcurveMenu.exportButton.style.cursor = "auto"
+            exportButton.disabled = true // Disable the button
+            exportButton.style.cursor = "auto"
             frameMenu.saveAnimationButton.disabled = true // Disable the button
             frameMenu.saveAnimationButton.style.cursor = "auto"
         }
@@ -150,6 +151,11 @@ function init() {
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);
         })
     }
+
+
+
+    // Add listener to the export button
+    exportButton = document.getElementById("export-lightcurve");
 
     if (!frameMenu) {
         frameMenu = new FrameMenu((ms) => {
@@ -188,8 +194,8 @@ function init() {
         }
     });
     
-    lightcurveMenu.exportButton.addEventListener("click", () => {exportLightcurve(lightcurveMenu.timesDays, fraction)});
-    lightcurveMenu.exportButton.disabled = true
+    exportButton.addEventListener("click", () => {lightcurveMenu.exportLightcurve(lightcurveMenu.timesDays, fraction)});
+    exportButton.disabled = true
     frameMenu.saveAnimationButton.disabled = true
     frameMenu.saveAnimationButton.addEventListener("click" , () => {
     frameMenu.saveAnimationButton.disabled=true; // Disable the button while we record
@@ -201,27 +207,6 @@ function init() {
     loadLanguage()
 
 
-}
-
-
-function exportLightcurve(timesDays, fraction) {
-    // Prepare the lightcurve data
-    const header = "Time (days),RelativeFlux";
-    const data = timesDays.map((time, index) => `${time.toFixed(4)},${fraction[index].toFixed(5)}`).join("\n");
-    const csvContent = `${header}\n${data}`; // Combine header and data
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    
-    // Create a download link
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "lightcurve.csv"; // Default filename
-    a.style.display = "none";
-    console.log("Exporting lightcurve", a)
-
-    // Append the link to the document and trigger the download
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
 }
 
 
