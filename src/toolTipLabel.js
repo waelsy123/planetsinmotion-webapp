@@ -9,7 +9,9 @@ export class ToolTipLabel {
 
 
     setLanguage(translations) {
-        this.toolTipElement.innerText = translations[this.name + "_tooltip"];
+        const toolTip = translations[this.name + "_tooltip"].replace("{index}", "{0}");
+        //InnerHTML to allow for italics
+        this.toolTipElement.innerHTML = toolTip;
     }
 
 }
