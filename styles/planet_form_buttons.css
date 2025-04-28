@@ -1,0 +1,31 @@
+
+
+        /* Buttons */
+        .planet-form-btn {
+           
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            
+        }
+
+        .planet-form-btn:hover {
+            background-color: #666;
+        }
+
+        .planet-btns img {
+            display: block;
+
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s ease;
+            filter:invert(100%);
+        }
+
+        .planet-btns:hover img {
+            transform: scale(1.2);
+            /* Smooth scaling effect */
+        }
