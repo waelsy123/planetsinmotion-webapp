@@ -25,11 +25,15 @@
                 <div class="menu-section">
                     <label><strong>Lightcurve</strong></label>
                     <div class="menu-row">
-                        <label for="datapoints"><i>N</i>:</label>
-                        <input type="number" min="1" step="10" max="5000" value="100" id="datapoints">
+                        <div for="datapoints" class="tooltip"><i>N</i>:
+                            <span class="tooltiptext" id="tooltip-datapoints"></span>
+                        </div>
+                        <input type="number" min="1" step="10" max="5000" value="100" id="input-datapoints">
                     </div>
                     <div class="menu-row">
-                        <label for="Orbits">Orbits:</label>
+                        <div for="orbits" class="tooltip">Orbits:
+                            <span class="tooltiptext" id="tooltip-orbits"></span>
+                        </div>
                         <input type="number" min="1" step="1" max="10" value="1" id="orbits">
                     </div>
                     <button id="export-lightcurve">Export</button>
@@ -41,7 +45,9 @@
                 <div class="menu-section">
                     <label><strong>Animation</strong></label>
                     <div class="menu-row">
-                        <label for="frame-rate">Rate (ms):</label>
+                        <div for="frame-rate" class="tooltip">Rate (ms):
+                            <span class="tooltiptext" id="tooltip-frame-rate"></span>
+                        </div>
                         <input type="number" min="1" step="10" max="2000" value="10" id="ms">
                     </div>
                     <button id="save-animation-btn">Save Animation</button>
@@ -64,8 +70,8 @@
                     <label class="x-axis-label y-axis-label">x (AU)</label>
                     <div class="x-axis-column-container">
                         <label class="x-axis-label">Face-on</label>
-                       <!-- <canvas id="faceoncanvas" width="600px" height="600px"></canvas>-->
-                       <div id="faceoncanvas"></div>
+                        <!-- <canvas id="faceoncanvas" width="600px" height="600px"></canvas>-->
+                        <div id="faceoncanvas"></div>
                         <label class="x-axis-label">y (AU)</label>
                     </div>
                 </div>
@@ -158,7 +164,7 @@
 
                             <div class="menu-row">
                                 <label for="planet-radius">Radius (R<sub>☉</sub>):</label>
-                                <input type="number" id="planet-radius" min="0.0" step="0.1" value="100"
+                                <input type="number" id="planet-radius" min="0.0" step="0.1" value="1"
                                     max="100000000" />
                             </div>
 
@@ -184,8 +190,17 @@
                                     <input type="number" min="0" step="0.1" max="1" value="0" id="eccentricity">
                                 </div>
                                 <div class="menu-row">
-                                    <label for="phase"><i>ɸ</i>:</label>
-                                    <input type="number" min="0" step="0.1" max="1" value="0.5" id="phase">
+                                    <div class="tooltip" for="phase"><i>ɸ</i>:
+                                        <span class="tooltiptext" id="tooltip-phase"></span>
+                                    </div>
+                                    <input type="number" min="0" step="0.1" max="1" value="0.5" id="phase-input">
+                                </div>
+                                <div class="menu-row">
+                                    <div class="tooltip" for="longitude-ascending-node"><i>Ω</i>:
+                                        <span class="tooltiptext" id="tooltip-longitude-ascending-node"></span>
+                                    </div>
+                                    <input type="number" min="0" step="0.1" max="1" value="0."
+                                        id="longitude-ascending-node-input">
                                 </div>
                             </div>
                             <!-- Controls -->
@@ -236,8 +251,11 @@
         </div>
     </div>
 
+
     <script type="module" src="./src/app.js"></script>
     <link rel="stylesheet" href="./styles/style.css">
+    <link rel="stylesheet" href="./styles/tooltip.css">
+    <link rel="stylesheet" href="./styles/planet_form_buttons.css">
 </body>
 
 </html>

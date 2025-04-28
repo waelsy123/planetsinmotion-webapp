@@ -5,7 +5,6 @@ import {FrameMenu} from './frameMenu.js'
 import {InfoDisplay} from './infoDisplay.js'
 import {LightcurveHandler} from './lightcurveHandler.js'
 import {OrbitAnimatorCanvasHandler} from './orbitAnimatorCanvasHandler.js'
-import {AU} from './constants.js'
 import fixWebmDuration from "fix-webm-duration";
 
 
@@ -24,12 +23,21 @@ let lightcurveMenu;
 let frameMenu;
 let helpMenu;
 let aboutMenu;
+let translations = {};
 let id;
 let fraction;
 let lightcurveHandler;
 let faceOnCanvasHandler;
 let edgeOnCanvasHandler;
 let i = 0;
+
+async function loadLanguage(lang="en") {
+    const res = await fetch(`./locales/${lang}.json`);
+    translations = await res.json();
+    lightcurveMenu.setLanguage(translations)
+    frameMenu.setLanguage(translations)
+    planetMenu.setLanguage(translations)
+}
 
 // Animate the frames
 const animate = (star, planets, datapoints) => {
@@ -83,6 +91,8 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
 }
  */
 function init() {
+
+    
 
     if (!lightcurveHandler) {
         const margin  = {top:20, bottom:40, left:100, right:100}
@@ -144,9 +154,9 @@ function init() {
     }
 
     if (!frameMenu) {
-        frameMenu = new FrameMenu(() => {
+        frameMenu = new FrameMenu((ms) => {
             clearInterval(id);
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, i);
+            restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, i);
         });
     }
 
@@ -184,7 +194,10 @@ function init() {
     frameMenu.saveAnimationButton.disabled=true; // Disable the button for now
     //saveAnimation()});
 
-    recordSVGAnimation(lightcurveHandler, "lightcurve", "video/webm")});
+        recordSVGAnimation(lightcurveHandler, "lightcurve", "video/webm")
+    });
+
+    loadLanguage()
 
 
 }
@@ -388,10 +401,7 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start=0) {
         //linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height); 
         lightcurveHandler.clear()
     }
-    const datapoints = lightcurveMenu.datapoints
-    const screenmin = Math.min(edgeoncanvas.width, edgeoncanvas.height)
-    const ratio = screenmin / 2 / (planetMenu.maxDistance);
-    
+    const datapoints = lightcurveMenu.datapoints    
     
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
@@ -401,11 +411,9 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start=0) {
                 datapoints, planetMenu.maxDistance); 
         };
         lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction)
-        const xdomain = [-planetMenu.maxDistance / AU, planetMenu.maxDistance  / AU]
-        const ydomain = [-planetMenu.maxDistance / AU, planetMenu.maxDistance  / AU]
         
-        faceOnCanvasHandler.setDomains(xdomain, ydomain, true)
-        edgeOnCanvasHandler.setDomains(xdomain, ydomain, false)
+        faceOnCanvasHandler.setDomains(-planetMenu.maxDistance, planetMenu.maxDistance, -planetMenu.maxDistance, planetMenu.maxDistance, true)
+        edgeOnCanvasHandler.setDomains(-planetMenu.maxDistance, planetMenu.maxDistance, -planetMenu.maxDistance, planetMenu.maxDistance, false)
         id = window.setInterval(animatePlanets, ms);
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     }  else {
