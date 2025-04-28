@@ -2,7 +2,7 @@
     "datapoints_tooltip": "Number of datapoints of the lightcurve. \nIncreasing its number will provide a smoother curve as well as slowing down the animation, as the number of frames is linked to the lightcurve datapoints.",
     "orbits_tooltip": "Number of orbits to run the simulation for. Always referred to the planet with the longest period.",
     "frame-rate_tooltip": "Frame rate in milliseconds.\n Increase to slow down the animation. Animations with longer frame rate will take longer to process.",
-    "longitude-ascending-node_tooltip": "Longitude of the ascending node.\n Use to rotate the orbit.",
+    "longitude-ascending-node_tooltip": "Longitude of the ascending node.\n Selects the position of closest point of the orbit to the star. Use it to rotate the orbit. For planar orbit (i.e. i=0) and circular (e = 0) it is undefined and the effect is the same as the phase.",
     "phase_tooltip": "Phase of the planet at t TODO:add subindex index 0 here. Use to select the initial position of the planet"
   }
   
