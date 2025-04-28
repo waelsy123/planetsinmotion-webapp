@@ -147,7 +147,7 @@ export class PlanetMenu {
         const phase = parseFloat(this.phaseInput.value);
         const Omega0 = parseFloat(this.Omega0Input.value);
         const color = this.colorInput.value
-        const name = this.planetList.value
+        const name = this.planetNameInput.value
         try {
             this.planet = new Planet(M, R, P, this.star, i, e, 0, Omega0, phase, color, name);
             this.errorLabel.classList.add("hidden")
