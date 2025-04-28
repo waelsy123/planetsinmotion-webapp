@@ -92,8 +92,6 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
  */
 function init() {
 
-    
-
     if (!lightcurveHandler) {
         const margin  = {top:20, bottom:40, left:100, right:100}
         lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1260, 500, margin)
@@ -172,7 +170,7 @@ function init() {
     restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms)
 
     const mainCanvas = document.getElementById("main-canvas-container")
-    mainCanvas.addEventListener("click", (event) => {
+    mainCanvas.addEventListener("click", () => {
         pauseAnimation()
     });
     // Pause animation on space bar pressing
@@ -184,6 +182,9 @@ function init() {
             } else {
                 restartAnimation(); // Restart the animation if it's paused
             }
+        } else if (event.code=="NumpadAdd") {
+            console.log(event.code)
+            planetMenu.showPlanetForm()
         }
     });
     
@@ -191,7 +192,7 @@ function init() {
     lightcurveMenu.exportButton.disabled = true
     frameMenu.saveAnimationButton.disabled = true
     frameMenu.saveAnimationButton.addEventListener("click" , () => {
-    frameMenu.saveAnimationButton.disabled=true; // Disable the button for now
+    frameMenu.saveAnimationButton.disabled=true; // Disable the button while we record
     //saveAnimation()});
 
         recordSVGAnimation(lightcurveHandler, "lightcurve", "video/webm")
