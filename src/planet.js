@@ -10,12 +10,12 @@ export class Planet extends Body{
      * ----------
      * @param {number} i - Inclination of the orbit, 0 indicating the planet orbits coplanar to the stellar ecliptic. Default: 0
      * @param {number} omega0 - Argument of periapsis. Phase at which the planet is farthest from the star. Default: 0
-     * @param {number} Omega0 - Longitude of the ascending node. Default: pi/2
+     * @param {number} Omega0 - Longitude of the ascending node. Default: 0 (in units of 2pi; 0<=Omega0<=1)
      * @param {number} phase - Inital orbital phase
      * @param {Star} star - Host star body
      * @param {string} color - Color of the planet
      */
-    constructor(M, R, P, star, i=0, e=0., omega0=0, Omega0=pi/2, phase0=0, color='blue', planetName="Planet 1") {
+    constructor(M, R, P, star, i=0, e=0., omega0=0, Omega0=0., phase0=0, color='blue', planetName="Planet 1") {
         super(M * M_sun, R * R_sun, color);
         this.checkInputParams(M, R, P, i, e, omega0, Omega0, star);
         this._e = e;
@@ -35,9 +35,7 @@ export class Planet extends Body{
         this.rmin = this.a * (1. - this._e)
         console.log(`Planet max distance: ${(this.rmax / AU).toFixed(2)} AU`);
     }
-    get phase0() {
-        return this.phase0
-    }
+
 
     get rmax() {
         return this._rmax
@@ -64,8 +62,26 @@ export class Planet extends Body{
     set phase0(phase0){
         return this._phase0 = phase0
     }
+    
     get phase0(){
         return this._phase0
+    }
+
+
+    get omega0() {
+        return this._omega0
+    }
+
+    set omega0(omega0) {
+        this._omega0 = omega0
+    }
+
+    get Omega0() {
+        return this._Omega0 / (2 * Math.PI)
+    }
+
+    set Omega0(Omega0) {
+        this._Omega0 = Omega0 * 2 * Math.PI;
     }
 
     /**
@@ -201,8 +217,8 @@ export class Planet extends Body{
         if (!(0<=omega0 && omega0<=pi)) {
             throw new Error(`Argument of periastron ${omega0.toFixed(1)} must be between 0 and pi!`);
         }
-        if (!(0<=Omega0 && Omega0<=2*pi)) {
-            throw new Error(`Longitude of the ascending ${Omega0} has to be between 0 and 2*pi!`);
+        if (!(0<=Omega0 && Omega0<=1)) {
+            throw new Error(`Longitude of the ascending ${Omega0} has to be between 0 and 1!`);
         }
         if (!(0<=e && e <=1)) {
             throw new Error(`Eccentricity ${e} needs to be between 0 and 1!`);
@@ -242,8 +258,8 @@ export class Planet extends Body{
         
         const sinnu = nu.map((nu_i) => sin(nu_i + this.omega0));
         const cosnu = nu.map((nu_i) => cos(nu_i + this.omega0));
-        const cosOmega = cos(this.Omega0); // Omega0 is constant
-        const sinOmega = sin(this.Omega0); // Omega0 is constant
+        const cosOmega = cos(this._Omega0); // Omega0 is constant
+        const sinOmega = sin(this._Omega0); // Omega0 is constant
         const cosi = cos(this._i); // i is constant
         const sini = sin(this._i); // i is constant
 
