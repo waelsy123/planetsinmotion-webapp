@@ -5,14 +5,11 @@ export class ToolTipLabel {
 
         this.toolTipElement = document.getElementById("tooltip-" + name)
 
-        this.label = document.getElementById("label-" + name)
-
     }
 
 
     setLanguage(translations) {
         this.toolTipElement.innerText = translations[this.name + "_tooltip"];
     }
-
 
 }
