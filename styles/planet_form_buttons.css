@@ -17,12 +17,11 @@
         }
 
         .planet-btns img {
-            display: block;
-
             width: 16px;
             height: 16px;
-            transition: transform 0.2s ease;
             filter:invert(100%);
+            display: block;
+            transition: transform 0.2s ease;
         }
 
         .planet-btns:hover img {
