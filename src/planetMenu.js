@@ -213,6 +213,9 @@ export class PlanetMenu {
 
     }
 
+
+    
+
     showPlanetForm(index = null) {
 
         /* Button to add planet*/
@@ -263,14 +266,22 @@ export class PlanetMenu {
         // Keyboard listeners
         this.keydownListener = (event) => {
             if (event.key === "Escape") {
-                this.closePlanetForm();
+                this.closePlanetBtn.click();
             }
 
-            if (event.key == "Enter") {
-                this.savePlanetBtn.focus()
-                this.addPlanet(index);
+            else if (event.key == "Enter") {
+                this.savePlanetBtn.click();
+            }
+
+            else if ((event.key=="R") || (event.key=="r")) {
+                this.randomizeBtn.click();
+            }
+
+            else if ((event.key=="c") || (event.key=="C")) {
+                this.cancelPlanetBtn.click();
             }
         };
+
 
         document.addEventListener('keydown', this.keydownListener);
 
