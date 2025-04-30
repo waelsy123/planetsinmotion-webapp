@@ -121,7 +121,7 @@ function init() {
     if (!planetMenu) {
         planetMenu = new PlanetMenu(() => {
         clearInterval(id);
-        lightcurveMenu.calculateTimes(planetMenu.planets)
+        lightcurveMenu.calculateTimes(planetMenu.maxP)
         starMenu.setTimes(lightcurveMenu.times)
         planetMenu.setTimes(lightcurveMenu.times)
         /* Uodate buttons state */        
@@ -143,9 +143,9 @@ function init() {
     } 
 
     if (!lightcurveMenu) {
-        lightcurveMenu = new LightcurveMenu(planetMenu.planets, () => {
+        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, () => {
             clearInterval(id);
-            lightcurveMenu.calculateTimes(planetMenu.planets)
+            lightcurveMenu.calculateTimes(planetMenu.maxP)
             starMenu.setTimes(lightcurveMenu.times)
             planetMenu.setTimes(lightcurveMenu.times)
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);

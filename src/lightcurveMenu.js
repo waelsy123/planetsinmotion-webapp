@@ -4,11 +4,11 @@ import { ToolTipLabel } from './toolTipLabel';
 
 
 export class LightcurveMenu {
-    constructor(planets, onUpdate) {
+    constructor(maxP, onUpdate) {
         this.onUpdate = onUpdate; // Callback to restart the simulation
 
         // Initialize menu elements
-        this.initLightcurve(planets);
+        this.initLightcurve(maxP);
 
     }
 
@@ -19,7 +19,7 @@ export class LightcurveMenu {
 
 
 
-    initLightcurve(planets) {
+    initLightcurve(maxP) {
         /// Datapoints
         const datapointsInput = document.getElementById("input-datapoints");
         this.datapoints = parseInt(datapointsInput.value);
@@ -30,7 +30,7 @@ export class LightcurveMenu {
         this.orbits = parseInt(orbitsInput.value);
         this.orbitsLabel = new ToolTipLabel("orbits")
 
-        this.calculateTimes(planets);
+        this.calculateTimes(maxP);
 
         datapointsInput.addEventListener("input", (event) => {
             const min = parseFloat(event.target.min);
@@ -50,15 +50,14 @@ export class LightcurveMenu {
 
             this.orbits = parseInt(event.target.value);
 
-            this.calculateTimes(planets);
+            this.calculateTimes(maxP);
 
             this.onUpdate(); // Trigger simulation update
         });
 
     }
 
-    calculateTimes(planets){
-        const maxP = Math.max(...planets.map((planet) => planet._P));
+    calculateTimes(maxP){
         this.times = linspace(0, this.orbits * maxP, this.datapoints);
         this.timesDays = this.times.map((t) => t / DaysToSeconds);
         console.log("Time days", this.timesDays)

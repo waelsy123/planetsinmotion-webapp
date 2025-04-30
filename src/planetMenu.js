@@ -281,11 +281,11 @@ export class PlanetMenu {
         const randomNumber = Math.random();
         // Planet
         this.massInput.value = parseFloat(randomNumber * 100 * M_J / M_sun + M_J / M_sun).toFixed(2);
-        this.radiusInput.value = parseFloat((randomNumber * this.star.R / R_sun / 10) + 1).toFixed(2);
+        this.radiusInput.value = parseFloat((randomNumber * this.star.R / R_sun / 5) + 1).toFixed(2);
 
         // Orbit
         this.periodInput.value = Math.floor(randomNumber * 500) + 0.01
-        this.iInput.value = parseFloat(Math.floor(randomNumber * 89) + 1).toFixed(2);
+        this.iInput.value = parseFloat((2 * randomNumber - 1) * 89.9).toFixed(2);
         const randome = Math.random();
         this.eInput.value = parseFloat(randome.toFixed(2));
         const randomPhase = Math.random();
@@ -336,6 +336,7 @@ export class PlanetMenu {
     }
 
     onRemoveListener(index) {
+        console.log("Removing planet" + index)
         this.planets.splice(index, 1);
         this.updateParameters();
     }
@@ -346,9 +347,8 @@ export class PlanetMenu {
     }
 
     updateParameters() {
-
-        this.maxDistance = Math.max(...this.planets.map((planet) => (planet.rmax + planet._R)));
-        this.maxRadius = Math.max(...this.planets.map((planet) => planet.R));
+        this.maxRadius = Math.max(...this.planets.map(planet => planet.R));
+        this.maxP = Math.max(...this.planets.map(planet => planet._P));
         this.updatePlanetList()
     }
 
@@ -402,6 +402,8 @@ export class PlanetMenu {
         this.planets.forEach(planet => {
             planet.setOrbitingTimes(times);
         });
+        /* Max distance depends on the orbits and therefore we need the times*/
+        this.maxDistance = Math.max(...this.planets.map(planet => (planet.maxCoordinate() + planet._R)));
     }
 
     setStar(star) {
