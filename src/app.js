@@ -58,7 +58,7 @@ const animate = (star, planets, datapoints) => {
     lightcurveHandler.drawLightcurved3(star.color, i)
 
     i = (i + 1) % datapoints;
-};
+}
 
 /**
 function drawLightcurve(linecontext, timesDays, fraction, color, j) {
@@ -153,8 +153,6 @@ function init() {
         })
     }
 
-
-
     // Add listener to the export button
     exportButton = document.getElementById("export-lightcurve");
 
@@ -189,8 +187,8 @@ function init() {
             } else {
                 restartAnimation(); // Restart the animation if it's paused
             }
+        // Show planet form on pressing the "+" button
         } else if (event.code == "NumpadAdd") {
-            console.log(event.code)
             planetMenu.showPlanetForm()
         }
     });
@@ -198,43 +196,40 @@ function init() {
     exportButton.addEventListener("click", () => {
         lightcurveMenu.exportLightcurve(lightcurveMenu.timesDays, fraction)
     });
+
     exportButton.disabled = true
-    frameMenu.saveAnimationButton.disabled = true
+    
     frameMenu.saveAnimationButton.addEventListener("click", () => {
-        frameMenu.saveAnimationButton.disabled = true; // Disable the button while we record
+        frameMenu.disable(true)
+        frameMenu.saveAnimationButton.style.cursor = "wait";
+
         saveAnimation()
     });
 
-        //recordSVGAnimation(lightcurveHandler, "lightcurve", "video/webm")});
-
     loadLanguage()
-
 }
 
 async function saveAnimation(format = "video/webm") {
-    const svgs = [faceOnCanvasHandler, edgeOnCanvasHandler, lightcurveHandler];
-    const names = ["faceon", "edgeon", "lightcurve"];
+    const svgs = [faceOnCanvasHandler, lightcurveHandler]; //edgeOnCanvasHandler
+    const names = ["faceon", "lightcurve"]; //"edgeon"
     const duration = lightcurveMenu.datapoints * frameMenu.ms + frameMenu.ms;
-    frameMenu.saveAnimationButton.style.cursor = "wait";
     for (let index = 0; index < svgs.length; index++) {
         const svg = svgs[index];
         const name = names[index];
 
         console.log(`Saving ${name}...`);
-        clearInterval(id);
-        restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
 
         // Wait for the recording to finish
         await recordSVGAnimation(svg, name, format, duration);
     }
 
     frameMenu.saveAnimationButton.style.cursor = "pointer";
-    frameMenu.saveAnimationButton.disabled = false;
-
+    frameMenu.disable(false)
     console.log("All simulations saved.");
 }
 
 async function recordSVGAnimation(svgElement, name, format, duration) {
+    console.log("svg", svgElement  )
 
     return new Promise((resolve) => {
         const recordedChunks = [];
@@ -270,36 +265,42 @@ async function recordSVGAnimation(svgElement, name, format, duration) {
             resolve();
         };
 
-        mediaRecorder.start();
 
-        // Animate by drawing the SVG to the canvas repeatedly
-        const startTime = Date.now();
         const drawFrame = () => {
             // milliseconds
             const elapsedms = Date.now() - startTime;
-            if (elapsedms >= duration) {
+            if (elapsedms > duration) {
                 mediaRecorder.stop();
                 return;
             }
 
-            const svgData = new XMLSerializer().serializeToString(svgElement.svg.node().parentNode);
+            const svgData = new XMLSerializer().serializeToString(svgElement.svgRoot.node());
             const img = new Image();
             const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
             const url = URL.createObjectURL(svgBlob);
 
             img.onload = () => {
-                ctx.clearRect(0, 0, svgElement.width, svgElement.height);
-                ctx.drawImage(img, 0, 0, svgElement.width, svgElement.height);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 URL.revokeObjectURL(url);
-                requestAnimationFrame(drawFrame);
             };
+            requestAnimationFrame(drawFrame);
             img.src = url;
 
         };
 
+        clearInterval(id);
+        restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
+        mediaRecorder.start();
+
+        // Animate by drawing the SVG to the canvas repeatedly
+        const startTime = Date.now();
+
         drawFrame();
     });
 }
+
+
 
 
 function recordCanvas(canvas, name, format, duration) {
@@ -385,9 +386,9 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) 
                 datapoints, planetMenu.maxDistance);
         };
         lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction)
-
-        faceOnCanvasHandler.setDomains(-planetMenu.maxDistance, planetMenu.maxDistance, -planetMenu.maxDistance, planetMenu.maxDistance, true)
-        edgeOnCanvasHandler.setDomains(-planetMenu.maxDistance, planetMenu.maxDistance, -planetMenu.maxDistance, planetMenu.maxDistance, false)
+        const limits = Math.abs(planetMenu.maxDistance *1.01)
+        faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true)
+        edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false)
         id = window.setInterval(animatePlanets, ms);
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     } else {
