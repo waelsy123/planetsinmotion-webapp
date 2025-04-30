@@ -240,4 +240,11 @@ export class Body {
         return fraction
     }
 
+    maxCoordinate() {
+        const maxRx = Math.max(...this.rx.map(Math.abs));
+        const maxRy = Math.max(...this.ry.map(Math.abs));
+        const maxRz = Math.max(...this.rz.map(Math.abs));
+        return Math.max(maxRx, maxRy, maxRz);
+      }
+
 }
