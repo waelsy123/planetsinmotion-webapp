@@ -23,3 +23,17 @@ export function darkenColor(hex, percent) {
 
     return darkenedHex;
 }
+
+
+export function downloadBlob(blob, name, format) {
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    a.href = url;
+    a.download = name + "." + format;
+    a.click();
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}

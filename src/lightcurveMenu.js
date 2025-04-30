@@ -1,5 +1,5 @@
 import {DaysToSeconds} from './constants.js'
-import {linspace} from './utils.js'
+import {linspace, downloadBlob} from './utils.js'
 import { ToolTipLabel } from './toolTipLabel';
 
 
@@ -70,18 +70,7 @@ export class LightcurveMenu {
         const data = timesDays.map((time, index) => `${time.toFixed(4)},${fraction[index].toFixed(5)}`).join("\n");
         const csvContent = `${header}\n${data}`; // Combine header and data
         const blob = new Blob([csvContent], { type: "text/csv" });
-        
-        // Create a download link
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "lightcurve.csv"; // Default filename
-        a.style.display = "none";
-        console.log("Exporting lightcurve", a)
-
-        // Append the link to the document and trigger the download
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        downloadBlob(blob, "lightcurve", "csv")
     }
 
 }
