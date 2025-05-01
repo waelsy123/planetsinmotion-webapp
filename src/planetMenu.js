@@ -184,7 +184,7 @@ export class PlanetMenu {
 
             const ctx = canvas.getContext("2d");
 
-            const ratio = canvas.width / 2 / (this.planet.rmax * 1.1);
+            const ratio = canvas.width / 2 / (this.planet.maxCoordinate() * 1.1);
 
             ctx.clearRect(0, 0, canvas.width, canvas.height)
 
