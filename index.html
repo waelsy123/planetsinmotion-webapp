@@ -48,7 +48,7 @@
                         <div for="frame-rate" class="tooltip">Rate (ms):
                             <span class="tooltiptext" id="tooltip-frame-rate"></span>
                         </div>
-                        <input type="number" min="1" step="10" max="2000" value="10" id="ms">
+                        <input type="number" min="0.0001" step="10" max="2000" value="10" id="ms">
                     </div>
                     <button id="save-animation-btn">Save Animation</button>
                 </div>
@@ -61,7 +61,7 @@
                     <!-- Y-axis label-->
                     <label class="x-axis-label y-axis-label">z (AU)</label>
                     <div class="x-axis-column-container">
-                        <label class="x-axis-label">Edge-on</label>
+                        <label class="canvas-title">Edge-on</label>
                         <div id="edgeoncanvas"></div>
                         <label class="x-axis-label">y (AU)</label>
                     </div>
@@ -69,7 +69,7 @@
                 <div class="axis-canvas-container">
                     <label class="x-axis-label y-axis-label">x (AU)</label>
                     <div class="x-axis-column-container">
-                        <label class="x-axis-label">Face-on</label>
+                        <label class="canvas-title">Face-on</label>
                         <!-- <canvas id="faceoncanvas" width="600px" height="600px"></canvas>-->
                         <div id="faceoncanvas"></div>
                         <label class="x-axis-label">y (AU)</label>
@@ -209,9 +209,9 @@
                             </div>
                             <!-- Controls -->
                             <div class="form-controls">
-                                <button id="cancel-planet-btn" class="planet-form-btn">Cancel</button>
-                                <button id="randomize-planet-btn" class="planet-form-btn">Randomize</button>
-                                <button id="save-planet-btn" class="planet-form-btn">Add</button>
+                                <button id="cancel-planet-btn" type="buton" class="planet-form-btn">Cancel</button>
+                                <button id="randomize-planet-btn" type="buton" class="planet-form-btn">Randomize</button>
+                                <button id="save-planet-btn" type="buton" class="planet-form-btn">Add</button>
                             </div>
                         </div>
                     </div>
