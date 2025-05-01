@@ -213,12 +213,11 @@ export class PlanetMenu {
 
     }
 
-
-    
-
     showPlanetForm(index = null) {
 
         /* Button to add planet*/
+
+        // This listener is dynamic because of the index so needs to be done in each call to the menu
         this.savePlanetBtn = document.getElementById("save-planet-btn");
         this.savePlanetListener = () => this.addPlanet(index);
         this.savePlanetBtn.addEventListener("click", this.savePlanetListener);
@@ -270,6 +269,16 @@ export class PlanetMenu {
             }
 
             else if (event.key == "Enter") {
+                const active = document.activeElement;
+
+            // Prevent interference from inputs like color pickers or text fields
+            if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+                // Optional: only override if it's a color input
+                if (active.type === "color") {
+                    event.preventDefault(); // Stop the default color picker submit
+                    event.stopPropagation();
+                }
+            }
                 this.savePlanetBtn.click();
             }
 
@@ -281,7 +290,6 @@ export class PlanetMenu {
                 this.cancelPlanetBtn.click();
             }
         };
-
 
         document.addEventListener('keydown', this.keydownListener);
 
@@ -306,11 +314,23 @@ export class PlanetMenu {
     }
 
     closePlanetForm() {
-        this.savePlanetBtn.removeEventListener("click", this.savePlanetListener);
+        console.log("Closing Menu")
+        // Blur the active element (e.g., color picker input)
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
+        // Hide form
         this.planetForm.classList.add("hidden");
+
+        // Remove listeners
         if (this.keydownListener) {
             document.removeEventListener("keydown", this.keydownListener);
             this.keydownListener = null; // Clear the reference
+        }
+        this.savePlanetBtn.removeEventListener("click", this.savePlanetListener);
+
+        if (this.savePlanetListener) {
+            this.savePlanetListener = null
         }
     }
 
@@ -319,14 +339,14 @@ export class PlanetMenu {
         // Errors are handled by createPlanet so no need to do anything here
             const success = this.createPlanet() // possibly no need but just in case
             if (success) {
-            /* If planet did not exist */
-            if (index == null) {
-                this.planets.push(this.planet)
-            /* If existed update the list */
-            } else {
-                this.planets[index] = this.planet
-            }
-
+                /* If planet did not exist */
+                if (index == null) {
+                    this.planets.push(this.planet)
+                    /* If existed update the list */
+                } else {
+                    this.planets[index] = this.planet
+                }
+                
             this.closePlanetForm();
             this.updateParameters();
         }
