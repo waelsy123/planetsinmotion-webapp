@@ -14,7 +14,7 @@ export class PlanetMenu {
         /*this.createPlanets(star);*/
 
         this.defaultColor = document.getElementById("planet-period").style.color
-
+        this.supressedListener = false
         this.initPlanetMenu()
         //this.initCanvas()
     }
@@ -106,6 +106,8 @@ export class PlanetMenu {
                     input.style.color = this.defaultColor
                 });
                 this.errorLabel.classList.add("hidden");
+                
+                if (this.supressedListener) return;
 
                 this.createPlanet();
                 this.drawOrbit()
@@ -113,6 +115,8 @@ export class PlanetMenu {
         });
 
         this.colorInput.addEventListener("input", () => {
+
+            if (this.supressedListener) return;
             this.createPlanet();
             this.drawOrbit()
         });
@@ -174,9 +178,9 @@ export class PlanetMenu {
         }
     }
 
-    drawOrbit(n = 500) {
+    drawOrbit(n = 5000) {
         if (this.planet != null) {
-            const times = linspace(0, this.planet._P, n);
+            const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * n)));
 
             this.planet.setOrbitingTimes(times);
 
@@ -225,12 +229,16 @@ export class PlanetMenu {
         this.randomizeBtn = document.getElementById("randomize-planet-btn");
 
         this.randomizeBtn.addEventListener("click", () => {
+            // do not update the orbit with each parameter change, only at the end
+            this.supressedListener = true
             //Randomize inputs
             this.randomizeInputs()
 
             this.errorLabel.classList.remove("hidden")
             this.createPlanet();
             this.drawOrbit()
+            // activate the listeners back
+            this.supressedListener = false
         });
 
         this.planetForm.classList.remove("hidden");
@@ -243,11 +251,14 @@ export class PlanetMenu {
 
             this.savePlanetBtn.textContent = "Edit"
 
+            // do not update the orbit with each parameter change, only at the end
+            this.supressedListener = true
+
             this.planetNameInput.value = this.planets[index].planetName
             this.periodInput.value = this.planets[index].P
             this.eInput.value = this.planets[index].e
-            this.iInput.value = this.planets[index].i
-            this.Omega0Input.value = this.planets[index].Omega0
+            this.iInput.value = parseFloat(this.planets[index].i).toFixed(2)
+            this.Omega0Input.value = parseFloat(this.planets[index].Omega0).toFixed(2)
             this.massInput.value = this.planets[index].M
             this.phaseInput.value = this.planets[index].phase0
             this.radiusInput.value = this.planets[index].R
@@ -261,6 +272,7 @@ export class PlanetMenu {
 
         this.createPlanet();
         this.drawOrbit()
+        this.supressedListener = false
 
         // Keyboard listeners
         this.keydownListener = (event) => {
