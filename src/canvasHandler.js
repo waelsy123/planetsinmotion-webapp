@@ -1,11 +1,15 @@
 import * as d3 from "d3";
+import fixWebmDuration from "fix-webm-duration";
+import { downloadBlob } from './utils.js';
+
 export class CanvasHandler {
 
-    constructor(id, width, height, margins) {
+    constructor(id, width, height, margins, outputname) {
         this.margin = margins;
         this.width = width - this.margin.left - this.margin.right;
         this.height = height - this.margin.top - this.margin.bottom;
         this.units = 1
+        this.fontsize = 18
 
         // Append the SVG object to the container
         this.svgRoot = d3
@@ -17,6 +21,8 @@ export class CanvasHandler {
             
         this.svg = this.svgRoot.append("g")
             .attr("transform", `translate(${this.margin.left},${this.margin.top})`);
+
+        this.outputname = outputname
     }
 
 
@@ -29,14 +35,14 @@ export class CanvasHandler {
         // Create the x-axis scale (time in days)
         this.xScale = d3
         .scaleLinear()
-        .domain(domainx).nice(80) // Input domain
+        .domain(domainx) // Input domain
         .range([0, this.width]); // Output range
 
         const rangey = inverty ? [0, this.height] : [this.height, 0]
         // Create the y-axis scale (relative flux)
         this.yScale = d3
             .scaleLinear()
-            .domain(domainy).nice(80)
+            .domain(domainy)
             .range(rangey);
         
         // Common inline style for all axes
@@ -48,7 +54,7 @@ export class CanvasHandler {
 
             axisGroup.selectAll("text")
                 .attr("fill", "white")
-                .attr("font-size", "22px")
+                .attr("font-size", `${this.fontsize}px`)
                 .attr("font-family", "DejaVu Sans");
         };
 
@@ -88,5 +94,67 @@ export class CanvasHandler {
         this.yScale = null
         this.svg.selectAll(".axis").remove();
     }
+
+
+    startRecording(ms, format, duration) {
+        
+        // Canvas for recording
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = this.width * 2;
+        this.canvas.height = this.height * 2;
+        
+        var recordedChunks = [];
+        const stream = this.canvas.captureStream(ms);
+        this.mediaRecorder = new MediaRecorder(stream, { mimeType: format });
+
+        this.mediaRecorder.onstart = () => {
+
+            console.log(`Recording for ${this.outputname} started and will stop after ${duration / 1000} seconds.`);
+        };
+        
+    
+        this.mediaRecorder.ondataavailable = (evt) => {
+            if (evt.data.size > 0) {
+                recordedChunks.push(evt.data);
+            }
+        };
+    
+        this.mediaRecorder.onstop = async () => {
+            const blob = new Blob(recordedChunks, { type: format });
+            const fixedBlob = await fixWebmDuration(blob, duration);
+            downloadBlob(fixedBlob, this.outputname, "webm");
+            //this.mediaRecorder = null;
+            this.canvas = null;
+        };
+    
+        this.mediaRecorder.start();
+    }
+
+
+    updateRecording() {
+        console.log("Updating recording...")
+        const svgData = new XMLSerializer().serializeToString(this.svgRoot.node());
+        const img = new Image();
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(svgBlob);
+
+        
+        const ctx = this.canvas.getContext("2d");
+        img.onload = () => {
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            URL.revokeObjectURL(url);
+        };
+    
+        img.src = url;
+    }
+
+
+    stopRecording() {
+        if (this.mediaRecorder.state === "recording") {
+            this.mediaRecorder.stop();
+        }
+    }
+    
 
 }
