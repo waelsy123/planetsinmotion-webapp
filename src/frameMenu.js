@@ -10,21 +10,27 @@ export class FrameMenu {
     }
 
     initFrame() {
-        const msInput = document.getElementById("ms");
+        this.msInput = document.getElementById("ms");
         this.msLabel = new ToolTipLabel("frame-rate")
-        this.ms = parseInt(msInput.value);
-        msInput.addEventListener("input", (event) => {
+        this.ms = parseInt(this.msInput.value);
+        this.msInput.addEventListener("input", (event) => {
             this.ms = parseInt(event.target.value);
             this.onUpdate(this.ms); // Trigger simulation update
         });
 
         this.saveAnimationButton = document.getElementById("save-animation-btn");
+        this.saveAnimationButton.disabled = true
 
     }
 
 
     setLanguage(translations) {
         this.msLabel.setLanguage(translations)
+    }
+    
+    disable(disable) {
+        this.msInput.disabled = disable
+        this.saveAnimationButton.disabled = disable
     }
 
     

@@ -1,0 +1,52 @@
+
+        /* Outer container for y-axis, canvas, and x-axis */
+        .axis-canvas-container {
+            display: flex;
+            font-size: 22px;
+            display: flex;
+            flex-direction: row;
+            /* Arrange y-axis and row-container horizontally */
+            align-items: center;
+            justify-content: center;
+            color: white;
+            gap: 5px;/* Space between x-axis and canvas */
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Row container for canvas and x-axis */
+        .x-axis-column-container {
+            display: flex;
+            flex-direction: column;
+            /* Arrange canvas and x-axis vertically */
+            align-items: center;
+            justify-content: center;
+            gap: 0px; /* Space between canvas and top label and y-axis */
+        }
+
+        .canvas-title {
+            font-size: 24px;
+            font-family: "DejaVu Sans", sans-serif;
+        }
+
+
+          /* Make all axis text bigger and cleaner */
+        /*  .axis path,
+          .axis line {
+              stroke: white;
+              stroke-width: 2;
+              shape-rendering: crispEdges;
+             }
+  
+          .axis text {
+              font-size: 22px; /* Bigger font for tick labels */
+         /*     fill: white;
+              font-family: "DejaVu Sans";
+          }
+         */
+          /* Optionally style your lightcurve line too */
+          .line {
+              fill: none;
+              stroke-linejoin: round;
+              stroke-linecap: round;
+          }

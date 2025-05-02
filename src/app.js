@@ -1,11 +1,10 @@
-import {StarMenu} from './starMenu.js'
-import {PlanetMenu } from './planetMenu.js';
-import {LightcurveMenu } from './lightcurveMenu.js';
-import {FrameMenu} from './frameMenu.js'
-import {InfoDisplay} from './infoDisplay.js'
-import {LightcurveHandler} from './lightcurveHandler.js'
-import {OrbitAnimatorCanvasHandler} from './orbitAnimatorCanvasHandler.js'
-import fixWebmDuration from "fix-webm-duration";
+import { StarMenu } from './starMenu.js'
+import { PlanetMenu } from './planetMenu.js';
+import { LightcurveMenu } from './lightcurveMenu.js';
+import { FrameMenu } from './frameMenu.js'
+import { InfoDisplay } from './infoDisplay.js'
+import { LightcurveHandler } from './lightcurveHandler.js'
+import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js'
 
 
 //const faceoncanvas = document.getElementById("faceoncanvas")
@@ -31,8 +30,10 @@ let faceOnCanvasHandler;
 let edgeOnCanvasHandler;
 let exportButton;
 let i = 0;
+let recordedFrames;
+let record = false
 
-async function loadLanguage(lang="en") {
+async function loadLanguage(lang = "en") {
     const res = await fetch(`./locales/${lang}.json`);
     translations = await res.json();
     lightcurveMenu.setLanguage(translations)
@@ -40,9 +41,10 @@ async function loadLanguage(lang="en") {
     planetMenu.setLanguage(translations)
 }
 
+
 // Animate the frames
 const animate = (star, planets, datapoints) => {
-    
+
     const bodies = [star, ...planets];
     // Sort bodies for edge-on view (x-direction)
     const sortedBodiesFaceOn = bodies.slice().sort((a, b) => a.rz[i] - b.rz[i]);
@@ -50,14 +52,41 @@ const animate = (star, planets, datapoints) => {
 
     // Sort bodies for face-on view (z-direction)
     const sortedBodiesEdgeOn = bodies.slice().sort((a, b) => a.rx[i] - b.rx[i]);
-    
+
     edgeOnCanvasHandler.drawBodies(sortedBodiesEdgeOn, i)
 
     //drawLightcurve(linecontext, timesDays, fraction, star.color, i);
     lightcurveHandler.drawLightcurved3(star.color, i)
 
+    if (record) {
+        [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(element => {
+            element.updateRecording();
+        });
+
+        
+
+        if (recordedFrames == datapoints ) {
+            console.log("Finishing recording");
+
+            record = false;
+
+            [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(handler => {
+                console.log("Stopping recording");
+                handler.stopRecording();
+            });
+    
+            console.log("Recording complete.");
+
+            frameMenu.saveAnimationButton.style.cursor = "pointer";
+            frameMenu.disable(false)
+            console.log("All simulations saved.");
+        }
+
+        recordedFrames++;
+    }
+
     i = (i + 1) % datapoints;
-};
+}
 
 /**
 function drawLightcurve(linecontext, timesDays, fraction, color, j) {
@@ -94,16 +123,16 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
 function init() {
 
     if (!lightcurveHandler) {
-        const margin  = {top:20, bottom:40, left:100, right:100}
-        lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1260, 500, margin)
+        const margin = { top: 10, bottom: 40, left: 80, right: 80 } // checked
+        lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1330, 500, margin)
     }
 
-    if(!faceOnCanvasHandler) {
-        faceOnCanvasHandler = new OrbitAnimatorCanvasHandler("faceoncanvas")
+    if (!faceOnCanvasHandler) {
+        faceOnCanvasHandler = new OrbitAnimatorCanvasHandler("faceoncanvas", "faceon")
     }
-    
+
     if (!edgeOnCanvasHandler) {
-        edgeOnCanvasHandler = new OrbitAnimatorCanvasHandler("edgeoncanvas")
+        edgeOnCanvasHandler = new OrbitAnimatorCanvasHandler("edgeoncanvas", "edgeon")
 
     }
 
@@ -117,30 +146,30 @@ function init() {
         });
     }
 
-    
+
     if (!planetMenu) {
         planetMenu = new PlanetMenu(() => {
-        clearInterval(id);
-        lightcurveMenu.calculateTimes(planetMenu.maxP)
-        starMenu.setTimes(lightcurveMenu.times)
-        planetMenu.setTimes(lightcurveMenu.times)
-        /* Uodate buttons state */        
-        if (planetMenu.planets.length > 0) {
-            exportButton.disabled = false // Enable the button
-            exportButton.style.cursor = "pointer"
-            frameMenu.saveAnimationButton.disabled = false // Enable the button
-            frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
-        } else if (planetMenu.planets.length == 0) {
-            exportButton.disabled = true // Disable the button
-            exportButton.style.cursor = "auto"
-            frameMenu.saveAnimationButton.disabled = true // Disable the button
-            frameMenu.saveAnimationButton.style.cursor = "auto"
-        }
-        restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms); // Restart the simulation
+            clearInterval(id);
+            lightcurveMenu.calculateTimes(planetMenu.maxP)
+            starMenu.setTimes(lightcurveMenu.times)
+            planetMenu.setTimes(lightcurveMenu.times)
+            /* Uodate buttons state */
+            if (planetMenu.planets.length > 0) {
+                exportButton.disabled = false // Enable the button
+                exportButton.style.cursor = "pointer"
+                frameMenu.saveAnimationButton.disabled = false // Enable the button
+                frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
+            } else if (planetMenu.planets.length == 0) {
+                exportButton.disabled = true // Disable the button
+                exportButton.style.cursor = "auto"
+                frameMenu.saveAnimationButton.disabled = true // Disable the button
+                frameMenu.saveAnimationButton.style.cursor = "auto"
+            }
+            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms); // Restart the simulation
 
-    }, starMenu.star);
-     
-    } 
+        }, starMenu.star);
+
+    }
 
     if (!lightcurveMenu) {
         lightcurveMenu = new LightcurveMenu(planetMenu.maxP, () => {
@@ -151,8 +180,6 @@ function init() {
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);
         })
     }
-
-
 
     // Add listener to the export button
     exportButton = document.getElementById("export-lightcurve");
@@ -167,18 +194,20 @@ function init() {
     if (!aboutMenu) {
         aboutMenu = new InfoDisplay("about")
     }
-    if(!helpMenu) {
+    if (!helpMenu) {
         helpMenu = new InfoDisplay("manual")
     }
-      
+
     starMenu.setTimes(lightcurveMenu.times)
     planetMenu.setTimes(lightcurveMenu.times)
     restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms)
 
     const mainCanvas = document.getElementById("main-canvas-container")
+
     mainCanvas.addEventListener("click", () => {
         pauseAnimation()
     });
+    
     // Pause animation on space bar pressing
     document.addEventListener("keydown", (event) => {
         if (event.code === "Space") {
@@ -188,170 +217,36 @@ function init() {
             } else {
                 restartAnimation(); // Restart the animation if it's paused
             }
-        } else if (event.code=="NumpadAdd") {
-            console.log(event.code)
+        // Show planet form on pressing the "+" button
+        } else if (event.code == "NumpadAdd") {
             planetMenu.showPlanetForm()
         }
     });
-    
-    exportButton.addEventListener("click", () => {lightcurveMenu.exportLightcurve(lightcurveMenu.timesDays, fraction)});
-    exportButton.disabled = true
-    frameMenu.saveAnimationButton.disabled = true
-    frameMenu.saveAnimationButton.addEventListener("click" , () => {
-    frameMenu.saveAnimationButton.disabled=true; // Disable the button while we record
-    //saveAnimation()});
 
-        recordSVGAnimation(lightcurveHandler, "lightcurve", "video/webm")
+    exportButton.addEventListener("click", () => {
+        lightcurveMenu.exportLightcurve(lightcurveMenu.timesDays, fraction)
+    });
+
+    exportButton.disabled = true
+    
+    frameMenu.saveAnimationButton.addEventListener("click", () => {
+        frameMenu.disable(true)
+        frameMenu.saveAnimationButton.style.cursor = "wait";
+
+        saveAnimation()
     });
 
     loadLanguage()
-
-
 }
 
-
-function downloadVideo(blob, name) {
-    
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    a.href = url;
-    a.download = name + ".webm";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async function saveAnimation(format = "video/webm") {
-    const canvass = [edgeoncanvas];
-    const names = ["faceon", "edgeon", "lightcurve"];
-    const duration = lightcurveMenu.datapoints * frameMenu.ms + frameMenu.ms;
-    frameMenu.saveAnimationButton.style.cursor = "wait";
-    for (let index = 0; index < canvass.length; index++) {
-        const canvas = canvass[index];
-        const name = names[index];
-
-        console.log(`Saving ${name}...`);
-        clearInterval(id);
-        restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
-
-        // Wait for the recording to finish
-        await recordCanvas(canvas, name, format, duration);
-    }
-
-    frameMenu.saveAnimationButton.style.cursor = "pointer";
-    frameMenu.saveAnimationButton.disabled = false;
-
-    console.log("All simulations saved.");
-}
-
-async function recordSVGAnimation(svgElement, name, format) {
-
-    const duration = frameMenu.ms * lightcurveMenu.datapoints
-    return new Promise((resolve) => {
-        const recordedChunks = [];
-
-        // Create an offscreen canvas
-        const canvas = document.createElement("canvas");
-        canvas.width = svgElement.width;
-        canvas.height = svgElement.height;
-        const ctx = canvas.getContext("2d");
-
-        // Capture the canvas stream
-        const canvasStream = canvas.captureStream(frameMenu.ms);
-        const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: format });
-
-        mediaRecorder.ondataavailable = (evt) => {
-            if (evt.data.size > 0) {
-                recordedChunks.push(evt.data);
-            }
-        };
-
-        mediaRecorder.onstart = () => {
-            console.log(`${name} recording started...`);
-        };
-
-        mediaRecorder.onstop = async () => {
-            console.log(`${name} recording stopped.`);
-
-            const webBlob = new Blob(recordedChunks, { type: format });
-            const fixedBlob = await fixWebmDuration(webBlob, duration);
-
-            downloadVideo(fixedBlob, name);
-
-            resolve();
-        };
-
-        mediaRecorder.start();
-
-        // Animate by drawing the SVG to the canvas repeatedly
-        const startTime = Date.now();
-        const drawFrame = () => {
-            const elapsed = Date.now() - startTime;
-            if (elapsed >= duration) {
-                mediaRecorder.stop();
-                return;
-            }
-
-            const svgData = new XMLSerializer().serializeToString(svgElement.svg.node());
-            const img = new Image();
-            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-            const url = URL.createObjectURL(svgBlob);
-
-            img.onload = () => {
-                ctx.clearRect(0, 0, svgElement.width, svgElement.height);
-                ctx.drawImage(img, 0, 0, svgElement.width, svgElement.height);
-                URL.revokeObjectURL(url);
-            };
-            img.src = url;
-
-            requestAnimationFrame(drawFrame);
-        };
-
-        drawFrame();
+async function saveAnimation(format = "video/webm") {
+    const duration = lightcurveMenu.datapoints * frameMenu.ms;
+    [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(element => {
+        element.startRecording(frameMenu.ms, format, duration);
     });
-}
-
-
-function recordCanvas(canvas, name, format, duration) {
-    return new Promise((resolve) => {
-        const recordedChunks = [];
-        const canvasStream = canvas.captureStream(frameMenu.ms); // Capture the canvas stream
-        const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: format });
-
-        mediaRecorder.ondataavailable = (evt) => {
-            if (evt.data.size > 0) {
-                recordedChunks.push(evt.data);
-            }
-        };
-
-        mediaRecorder.onstart = () => {
-            console.log(`${name} recording started...`);
-        };
-
-        mediaRecorder.onstop = async () => {
-            console.log(`${name} recording stopped.`);
-
-            const webBlob = new Blob(recordedChunks, { type: format });
-            const fixedBlob = await fixWebmDuration(webBlob, duration);
-
-            // Download the fixed blob
-            downloadVideo(fixedBlob, name);
-
-            // Resolve the promise to indicate that recording is complete
-            resolve();
-        };
-
-        mediaRecorder.start();
-
-        // Stop recording after the specified duration
-        console.log(`Recording for ${name} will stop after ${duration / 1000} seconds.`);
-        setTimeout(() => {
-            if (mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-            }
-        }, duration);
-    });
+    record = true;
+    recordedFrames = 0;
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
 }
 
 
@@ -379,39 +274,39 @@ function pauseAnimation() {
 }
 
 
-function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start=0) {
+function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) {
     i = start
     console.log("Restarting simu")
+
+    //Clear simulation//
+    if (id) {
+        clearInterval(id);
+    }
     // Clear lightcurve  the canvas if we restart simulation from beginning///
-    if (i==0) {
+    if (i == 0) {
         //linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height); 
         lightcurveHandler.clear()
     }
-    const datapoints = lightcurveMenu.datapoints    
-    
+
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
         fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
         const animatePlanets = () => {
-            animate(starMenu.star, planetMenu.planets, 
-                datapoints, planetMenu.maxDistance); 
+            animate(starMenu.star, planetMenu.planets,
+                lightcurveMenu.datapoints);
         };
         lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction)
-        
-        faceOnCanvasHandler.setDomains(-planetMenu.maxDistance, planetMenu.maxDistance, -planetMenu.maxDistance, planetMenu.maxDistance, true)
-        edgeOnCanvasHandler.setDomains(-planetMenu.maxDistance, planetMenu.maxDistance, -planetMenu.maxDistance, planetMenu.maxDistance, false)
+        const limits = Math.abs(planetMenu.maxDistance *1.02)
+        faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true)
+        edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false)
         id = window.setInterval(animatePlanets, ms);
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
-    }  else {
+    } else {
         lightcurveHandler.clear()
         faceOnCanvasHandler.clear()
         edgeOnCanvasHandler.clear()
         //faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
         //edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
-    }
-    //Clear simulation//
-    if (!id) {
-        clearInterval(id);
     }
 }
 

@@ -1,0 +1,60 @@
+<style>
+/* Hidden Form */
+.planet-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background-color: #222;
+    color: white;
+}
+</style>
+
+<div id="planet-form" class="planet-form hidden">
+    <!-- Planet Section -->
+    <div class="menu-section"></div>
+    
+        <label><strong>Planet</strong></label>
+        
+        <label for="planet-name">Name:</label>
+        <input type="text" id="planet-name" placeholder="Planet Name" />
+
+        <label for="planet-mass">Mass (M<sub>☉</sub>):</label>
+        <input type="number" id="planet-mass" min="0.0" step="0.1" placeholder="Mass" />
+
+        <label for="planet-radius">Radius (R<sub>☉</sub>):</label>
+        <input type="number" id="planet-radius" min="0.0" step="0.1" placeholder="Radius" />
+
+        <label for="planet-color">Color:</label>
+        <select id="planet-color">
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+            <option value="yellow">Yellow</option>
+            <option value="white">White</option>
+            <option value="orange">Orange</option>
+        </select>
+
+    <!-- Orbit Section -->
+    <div class="menu-section">  
+        <label><strong>Orbit</strong></label>
+
+        <div class="menu-row">
+            <label for="period"><i>P</i> (days):</label>
+            <input type="number" min="0.1" step="1" id="planet-period" value="10">
+        </div>
+        <div class="menu-row">
+            <label for="inclination"><i>i</i>(°):</label>
+            <input type="number" min="-90" step="1" max="90" value="0" id="inclination">
+        </div>
+        <div class="menu-row">
+            <label for="Eccentricity">e:</label>
+            <input type="number" min="0" step="0.1" max="1" value="0" id="eccentricity">
+        </div>
+    </div>
+    </div>
+
+    <button id="save-planet-btn" class="save-btn">Add</button>
+    <button id="cancel-planet-btn" class="cancel-btn">Cancel</button>
+</div>
