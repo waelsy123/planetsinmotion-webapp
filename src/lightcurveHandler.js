@@ -3,7 +3,7 @@ import { CanvasHandler } from "./canvasHandler";
 export class LightcurveHandler extends CanvasHandler {
 
     constructor(id, width, height, margins) {
-        super(id, width, height, margins)
+        super(id, width, height, margins, "lightcurve")
         this.xvalues = null
         this.yvalues = null
     }
@@ -20,6 +20,8 @@ export class LightcurveHandler extends CanvasHandler {
             .y((d) => this.yScale(d.y)); // Map y values
         
         const path = this.svg.select(".line")
+
+        if (true) {
         // Add the line to the SVG
         if (!path.empty()) {
             // Update the existing line
@@ -33,18 +35,35 @@ export class LightcurveHandler extends CanvasHandler {
                 .attr("d", line)
                 .attr("stroke", color) // Set the line color
                 .attr("stroke-width", 2); // Set the line width
+            
         }
+    }  else { 
+        const limitedScatterTimesDays = this.xvalues.slice(j, j + 1); // Include data up to index j
+        const limitedScatterFraction = this.yvalues.slice(j, j + 1); // Include data up to index j
+        const scatterdata = limitedScatterTimesDays.map((d, i) => ({ x: d, y: limitedScatterFraction[i]}));
+        this.svg.append('g')
+        .selectAll("dot")
+        .data(scatterdata)
+        .enter()
+        .append("circle")
+          .attr("cx", d => this.xScale(d.x))
+          .attr("cy", d => this.yScale(d.y))
+          .attr("r", 5)
+          .style("fill", color)
 
     }
+}
 
     setScales(xvalues, yvalues) {
-        super.setDomains(d3.min(xvalues), d3.max(xvalues), d3.min(yvalues) * 0.999, d3.max(yvalues) * 1.002)
+        super.setDomains(d3.min(xvalues), d3.max(xvalues), d3.min(yvalues) * 0.999, d3.max(yvalues) * 1.01)
         this.xvalues = xvalues
         this.yvalues = yvalues   
     }
 
     clear() {
         super.clear()
+        //this.svg.selectAll("circle").remove();
+
         this.svg.select(".line").remove();
         this.xvalues = null
         this.yvalues = null
