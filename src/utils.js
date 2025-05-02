@@ -34,6 +34,8 @@ export function downloadBlob(blob, name, format) {
     a.href = url;
     a.download = name + "." + format;
     a.click();
-    URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }, 100); // 100ms buffer
 }
