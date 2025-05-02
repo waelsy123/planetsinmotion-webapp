@@ -5,8 +5,6 @@ import { FrameMenu } from './frameMenu.js'
 import { InfoDisplay } from './infoDisplay.js'
 import { LightcurveHandler } from './lightcurveHandler.js'
 import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js'
-import fixWebmDuration from "fix-webm-duration";
-import { downloadBlob } from './utils.js';
 
 
 //const faceoncanvas = document.getElementById("faceoncanvas")
@@ -32,6 +30,8 @@ let faceOnCanvasHandler;
 let edgeOnCanvasHandler;
 let exportButton;
 let i = 0;
+let recordedFrames;
+let record = false
 
 async function loadLanguage(lang = "en") {
     const res = await fetch(`./locales/${lang}.json`);
@@ -40,6 +40,7 @@ async function loadLanguage(lang = "en") {
     frameMenu.setLanguage(translations)
     planetMenu.setLanguage(translations)
 }
+
 
 // Animate the frames
 const animate = (star, planets, datapoints) => {
@@ -56,6 +57,33 @@ const animate = (star, planets, datapoints) => {
 
     //drawLightcurve(linecontext, timesDays, fraction, star.color, i);
     lightcurveHandler.drawLightcurved3(star.color, i)
+
+    if (record) {
+        [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(element => {
+            element.updateRecording();
+        });
+
+        
+
+        if (recordedFrames == datapoints ) {
+            console.log("Finishing recording");
+
+            record = false;
+
+            [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(handler => {
+                console.log("Stopping recording");
+                handler.stopRecording();
+            });
+    
+            console.log("Recording complete.");
+
+            frameMenu.saveAnimationButton.style.cursor = "pointer";
+            frameMenu.disable(false)
+            console.log("All simulations saved.");
+        }
+
+        recordedFrames++;
+    }
 
     i = (i + 1) % datapoints;
 }
@@ -95,16 +123,16 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
 function init() {
 
     if (!lightcurveHandler) {
-        const margin = { top: 20, bottom: 40, left: 100, right: 100 }
-        lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1260, 500, margin)
+        const margin = { top: 10, bottom: 40, left: 80, right: 80 } // checked
+        lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1330, 500, margin)
     }
 
     if (!faceOnCanvasHandler) {
-        faceOnCanvasHandler = new OrbitAnimatorCanvasHandler("faceoncanvas")
+        faceOnCanvasHandler = new OrbitAnimatorCanvasHandler("faceoncanvas", "faceon")
     }
 
     if (!edgeOnCanvasHandler) {
-        edgeOnCanvasHandler = new OrbitAnimatorCanvasHandler("edgeoncanvas")
+        edgeOnCanvasHandler = new OrbitAnimatorCanvasHandler("edgeoncanvas", "edgeon")
 
     }
 
@@ -175,9 +203,11 @@ function init() {
     restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms)
 
     const mainCanvas = document.getElementById("main-canvas-container")
+
     mainCanvas.addEventListener("click", () => {
         pauseAnimation()
     });
+    
     // Pause animation on space bar pressing
     document.addEventListener("keydown", (event) => {
         if (event.code === "Space") {
@@ -210,137 +240,13 @@ function init() {
 }
 
 async function saveAnimation(format = "video/webm") {
-    const svgs = [faceOnCanvasHandler, lightcurveHandler]; //edgeOnCanvasHandler
-    const names = ["faceon", "lightcurve"]; //"edgeon"
-    const duration = lightcurveMenu.datapoints * frameMenu.ms + frameMenu.ms;
-    for (let index = 0; index < svgs.length; index++) {
-        const svg = svgs[index];
-        const name = names[index];
-
-        console.log(`Saving ${name}...`);
-
-        // Wait for the recording to finish
-        await recordSVGAnimation(svg, name, format, duration);
-    }
-
-    frameMenu.saveAnimationButton.style.cursor = "pointer";
-    frameMenu.disable(false)
-    console.log("All simulations saved.");
-}
-
-async function recordSVGAnimation(svgElement, name, format, duration) {
-    console.log("svg", svgElement  )
-
-    return new Promise((resolve) => {
-        const recordedChunks = [];
-
-        // Create an offscreen canvas
-        const canvas = document.createElement("canvas");
-        canvas.width = svgElement.width;
-        canvas.height = svgElement.height;
-        const ctx = canvas.getContext("2d");
-
-        // Capture the canvas stream
-        const canvasStream = canvas.captureStream(frameMenu.ms);
-        const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: format });
-
-        mediaRecorder.ondataavailable = (evt) => {
-            if (evt.data.size > 0) {
-                recordedChunks.push(evt.data);
-            }
-        };
-
-        mediaRecorder.onstart = () => {
-            console.log(`Recording for ${name} started and will stop after ${duration / 1000} seconds.`);
-        };
-
-        mediaRecorder.onstop = async () => {
-            console.log(`${name} recording stopped.`);
-
-            const webBlob = new Blob(recordedChunks, { type: format });
-            const fixedBlob = await fixWebmDuration(webBlob, duration);
-
-            downloadBlob(fixedBlob, name, "webm");
-
-            resolve();
-        };
-
-
-        const drawFrame = () => {
-            // milliseconds
-            const elapsedms = Date.now() - startTime;
-            if (elapsedms > duration) {
-                mediaRecorder.stop();
-                return;
-            }
-
-            const svgData = new XMLSerializer().serializeToString(svgElement.svgRoot.node());
-            const img = new Image();
-            const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-            const url = URL.createObjectURL(svgBlob);
-
-            img.onload = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                URL.revokeObjectURL(url);
-            };
-            requestAnimationFrame(drawFrame);
-            img.src = url;
-
-        };
-
-        clearInterval(id);
-        restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
-        mediaRecorder.start();
-
-        // Animate by drawing the SVG to the canvas repeatedly
-        const startTime = Date.now();
-
-        drawFrame();
+    const duration = lightcurveMenu.datapoints * frameMenu.ms;
+    [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(element => {
+        element.startRecording(frameMenu.ms, format, duration);
     });
-}
-
-
-
-
-function recordCanvas(canvas, name, format, duration) {
-    return new Promise((resolve) => {
-        const recordedChunks = [];
-        const canvasStream = canvas.captureStream(frameMenu.ms); // Capture the canvas stream
-        const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: format });
-
-        mediaRecorder.ondataavailable = (evt) => {
-            if (evt.data.size > 0) {
-                recordedChunks.push(evt.data);
-            }
-        };
-
-        mediaRecorder.onstart = () => {
-            console.log(`${name} recording started...`);
-        };
-
-        mediaRecorder.onstop = async () => {
-            console.log(`${name} recording stopped.`);
-
-            const webBlob = new Blob(recordedChunks, { type: format });
-            const fixedBlob = await fixWebmDuration(webBlob, duration);
-
-            // Download the fixed blob
-            downloadBlob(fixedBlob, name, "webm");
-
-            // Resolve the promise to indicate that recording is complete
-            resolve();
-        };
-
-        mediaRecorder.start();
-
-        // Stop recording after the specified duration
-        setTimeout(() => {
-            if (mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-            }
-        }, duration);
-    });
+    record = true;
+    recordedFrames = 0;
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
 }
 
 
@@ -371,22 +277,26 @@ function pauseAnimation() {
 function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) {
     i = start
     console.log("Restarting simu")
+
+    //Clear simulation//
+    if (id) {
+        clearInterval(id);
+    }
     // Clear lightcurve  the canvas if we restart simulation from beginning///
     if (i == 0) {
         //linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height); 
         lightcurveHandler.clear()
     }
-    const datapoints = lightcurveMenu.datapoints
 
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
         fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
         const animatePlanets = () => {
             animate(starMenu.star, planetMenu.planets,
-                datapoints, planetMenu.maxDistance);
+                lightcurveMenu.datapoints);
         };
         lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction)
-        const limits = Math.abs(planetMenu.maxDistance *1.01)
+        const limits = Math.abs(planetMenu.maxDistance *1.02)
         faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true)
         edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false)
         id = window.setInterval(animatePlanets, ms);
@@ -397,10 +307,6 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) 
         edgeOnCanvasHandler.clear()
         //faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
         //edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
-    }
-    //Clear simulation//
-    if (!id) {
-        clearInterval(id);
     }
 }
 
