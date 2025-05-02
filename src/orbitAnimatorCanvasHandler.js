@@ -7,8 +7,8 @@ import {darkenColor} from './utils.js'
 
 export class OrbitAnimatorCanvasHandler extends CanvasHandler {
 
-    constructor(id, width = 600, height = 600, margins = { top: 20, bottom: 40, left: 40, right: 40 }) {
-        super(id, width, height, margins)
+    constructor(id, outputname, width = 600, height = 600, margins = { top: 20, bottom: 40, left: 60, right: 40 }) {
+        super(id, width, height, margins, outputname)
 
         this.units = AU
     }
