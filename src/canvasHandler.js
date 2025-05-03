@@ -102,7 +102,8 @@ export class CanvasHandler {
         this.canvas = document.createElement("canvas");
         this.canvas.width = this.width * 2;
         this.canvas.height = this.height * 2;
-        
+        this.ctx = this.canvas.getContext("2d");
+
         var recordedChunks = [];
         const stream = this.canvas.captureStream(ms);
         this.mediaRecorder = new MediaRecorder(stream, { mimeType: format });
@@ -125,6 +126,7 @@ export class CanvasHandler {
             downloadBlob(fixedBlob, this.outputname, "webm");
             //this.mediaRecorder = null;
             this.canvas = null;
+            this.ctx = null
         };
     
         this.mediaRecorder.start();
@@ -132,17 +134,14 @@ export class CanvasHandler {
 
 
     updateRecording() {
-        console.log("Updating recording...")
         const svgData = new XMLSerializer().serializeToString(this.svgRoot.node());
         const img = new Image();
         const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
         const url = URL.createObjectURL(svgBlob);
-
         
-        const ctx = this.canvas.getContext("2d");
         img.onload = () => {
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
             URL.revokeObjectURL(url);
         };
     
