@@ -12,9 +12,9 @@ export class FrameMenu {
     initFrame() {
         this.msInput = document.getElementById("ms");
         this.msLabel = new ToolTipLabel("frame-rate")
-        this.ms = parseInt(this.msInput.value);
+        this.ms = parseFloat(this.msInput.value);
         this.msInput.addEventListener("input", (event) => {
-            this.ms = parseInt(event.target.value);
+            this.ms = parseFloat(event.target.value);
             this.onUpdate(this.ms); // Trigger simulation update
         });
 
