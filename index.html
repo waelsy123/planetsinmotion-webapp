@@ -50,6 +50,12 @@
                         </div>
                         <input type="number" min="10" step="10" max="2000" value="20" id="ms">
                     </div>
+                    <div class="menu-row">
+                        <div for="animation-duration" class="tooltip">Duration (s):
+                            <span class="tooltiptext" id="tooltip-animation-duration"></span>
+                        </div>
+                        <label id="animation-duration-label">0</label>
+                    </div>
                     <button id="save-animation-btn">Save Animation</button>
                 </div>
             </div>
@@ -255,12 +261,20 @@
         </div>
     </div>
 
+    <dialog class="recording-dialog" id="recording-dialog">
+        <div class="recording-content">
+        <label>Recording...</label>
+        <div class="spinner"></div>
+    </div>
+    </dialog>
+
 
     <script type="module" src="./src/app.js"></script>
     <link rel="stylesheet" href="./styles/style.css">
     <link rel="stylesheet" href="./styles/tooltip.css">
     <link rel="stylesheet" href="./styles/planet_form_buttons.css">
     <link rel="stylesheet" href="./styles/svg.css">
+    <link rel="stylesheet" href="./styles/recording_dialog.css">
 </body>
 
 </html>
