@@ -1,7 +1,6 @@
 
 import { CanvasHandler } from "./canvasHandler";
 import { AU } from "./constants"
-import * as d3 from "d3";
 import { Star } from "./star"
 import {darkenColor} from './utils.js'
 
@@ -13,23 +12,41 @@ export class OrbitAnimatorCanvasHandler extends CanvasHandler {
         this.units = AU
     }
 
+    defineSunGradient(starColor) {
+        this.starColor = starColor;
+        this.svg.selectAll(".star-gradient").remove();
+        this.svg.append("defs").attr("class", "star-gradient").append("radialGradient")
+        .attr("id", "sun-glow-gradient")
+        .attr("cx", "50%")
+        .attr("cy", "50%")
+        .attr("r", "58%")
+        .selectAll("stop")
+        .data([
+            { offset: "0%", color: starColor},  // Center: original color
+            { offset: "100%", color: "black" }  // Edge: darker shadow
+        ])
+        .enter()
+        .append("stop")
+        .attr("offset", d => d.offset)
+        .attr("stop-color", d => d.color);
+    }
+
     clear() {
         super.clear()
-        this.svg.selectAll(".circle").remove();
-        this.svg.selectAll("defs").remove();
+        // Remove planets definitions
+        this.svg.selectAll("circle").remove();
+        // Remove planets definitions
+        this.svg.selectAll(".planet-defs").remove();
         this.svg.selectAll("path").remove();
     }
 
-
     drawBodies(bodies, i, faceon = false) {
 
-        this.svg.selectAll(".circle").remove();
-        this.svg.selectAll("defs").remove();
-        this.svg.selectAll(".arc").remove();
-
+        this.svg.selectAll("circle").remove();
+        this.svg.selectAll(".planet-defs").remove();
+        //this.svg.selectAll(".arc").remove();
 
         bodies.forEach((body) => {
-
             const radius = (Math.abs(this.xScale(body._R) - this.xScale(0)) / this.units)
 
             let color;
@@ -39,43 +56,56 @@ export class OrbitAnimatorCanvasHandler extends CanvasHandler {
             var z = 1 / this.units;
 
             if (faceon) {
-                y *= body.rx[i]
-                z *= body.rz[i]
+                y *= body.rx[i];
+                z *= body.rz[i];
             } else {
-                y *= body.rz[i]
-                z *= -body.rx[i]
+                y *= body.rz[i];
+                z *= -body.rx[i];
             }
 
             if (body instanceof Star) {
-                var defs = this.svg.append("defs")
-                defs.append("radialGradient")
-                    .attr("id", "sun-glow-gradient")
-                    .attr("cx", "50%")
-                    .attr("cy", "50%")
-                    .attr("r", "58%")
-                    .selectAll("stop")
-                    .data([
-                        { offset: "0%", color: body.color },  // Center: original color
-                        { offset: "100%", color: "black" }  // Edge: darker shadow
-                    ])
-                    .enter()
-                    .append("stop")
-                    .attr("offset", d => d.offset)
-                    .attr("stop-color", d => d.color);
-
+                // Gradient already defined in the constructor    
                 color = "url(#sun-glow-gradient)"
-
-                //Append the circular star
-                this.svg.append("circle").attr("class", "circle")
-                    .attr("cx", this.xScale(x))
-                    .attr("cy", this.yScale(y))
-                    .attr("r", radius)
-                    .attr("pointer-events","none")
-                    .style("fill", color)
             } else {
-                const planetX = this.xScale(x)
-                const planetY = this.yScale(y)
+                
+                const theta = Math.atan2(faceon ? -y: y, x) // account for the flip signed in x
+                const cosTheta = Math.cos(theta);
+                const sinTheta = Math.sin(theta);
+                const r = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+                const phi = Math.acos(Math.sqrt(x ** 2 + y ** 2) / r);
+                const cosPhi = Math.cos(phi); // cosPhi determines the position of the shadow
 
+                // For face-on view, the gradient is vertical
+                const gradientStartX = 50 * (1 - cosTheta);
+                const gradientStartY = 50 * (1 + sinTheta); // At theta = 90 degrees, this will be 100% (bottom)
+                const gradientEndX = 50 * (1 + cosTheta);
+                const gradientEndY = 50 * (1 - sinTheta);
+               
+                //if (!faceon) {
+                  //  console.log(gradientStartX, gradientEndX, gradientStartY, gradientEndY, (theta / Math.PI * 180).toFixed(1), (phi  / Math.PI * 180).toFixed(2));
+                //}
+                
+                // Define the gradient
+                // Gradient ID is unique for each planet and view (face-on or edge-on) otherwise there are conflicts
+                const gradientId = `planet-gradient-${body.planetName.replace(/\s+/g, '')}-${faceon ? "faceon" : "edegeon"}`;
+                const linearGradient = this.svg.append("defs").attr("class", "planet-defs").append("linearGradient").attr("id", gradientId)
+                .attr("x1",`${gradientStartX}%`)
+                .attr("y1",`${gradientStartY}%`)
+                .attr("x2",`${gradientEndX}%`)
+                .attr("y2", `${gradientEndY}%`)
+
+
+                linearGradient.append("stop")
+                .attr("offset", "0%")
+                .attr("stop-color", body.color); // Bright color body.color
+                
+                linearGradient.append("stop")
+                    .attr("offset", `${ cosPhi * 100}%`) // Shadow position based on cosPhi
+                    .attr("stop-color", darkenColor(body.color, 85)); // Darkened color
+
+                color = `url(#${gradientId})`
+
+                /**
                 const shadowArc = d3.arc()
                 .innerRadius(0)
                 .outerRadius(radius)
@@ -86,6 +116,8 @@ export class OrbitAnimatorCanvasHandler extends CanvasHandler {
                     .attr("d", shadowArc())
                     .attr("transform", `translate(${planetX}, ${planetY})`)
                     .style("fill", body.color).attr("class", "arc");
+
+                 */
                 /**
                 // account for the flip signed in x
                 const theta = Math.atan2(y, -x)
@@ -132,6 +164,15 @@ export class OrbitAnimatorCanvasHandler extends CanvasHandler {
                       */
             }
 
+            const bodyX = this.xScale(x)
+            const bodyY = this.yScale(y)
+            // Add the circle
+            this.svg.append("circle")
+            .attr("pointer-events","none")
+            .attr("cx", bodyX)
+            .attr("cy", bodyY)
+            .attr("r", radius)
+            .style("fill", color);
 
         });
     }
