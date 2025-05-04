@@ -43,7 +43,11 @@ async function loadLanguage(lang = "en") {
 
 
 // Animate the frames
-const animate = (star, planets, datapoints) => {
+const animate = () => {
+
+    const star = starMenu.star
+    const planets = planetMenu.planets
+    const datapoints = lightcurveMenu.datapoints
 
     const bodies = [star, ...planets];
     // Sort bodies for face-on view (z-direction)
@@ -62,18 +66,16 @@ const animate = (star, planets, datapoints) => {
             element.updateRecording();
         });
 
-        
-
-        if (recordedFrames == datapoints ) {
+        if (recordedFrames == datapoints + 1) {
             console.log("Finishing recording");
 
             record = false;
-
+            setTimeout(() => {
             [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(handler => {
                 console.log("Stopping recording");
                 handler.stopRecording();
             });
-    
+        },50);
             console.log("Recording complete.");
 
             frameMenu.saveAnimationButton.style.cursor = "pointer";
@@ -123,7 +125,7 @@ function init() {
 
     if (!lightcurveHandler) {
         const margin = { top: 10, bottom: 40, left: 80, right: 80 } // checked
-        lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1330, 500, margin)
+        lightcurveHandler = new LightcurveHandler("d3-lightcurve-container", 1320, 500, margin)
     }
 
     if (!faceOnCanvasHandler) {
@@ -132,7 +134,6 @@ function init() {
 
     if (!edgeOnCanvasHandler) {
         edgeOnCanvasHandler = new OrbitAnimatorCanvasHandler("edgeoncanvas", "edgeon")
-
     }
 
     if (!starMenu) {
@@ -240,8 +241,8 @@ function init() {
     loadLanguage()
 }
 
-async function saveAnimation(format = "video/webm") {
-    const duration = lightcurveMenu.datapoints * frameMenu.ms;
+function saveAnimation(format = "video/webm") {
+    const duration = (lightcurveMenu.datapoints + 2) * frameMenu.ms;
     [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(element => {
         element.startRecording(frameMenu.ms, format, duration);
     });
