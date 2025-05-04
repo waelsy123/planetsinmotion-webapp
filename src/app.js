@@ -46,13 +46,12 @@ async function loadLanguage(lang = "en") {
 const animate = (star, planets, datapoints) => {
 
     const bodies = [star, ...planets];
-    // Sort bodies for edge-on view (x-direction)
+    // Sort bodies for face-on view (z-direction)
     const sortedBodiesFaceOn = bodies.slice().sort((a, b) => a.rz[i] - b.rz[i]);
     faceOnCanvasHandler.drawBodies(sortedBodiesFaceOn, i, true)
-
-    // Sort bodies for face-on view (z-direction)
+    
+    // Sort bodies for edge-on view (x-direction)
     const sortedBodiesEdgeOn = bodies.slice().sort((a, b) => a.rx[i] - b.rx[i]);
-
     edgeOnCanvasHandler.drawBodies(sortedBodiesEdgeOn, i)
 
     //drawLightcurve(linecontext, timesDays, fraction, star.color, i);
@@ -142,14 +141,18 @@ function init() {
             planetMenu.setStar(starMenu.star)
             starMenu.setTimes(lightcurveMenu.times)
             planetMenu.setTimes(lightcurveMenu.times)
+            edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
+            faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
         });
     }
 
+    edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
+    faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
+
 
     if (!planetMenu) {
         planetMenu = new PlanetMenu(() => {
-            clearInterval(id);
             lightcurveMenu.calculateTimes(planetMenu.maxP)
             starMenu.setTimes(lightcurveMenu.times)
             planetMenu.setTimes(lightcurveMenu.times)
@@ -173,7 +176,6 @@ function init() {
 
     if (!lightcurveMenu) {
         lightcurveMenu = new LightcurveMenu(planetMenu.maxP, () => {
-            clearInterval(id);
             lightcurveMenu.calculateTimes(planetMenu.maxP)
             starMenu.setTimes(lightcurveMenu.times)
             planetMenu.setTimes(lightcurveMenu.times)
@@ -186,7 +188,6 @@ function init() {
 
     if (!frameMenu) {
         frameMenu = new FrameMenu((ms) => {
-            clearInterval(id);
             restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, i);
         });
     }
@@ -275,36 +276,33 @@ function pauseAnimation() {
 
 
 function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) {
-    i = start
+    i = start;
     console.log("Restarting simu")
 
     //Clear simulation//
-    if (id) {
+    if (id) { 
         clearInterval(id);
+        id = null; // Reset the interval ID
     }
     // Clear lightcurve  the canvas if we restart simulation from beginning///
     if (i == 0) {
         //linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height); 
-        lightcurveHandler.clear()
+        lightcurveHandler.clear();
     }
 
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
         fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
-        const animatePlanets = () => {
-            animate(starMenu.star, planetMenu.planets,
-                lightcurveMenu.datapoints);
-        };
-        lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction)
-        const limits = Math.abs(planetMenu.maxDistance *1.02)
-        faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true)
-        edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false)
-        id = window.setInterval(animatePlanets, ms);
+        lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction);
+        const limits = Math.abs(planetMenu.maxDistance *1.02);
+        faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true);
+        edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false);
+        id = window.setInterval(animate, ms);
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     } else {
-        lightcurveHandler.clear()
-        faceOnCanvasHandler.clear()
-        edgeOnCanvasHandler.clear()
+        lightcurveHandler.clear();
+        faceOnCanvasHandler.clear();
+        edgeOnCanvasHandler.clear();
         //faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
         //edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
     }
