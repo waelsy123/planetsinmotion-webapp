@@ -75,11 +75,13 @@ const animate = () => {
                 console.log("Stopping recording");
                 handler.stopRecording();
             });
-        },50);
-            console.log("Recording complete.");
 
-            frameMenu.saveAnimationButton.style.cursor = "pointer";
-            frameMenu.disable(false)
+             // Hide the recording dialog
+            const recordingDialog = document.getElementById("recording-dialog");
+            recordingDialog.close();
+        },50);
+
+            console.log("Recording complete.");
             console.log("All simulations saved.");
         }
 
@@ -147,7 +149,7 @@ function init() {
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
         });
     }
-
+    // Set the star color gradient in the canvas handlers
     edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
     faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
 
@@ -181,6 +183,7 @@ function init() {
             starMenu.setTimes(lightcurveMenu.times)
             planetMenu.setTimes(lightcurveMenu.times)
             restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);
+            frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
         })
     }
 
@@ -189,6 +192,7 @@ function init() {
 
     if (!frameMenu) {
         frameMenu = new FrameMenu((ms) => {
+            frameMenu.setDuration((lightcurveMenu.datapoints) * ms);
             restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, i);
         });
     }
@@ -202,6 +206,7 @@ function init() {
 
     starMenu.setTimes(lightcurveMenu.times)
     planetMenu.setTimes(lightcurveMenu.times)
+    frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
     restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms)
 
     const mainCanvas = document.getElementById("main-canvas-container")
@@ -232,9 +237,6 @@ function init() {
     exportButton.disabled = true
     
     frameMenu.saveAnimationButton.addEventListener("click", () => {
-        frameMenu.disable(true)
-        frameMenu.saveAnimationButton.style.cursor = "wait";
-
         saveAnimation()
     });
 
@@ -242,7 +244,11 @@ function init() {
 }
 
 function saveAnimation(format = "video/webm") {
-    const duration = (lightcurveMenu.datapoints + 2) * frameMenu.ms;
+    // Show the recording dialog
+    const recordingDialog = document.getElementById("recording-dialog");
+    recordingDialog.showModal();
+
+    const duration = frameMenu.animationDurationms;
     [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(element => {
         element.startRecording(frameMenu.ms, format, duration);
     });
