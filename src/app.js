@@ -4,6 +4,7 @@ import { LightcurveMenu } from './lightcurveMenu.js';
 import { FrameMenu } from './frameMenu.js'
 import { InfoDisplay } from './infoDisplay.js'
 import { LightcurveHandler } from './lightcurveHandler.js'
+import { DonateMenu } from './donateMenu.js'
 import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js'
 
 
@@ -22,6 +23,7 @@ let lightcurveMenu;
 let frameMenu;
 let helpMenu;
 let aboutMenu;
+let donateMenu;
 let translations = {};
 let id;
 let fraction;
@@ -202,6 +204,10 @@ function init() {
     }
     if (!helpMenu) {
         helpMenu = new InfoDisplay("manual")
+    }
+
+    if (!donateMenu) {
+        donateMenu = new DonateMenu("donate")
     }
 
     starMenu.setTimes(lightcurveMenu.times)
