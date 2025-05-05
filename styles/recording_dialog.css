@@ -37,6 +37,7 @@ dialog#recording-dialog .spinner {
     height: 40px;
     animation: spin 1s linear infinite;
     display: inline-block; /* Make it inline-block to align with text */
+
 }
 
 @keyframes spin {

@@ -3,10 +3,10 @@ import { sin, cos, asin, acos, atan } from 'mathjs';
 /**
  * Computes the angle alpha.
  *
- * @param {Array} Rs - Array of radii of the star or eclipsed object.
- * @param {Array} Rp - Array of radii of the planet or transiting object.
- * @param {Array} beta - Array of angles between the line connecting the two bodies' centers and the line connecting the eclipsed body's center and the point of contact.
- * @returns {Array} - The angle alpha for each input.
+ * @param {number} Rs - Radius of the star or eclipsed object.
+ * @param {number} Rp - Radius of the planet or transiting object.
+ * @param {number} beta - Angle between the line connecting the two bodies' centers and the line connecting the eclipsed body's center and the point of contact.
+ * @returns {number} - The angle alpha for each input.
  */
 export function getAlpha(Rs, Rp, beta) {
 

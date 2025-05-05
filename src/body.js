@@ -121,8 +121,8 @@ export class Body {
         const partialtransitArray = this.getPartialTransits(body);
         partialtransitArray.forEach((transit, index) => {
             if (transit) {
-                const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], ry[index], rz[index])
-                const alpha = getAlpha(body._R, this._R, beta)
+                const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], ry[index], rz[index]);
+                const alpha = getAlpha(body._R, this._R, beta);
                 A[index] += transitArea(body._R, this._R, beta, alpha);
             }
 
@@ -140,21 +140,21 @@ export class Body {
         return A
 
     }
-    
+
     draw(context, center, scale, i, faceon = true) {
         context.save()
-        context.fillStyle = this.color
+        context.fillStyle = this.color;
         context.beginPath();
-        const x = this.ry[i] * scale
+        const x = this.ry[i] * scale;
         var y = scale;
         if (faceon) {
-            y *= this.rx[i]
+            y *= this.rx[i];
         } else {
-            y *= this.rz[i]
+            y *= this.rz[i];
         }
 
-        const bodyX = center[0] + x
-        const bodyY = center[1] + y
+        const bodyX = center[0] + x;
+        const bodyY = center[1] + y;
         context.arc(bodyX, bodyY, this._R * scale, 0, 2 * Math.PI);
 
         context.fill();
@@ -225,7 +225,7 @@ export class Body {
                 partialtransit.forEach((transit, index) => {
                     if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
                         const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                        const alpha = getAlpha(prevPlanet._R, planet._R, beta)
+                        const alpha = getAlpha(prevPlanet._R, planet._R, beta);
                         A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
                     }
 
@@ -236,7 +236,7 @@ export class Body {
             previousPlanets[planetIndex] = planet;
         });
         const fraction = A.map((area) => 1 - area / this.Area);
-        console.log("fraction", fraction)
+        console.log("fraction", fraction);
         return fraction
     }
 
@@ -245,6 +245,6 @@ export class Body {
         const maxRy = Math.max(...this.ry.map(Math.abs));
         const maxRz = Math.max(...this.rz.map(Math.abs));
         return Math.max(maxRx, maxRy, maxRz);
-      }
+    }
 
 }
