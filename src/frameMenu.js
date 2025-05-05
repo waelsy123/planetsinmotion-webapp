@@ -19,18 +19,24 @@ export class FrameMenu {
         });
 
         this.saveAnimationButton = document.getElementById("save-animation-btn");
-        this.saveAnimationButton.disabled = true
+        this.saveAnimationButton.disabled = true;
 
+        this.durationLabel = document.getElementById("animation-duration-label");
+    }
+
+    setDuration(duration) {
+        this.durationLabel.innerHTML = duration.toFixed(1) / 1000;
+        this.animationDurationms = duration;
     }
 
 
     setLanguage(translations) {
-        this.msLabel.setLanguage(translations)
+        this.msLabel.setLanguage(translations);
     }
     
     disable(disable) {
-        this.msInput.disabled = disable
-        this.saveAnimationButton.disabled = disable
+        this.msInput.disabled = disable;
+        this.saveAnimationButton.disabled = disable;
     }
 
     
