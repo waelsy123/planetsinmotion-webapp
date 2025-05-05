@@ -344,36 +344,6 @@
         .button-cursor {
             cursor: pointer;
         }
-
-        .information-form {
-            /* Add a shadow for better visibility */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
-            flex-direction: column;
-        }
-
-        .information-container {
-            position: relative;
-            padding: 10px;
-            margin: 10px;
-            color: white;
-            font-size: 18px;
-            border: 1px solid white;
-            border-radius: 5px;
-            flex-direction: column;
-            display: flex;
-            width: 850px;
-            overflow-y: auto;
-        }
-
-        .information-title {
-            text-align: center;
-            font-size: 26px;
-        }
-
-        .information-content{ 
-            justify-content: left;
-            font-size: 20px;
-        }
         /* links */
         a {
             color: #00bfff;
