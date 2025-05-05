@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exoplanet Transit Animation</title>
     <link rel="stylesheet" href="./styles/style.css"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="./styles/tooltip.css">
+    <link rel="stylesheet" href="./styles/planet_form_buttons.css">
+    <link rel="stylesheet" href="./styles/svg.css">
+    <link rel="stylesheet" href="./styles/recording_dialog.css">
     <style>
 
     </style>
@@ -210,7 +214,8 @@
                             <!-- Controls -->
                             <div class="form-controls">
                                 <button id="cancel-planet-btn" type="buton" class="planet-form-btn">Cancel</button>
-                                <button id="randomize-planet-btn" type="buton" class="planet-form-btn">Randomize</button>
+                                <button id="randomize-planet-btn" type="buton"
+                                    class="planet-form-btn">Randomize</button>
                                 <button id="save-planet-btn" type="buton" class="planet-form-btn">Add</button>
                             </div>
                         </div>
@@ -255,12 +260,24 @@
         </div>
     </div>
 
+<<<<<<< Updated upstream
 
     <script type="module" src="./src/app.js"></script>
     <link rel="stylesheet" href="./styles/style.css">
     <link rel="stylesheet" href="./styles/tooltip.css">
     <link rel="stylesheet" href="./styles/planet_form_buttons.css">
     <link rel="stylesheet" href="./styles/svg.css">
+=======
+    <dialog id="recording-dialog">
+        <div class="recording-content"> 
+            <label>Generating...</label>
+            <div class="spinner"></div>
+        </div>
+    </dialog>
+
+
+    <script type="module" src="./src/app.js"></script>
+>>>>>>> Stashed changes
 </body>
 
 </html>
