@@ -224,8 +224,8 @@ function init() {
             } else {
                 restartAnimation(); // Restart the animation if it's paused
             }
-        // Show planet form on pressing the "+" button
-        } else if (event.code == "NumpadAdd") {
+        // Show planet form on pressing the "+" button (and not pressing Ctrl)
+        } else if ((event.code == "NumpadAdd") && (!event.ctrlKey)) {
             planetMenu.showPlanetForm()
         }
     });
