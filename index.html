@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./styles/planet_form_buttons.css">
     <link rel="stylesheet" href="./styles/svg.css">
     <link rel="stylesheet" href="./styles/recording_dialog.css">
+    <link rel="stylesheet" href="./styles/information.css">
     <style>
 
     </style>
@@ -19,6 +20,7 @@
     <!-- Top Banner -->
     <div class="top-banner">
         <button id="manual-button" class="banner-button">Manual</button>
+        <button id="donate-button" class="banner-button">Donate</button>
         <button id="about-button" class="banner-button">About</button>
     </div>
     <div class="main-container">
@@ -266,10 +268,40 @@
         </div>
     </div>
 
-    <script type="module" src="./src/app.js"></script>
+    <div class="planet-form hidden" id="donate-content">
+        <div class="information-form">
+            <button id="close-donate-btn" class="close-btn">×</button>
+            <div class="information-container">
+                <label class="information-title">Support This Project &lt;3</label>
+                <label id="donate-text" class="information-content"></label>
+                <div class="donate-content">
+                    <img src="./icons/bitcoin-btc-logo.svg" class="crypto-logo"> <p> Wallet Address</p>
+                    <div class="wallet-box">
+                        <code>bc1q4xr9agec3ldug0xezqxy252y3kvqmcz62xr6pm</code>
+                    </div>
+                    <button class="planet-btns" id="copyBTCWalletAddressBtn" aria-label="Copy BTC Wallet Address">
+                        <img src="./icons/copy.png" alt="Copy BTC Icon" />
+                    </button>
+                    <div id="copy-feedback" class="copy-feedback hidden">Copied!</div>
+                </div>
+
+                <div class="donate-content">
+                    <img src="./icons/ethereum-eth-logo.svg" class="crypto-logo"> <p>Wallet Address</p> 
+                    <div class="wallet-box">
+                        <code>0xaFE3DB130E71404Ed038397D25C26777d4EC8e4F</code>
+                    </div>
+                    <button class="planet-btns" id="copyETHWalletAddressBtn" aria-label="Copy Wallet Address">
+                        <img src="./icons/copy.png" alt="Copy ETH Icon" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--bc1q4xr9agec3ldug0xezqxy252y3kvqmcz62xr6pm -->
 
     <dialog id="recording-dialog">
-        <div class="recording-content"> 
+        <div class="recording-content">
             <label>Generating...</label>
             <div class="spinner"></div>
         </div>

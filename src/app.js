@@ -4,6 +4,7 @@ import { LightcurveMenu } from './lightcurveMenu.js';
 import { FrameMenu } from './frameMenu.js'
 import { InfoDisplay } from './infoDisplay.js'
 import { LightcurveHandler } from './lightcurveHandler.js'
+import { DonateMenu } from './donateMenu.js'
 import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js'
 
 
@@ -22,6 +23,7 @@ let lightcurveMenu;
 let frameMenu;
 let helpMenu;
 let aboutMenu;
+let donateMenu;
 let translations = {};
 let id;
 let fraction;
@@ -204,6 +206,10 @@ function init() {
         helpMenu = new InfoDisplay("manual")
     }
 
+    if (!donateMenu) {
+        donateMenu = new DonateMenu("donate")
+    }
+
     starMenu.setTimes(lightcurveMenu.times)
     planetMenu.setTimes(lightcurveMenu.times)
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
@@ -224,8 +230,8 @@ function init() {
             } else {
                 restartAnimation(); // Restart the animation if it's paused
             }
-        // Show planet form on pressing the "+" button
-        } else if (event.code == "NumpadAdd") {
+        // Show planet form on pressing the "+" button (and not pressing Ctrl)
+        } else if ((event.code == "NumpadAdd") && (!event.ctrlKey)) {
             planetMenu.showPlanetForm()
         }
     });

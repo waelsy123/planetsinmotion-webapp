@@ -11,7 +11,7 @@ export class InfoDisplay {
         this.closeButton = document.getElementById("close-" + contentName + "-btn");
 
 
-        this.closeWindowListener = (event) =>{
+        this.closeWindowListener = () =>{
             this.closeWindow(content);
         }
         this.closeButton.addEventListener("click", this.closeWindowListener)
