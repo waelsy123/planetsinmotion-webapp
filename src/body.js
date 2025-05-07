@@ -105,7 +105,6 @@ export class Body {
      * Calculates the area eclipsed by this body on the input body (e.g., a star).
      *
      * @param {Body} body - The body being eclipsed (e.g., the star).
-     * @returns {number[]} An array representing the eclipsed area at each data point.
      *
      * Notes:
      * - The method calculates the eclipsed area based on the relative positions and radii of the two bodies.
@@ -119,24 +118,19 @@ export class Body {
         const ry = body.ry;
         const rz = body.rz;
         const partialtransitArray = this.getPartialTransits(body);
-        partialtransitArray.forEach((transit, index) => {
-            if (transit) {
+        const fullTransitArray = this.getFullTransits(body)
+        partialtransitArray.forEach((partialTransit, index) => {
+
+            if (partialTransit) {
                 const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], ry[index], rz[index]);
                 const alpha = getAlpha(body._R, this._R, beta);
                 A[index] += transitArea(body._R, this._R, beta, alpha);
-            }
-
-        });
-
-        const fullTransitArray = this.getFullTransits(body)
-
-        // Set transit area for full transits
-        fullTransitArray.forEach((isTransit, index) => {
-            if (isTransit) {
+                // Set transit area for full transits
+            } else if (fullTransitArray[index]) {
                 A[index] += this.Area; // Full transit area is the area of the planet
             }
-        });
 
+        });
         return A
 
     }
