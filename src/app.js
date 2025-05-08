@@ -1,11 +1,11 @@
 import { StarMenu } from './starMenu.js'
 import { PlanetMenu } from './planetMenu.js';
 import { LightcurveMenu } from './lightcurveMenu.js';
-import { FrameMenu } from './frameMenu.js'
-import { InfoDisplay } from './infoDisplay.js'
-import { LightcurveHandler } from './lightcurveHandler.js'
-import { DonateMenu } from './donateMenu.js'
-import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js'
+import { FrameMenu } from './frameMenu.js';
+import { InfoDisplay } from './infoDisplay.js';
+import { LightcurveHandler } from './lightcurveHandler.js';
+import { DonateMenu } from './donateMenu.js';
+import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js';
 
 
 //const faceoncanvas = document.getElementById("faceoncanvas")
