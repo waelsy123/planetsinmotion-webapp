@@ -140,16 +140,11 @@ export class Body {
         const datapoints = this.rx.length
         var A = new Array(datapoints).fill(0);
 
-        const ry = body.ry;
-        const rz = body.rz;
-        //const partialtransitArray = this.getPartialTransits(body);
-        //const fullTransitArray = this.getFullTransits(body)
-
         const { fullTransit, partialTransit } = this.getTransits(body);
         partialTransit.forEach((partialTransitItem, index) => {
 
             if (partialTransitItem) {
-                const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], ry[index], rz[index]);
+                const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], body.ry[index], body.rz[index]);
                 const alpha = getAlpha(body._R, this._R, beta);
                 A[index] += transitArea(body._R, this._R, beta, alpha);
                 // Set transit area for full transits
@@ -235,7 +230,7 @@ export class Body {
             previousPlanets.forEach((prevPlanet) => {
                 const fullTransits = planet.getFullTransits(previousPlanets);
                 const fullTransitsStar = planet.getFullTransits(this);
-                const fullPartialStar = planet.getFullTransits(this);
+                const fullPartialStar = planet.getPartialTransits(this);
                 fullTransits.forEach((transit, index) => {
                     if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
                         A[index] -= planet.Area; // Full transit area is the area of the planet
