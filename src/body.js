@@ -44,13 +44,38 @@ export class Body {
         this.rz = new Array(times.length).fill(0);
     }
 
-
     /**
      * Parameters
      * ----------
-     * @param {number} Ro - Radius of the object being eclipsed (e.g. host star)
-     * @param {number|Array} ry - y position of the object being transited
-     * @param {number|Array} rz - z position of the object being transited
+     * @param {Body} body - The eclipsing body (e.g. planet)
+    */
+    getTransits(body) {
+        const proj_distance = this.getProjectedDistance(body.ry, body.rz)
+
+        const datapoints = this.rx.length
+        var fullTransitArray = new Array(datapoints).fill(false);
+        var partialTransitArray = new Array(datapoints).fill(false);
+
+        for (let i = 0; i < datapoints; i++) {
+            if (this.rx[i] > body.rx[i]) {
+                // Full transit
+                if (proj_distance[i] + this._R <= body._R) {
+                    fullTransitArray[i] = true;
+                    // Partial transit
+                } else if ((proj_distance[i] - this._R < body._R) && (proj_distance[i] + this._R > body._R)) {
+                    partialTransitArray[i] = true;
+                }
+            }
+        }
+        return {
+            fullTransit: fullTransitArray,
+            partialTransit: partialTransitArray
+        }
+    }
+    /**
+     * Parameters
+     * ----------
+     * @param {Body} body - The body being eclipsed (e.g. the star)
      */
     getFullTransits(body) {
         const proj_distance = this.getProjectedDistance(body.ry, body.rz)
@@ -61,7 +86,7 @@ export class Body {
         /**
          * Parameters
          * ----------
-         * @param {number} Ro - Radius of the object being eclipsed (e.g. host star)
+         * @param {Body} body - The transiting body (e.g. planet)
          */
         const proj_distance = this.getProjectedDistance(body.ry, body.rz)
         const partialtransit = proj_distance.map((dist, index) => (((dist - this._R < body._R) && (dist + this._R > body._R)) && (this.rx[index] > body.rx[index])));
@@ -105,7 +130,6 @@ export class Body {
      * Calculates the area eclipsed by this body on the input body (e.g., a star).
      *
      * @param {Body} body - The body being eclipsed (e.g., the star).
-     * @returns {number[]} An array representing the eclipsed area at each data point.
      *
      * Notes:
      * - The method calculates the eclipsed area based on the relative positions and radii of the two bodies.
@@ -116,27 +140,19 @@ export class Body {
         const datapoints = this.rx.length
         var A = new Array(datapoints).fill(0);
 
-        const ry = body.ry;
-        const rz = body.rz;
-        const partialtransitArray = this.getPartialTransits(body);
-        partialtransitArray.forEach((transit, index) => {
-            if (transit) {
-                const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], ry[index], rz[index]);
+        const { fullTransit, partialTransit } = this.getTransits(body);
+        partialTransit.forEach((partialTransitItem, index) => {
+
+            if (partialTransitItem) {
+                const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], body.ry[index], body.rz[index]);
                 const alpha = getAlpha(body._R, this._R, beta);
                 A[index] += transitArea(body._R, this._R, beta, alpha);
-            }
-
-        });
-
-        const fullTransitArray = this.getFullTransits(body)
-
-        // Set transit area for full transits
-        fullTransitArray.forEach((isTransit, index) => {
-            if (isTransit) {
+                // Set transit area for full transits
+            } else if (fullTransit[index]) {
                 A[index] += this.Area; // Full transit area is the area of the planet
             }
-        });
 
+        });
         return A
 
     }
@@ -214,7 +230,7 @@ export class Body {
             previousPlanets.forEach((prevPlanet) => {
                 const fullTransits = planet.getFullTransits(previousPlanets);
                 const fullTransitsStar = planet.getFullTransits(this);
-                const fullPartialStar = planet.getFullTransits(this);
+                const fullPartialStar = planet.getPartialTransits(this);
                 fullTransits.forEach((transit, index) => {
                     if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
                         A[index] -= planet.Area; // Full transit area is the area of the planet

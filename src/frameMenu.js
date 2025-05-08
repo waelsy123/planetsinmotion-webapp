@@ -25,7 +25,7 @@ export class FrameMenu {
     }
 
     setDuration(duration) {
-        this.durationLabel.innerHTML = duration.toFixed(1) / 1000;
+        this.durationLabel.innerHTML = (duration / 1000).toFixed(3);
         this.animationDurationms = duration;
     }
 
