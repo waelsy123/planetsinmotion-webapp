@@ -52,18 +52,23 @@ function betaFunc(beta_i, ry, Rs, Rp, phi) {
 export function solveBeta(ry, rz, Rs, Rp, errTol = 0.001){
         let betaA = 0;
         let betaB = Math.PI;
-        let err = (betaB - betaA) / 2;
         const phi = atan(rz / ry);
 
+        let betaC = (betaA + betaB) / 2
+
+        let fC = betaFunc(betaC, ry, Rs, Rp, phi)
+        // Check if the function is discontinuous at the midpoint
+        if (isNaN(fC)) {
+            // if so redefine the initial guess for betaA
+            betaA = findInitBeta(betaC, ry, Rs, Rp, phi)
+        }
+        
+        let err = (betaB - betaA) / 2;
         let fA = betaFunc(betaA, ry, Rs, Rp, phi);
 
-        if (isNaN(fA)) {
-            return NaN;
-        }
-
-        while (err > errTol) {
-            const betaC = (betaA + betaB) / 2;
-            const fC = betaFunc(betaC, ry, Rs, Rp, phi);
+        while ((err > errTol) && (fC !== 0)) {
+            betaC = (betaA + betaB) / 2;
+            fC = betaFunc(betaC, ry, Rs, Rp, phi);
             if (fC * fA < 0) {
                 betaB = betaC;
             } else {
@@ -73,7 +78,21 @@ export function solveBeta(ry, rz, Rs, Rp, errTol = 0.001){
             err = (betaB - betaA) / 2;
         }
         return (betaA + betaB) / 2;
-    };
+    }
+
+/**
+* Find initial guess value for beta when the function _betafunc is discontinuous.
+*/
+function findInitBeta(init_beta, ry, Rs, Rp, phi) {
+    
+    let beta_a = init_beta
+    let f_a = betaFunc(beta_a, ry, Rs, Rp, phi)
+    while (isNaN(f_a)) {
+        beta_a += 0.01
+        f_a = betaFunc(beta_a, ry, Rs, Rp, phi)
+    }
+    return beta_a
+}
 
 /**
  * Computes the transit area.
