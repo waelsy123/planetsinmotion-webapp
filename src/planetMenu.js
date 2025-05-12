@@ -316,11 +316,15 @@ export class PlanetMenu {
             }
 
             else if ((event.key=="R") || (event.key=="r")) {
-                this.randomizeBtn.click();
+                if (document.activeElement != this.planetNameInput) {
+                    this.randomizeBtn.click();
+                }
             }
 
             else if ((event.key=="c") || (event.key=="C")) {
-                this.cancelPlanetBtn.click();
+                if (document.activeElement != this.planetNameInput) {
+                        this.cancelPlanetBtn.click();
+                }
             }
         };
 
