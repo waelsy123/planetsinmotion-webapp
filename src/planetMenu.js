@@ -11,7 +11,6 @@ export class PlanetMenu {
         this.planets = []
         this.star = star
         // Initialize menu elements
-        /*this.createPlanets(star);*/
 
         this.defaultColor = document.getElementById("planet-period").style.color
         this.supressedListener = false
@@ -71,7 +70,7 @@ export class PlanetMenu {
         /* Error message for the add planet menu*/
         this.errorLabel = document.getElementById("planet-error")
 
-        /* Listeners for the pop up menu */
+        /* Inputs for the pop up menu */
         // Orbit
         this.planetNameInput = document.getElementById("planet-name")
         this.periodInput = document.getElementById("planet-period")
@@ -114,11 +113,17 @@ export class PlanetMenu {
             });
         });
 
-        this.colorInput.addEventListener("input", () => {
-
+        this.colorInput.addEventListener("input", (event) => {
+            // This prevents randomize from triggering the event
             if (this.supressedListener) return;
             this.createPlanet();
-            this.drawOrbit()
+            this.drawOrbit();
+        });
+
+        this.planetNameInput.addEventListener("input", (event) => {
+
+            event.target.style.color = this.defaultColor;
+            this.errorLabel.classList.add("hidden");
         });
 
 
@@ -140,8 +145,23 @@ export class PlanetMenu {
 
         this.labels = [OmegaLabel, phaseLabel, eccentricityLabel, inclinationLabel]
 
-    }
+        // Planet counter
+        this.planetCounter = document.getElementById("planet-title-number")
 
+    }
+    /**
+     * Attempts to create a new planet with the given parameters. Highlights error if any
+     * @param {number} M - Mass of the planet.
+     * @param {number} R - Radius of the planet.
+     * @param {number} P - Orbital period of the planet.
+     * @param {number} i - Inclination of the orbit.
+     * @param {number} e - Eccentricity of the orbit.
+     * @param {number} phase - Initial phase of the orbit.
+     * @param {number} Omega0 - Longitude of the ascending node.
+     * @param {string} color - Color of the planet.
+     * @param {string} name - Name of the planet.
+     * @returns {boolean} - True if the planet was created successfully, false otherwise.
+     */
     createPlanet() {
         const M = parseFloat(this.massInput.value);
         const R = parseFloat(this.radiusInput.value);
@@ -152,6 +172,7 @@ export class PlanetMenu {
         const Omega0 = parseFloat(this.Omega0Input.value);
         const color = this.colorInput.value
         const name = this.planetNameInput.value
+
         try {
             this.planet = new Planet(M, R, P, this.star, i, e, 0, Omega0, phase, color, name);
             this.errorLabel.classList.add("hidden")
@@ -345,8 +366,26 @@ export class PlanetMenu {
             this.savePlanetListener = null
         }
     }
-
+    /**
+     * Adds a planet to the list of planets when the user press the button. If index is null, it adds a new planet.
+     * If index is provided, it updates the existing planet at that index.
+     * @param {number} index - The index of the planet to update (optional).
+     */
     addPlanet(index = null) {
+
+        const name = this.planetNameInput.value
+        const planetNames = this.planets.map(planet => planet.planetName);
+        const existingIndex = planetNames.indexOf(name);
+        // Check if the planet name already exists in the list
+        // If the planet name already exists and it's not the same planet being edited, show an error
+        if (existingIndex!= -1 && existingIndex!=index) {
+            this.errorLabel.classList.remove("hidden");
+            this.errorLabel.textContent = "Planet name already exists!";
+            this.planetNameInput.style.color = "red";
+            this.planetNameInput.focus();
+            this.planet = null;
+            return;
+        }
         
         // Errors are handled by createPlanet so no need to do anything here
             const success = this.createPlanet() // possibly no need but just in case
@@ -398,6 +437,7 @@ export class PlanetMenu {
 
     // Update the planet list UI
     updatePlanetList() {
+
         this.planetList.innerHTML = ""; // Clear the list
 
         this.planets.forEach((planet, index) => {
@@ -437,6 +477,9 @@ export class PlanetMenu {
 
             this.planetList.appendChild(planetItem);
         });
+
+
+        this.planetCounter.textContent = "Planets (" + this.planets.length + ")";
         /* Trigger the update of the simulation */
         this.onUpdate()
     }
