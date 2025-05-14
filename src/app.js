@@ -51,6 +51,7 @@ const animate = () => {
     const planets = planetMenu.planets
     const datapoints = lightcurveMenu.datapoints
 
+
     const bodies = [star, ...planets];
     // Sort bodies for face-on view (z-direction)
     const sortedBodiesFaceOn = bodies.slice().sort((a, b) => a.rz[i] - b.rz[i]);
@@ -62,7 +63,6 @@ const animate = () => {
 
     //drawLightcurve(linecontext, timesDays, fraction, star.color, i);
     lightcurveHandler.drawLightcurved3(star.color, i)
-
     if (record) {
         [edgeOnCanvasHandler, faceOnCanvasHandler, lightcurveHandler].forEach(element => {
             element.updateRecording();
@@ -81,6 +81,7 @@ const animate = () => {
              // Hide the recording dialog
             const recordingDialog = document.getElementById("recording-dialog");
             recordingDialog.close();
+            document.body.style.cursor = "default";
         },50);
 
             console.log("Recording complete.");
@@ -127,44 +128,59 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
  */
 function onStarUpdate() {
     planetMenu.setStar(starMenu.star)
-    starMenu.setTimes(lightcurveMenu.times)
-    planetMenu.setTimes(lightcurveMenu.times)
-    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
+    updateSimulation();
 }
 
 function onStarColorChange() {
     edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
     faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
-    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
+    restartSimulation(0)
 }
 
 function onDatapointsUpdate() {
-    onOrbitsUpdate();
+    onTimesUpdate();
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
-
 }
 
-function onOrbitsUpdate() {
+function onTimesUpdate() {
     lightcurveMenu.calculateTimes(planetMenu.maxP)
+    updateSimulation();
+}
+
+function updateSimulation() {
     starMenu.setTimes(lightcurveMenu.times);
     planetMenu.setTimes(lightcurveMenu.times);
-    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
+    fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
+    const limits = Math.abs(planetMenu.maxDistance *1.02);
+    faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true);
+    edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false);
+    restartSimulation(0);
 }
 
 function onUpdatePlanets() {
-    onOrbitsUpdate();
     /* Uodate buttons state */
     if (planetMenu.planets.length > 0) {
         exportButton.disabled = false // Enable the button
         exportButton.style.cursor = "pointer"
         frameMenu.saveAnimationButton.disabled = false // Enable the button
         frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
+        // We update the lightcurve times due to the planets period
+        onTimesUpdate();
+
     } else if (planetMenu.planets.length == 0) {
         exportButton.disabled = true // Disable the button
         exportButton.style.cursor = "auto"
         frameMenu.saveAnimationButton.disabled = true // Disable the button
         frameMenu.saveAnimationButton.style.cursor = "auto"
+
+        // If there are no planets, clear the canvas
+        console.log("No planets to animate, clearing canvas");
+        lightcurveHandler.clear();
+        faceOnCanvasHandler.clear();
+        edgeOnCanvasHandler.clear();
     }
+
+
 }
 
 
@@ -195,7 +211,7 @@ function init() {
     }
 
     if (!lightcurveMenu) {
-        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, onDatapointsUpdate, onOrbitsUpdate);
+        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, onDatapointsUpdate, onTimesUpdate);
     }
 
     // Add listener to the export button
@@ -204,7 +220,7 @@ function init() {
     if (!frameMenu) {
         frameMenu = new FrameMenu((ms) => {
             frameMenu.setDuration((lightcurveMenu.datapoints) * ms);
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, i);
+            restartSimulation(i);
         });
     }
 
@@ -219,10 +235,8 @@ function init() {
         donateMenu = new DonateMenu("donate")
     }
 
-    starMenu.setTimes(lightcurveMenu.times)
-    planetMenu.setTimes(lightcurveMenu.times)
+    updateSimulation();
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
-    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms)
 
     const mainCanvas = document.getElementById("main-canvas-container")
 
@@ -259,6 +273,8 @@ function init() {
 }
 
 function saveAnimation(format = "video/webm") {
+    // Set the pointer to "loading" mode
+    document.body.style.cursor = "wait";
     // Show the recording dialog
     const recordingDialog = document.getElementById("recording-dialog");
     recordingDialog.showModal();
@@ -269,14 +285,14 @@ function saveAnimation(format = "video/webm") {
     });
     record = true;
     recordedFrames = 0;
-    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
+    restartSimulation(0);
 }
 
 
 function restartAnimation() {
     console.log("Restarting animation");
     if (!id) {
-        restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, i)
+        restartSimulation(i)
     }
     const mainCanvas = document.getElementById("main-canvas-container")
     // Change the event listener back to pause the animation
@@ -297,7 +313,7 @@ function pauseAnimation() {
 }
 
 
-function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) {
+function restartSimulation(start = 0) {
     i = start;
     console.log("Restarting simu")
 
@@ -314,20 +330,8 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) 
 
     /* If there are no valid planets do no update animation */
     if (planetMenu.planets.length > 0) {
-        fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
         lightcurveHandler.setScales(lightcurveMenu.timesDays, fraction);
-        const limits = Math.abs(planetMenu.maxDistance *1.02);
-        faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true);
-        edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false);
-        id = window.setInterval(animate, ms);
-        /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
-    } else {
-        console.log("No planets to animate, clearing canvas");
-        lightcurveHandler.clear();
-        faceOnCanvasHandler.clear();
-        edgeOnCanvasHandler.clear();
-        //faceoncontext.clearRect(0, 0, faceoncanvas.width, faceoncanvas.height);
-        //edgeoncontext.clearRect(0, 0, edgeoncanvas.width, edgeoncanvas.height);  
+        id = window.setInterval(animate, frameMenu.ms);
     }
 }
 

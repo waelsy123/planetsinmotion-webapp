@@ -26,6 +26,8 @@ export class PlanetMenu {
         this.labels.forEach(label => {
             label.setLanguage(translations)
         });
+
+        this.planetNameCounter = 0;
     }
     /**
      * This method is just in case we want add zoom capabilities, otherwise ignore
@@ -294,8 +296,8 @@ export class PlanetMenu {
 
         } else {
             this.colorInput.value = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
-            this.savePlanetBtn.textContent = "Add"
-            this.planetNameInput.value = "Planet " + (this.planets.length + 1)
+            this.savePlanetBtn.textContent = "Add";
+            this.planetNameInput.value = "Planet " + (this.planetNameCounter + 1);
         }
 
         this.createPlanet();
@@ -405,8 +407,10 @@ export class PlanetMenu {
                 /* If planet did not exist */
                 if (index == null) {
                     this.planets.push(this.planet)
-                    /* If existed update the list */
+                    this.planetNameCounter++;
+
                 } else {
+                    /* If existed update the list */
                     this.planets[index] = this.planet
                 }
                 
