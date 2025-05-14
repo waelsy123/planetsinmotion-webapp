@@ -4,11 +4,14 @@ import { ToolTipLabel } from './toolTipLabel';
 
 
 export class LightcurveMenu {
-    constructor(maxP, onUpdate) {
-        this.onUpdate = onUpdate; // Callback to restart the simulation
-
+    constructor(maxP, onDatapointsUpdate, onOrbitsUpdate) {
+        this.onDatapointsUpdate = onDatapointsUpdate; // Callback to restart the simulation when datapoints is updated
+        this.onOrbitsUpdate = onOrbitsUpdate; // Callback to restart the simulation when orbits is updated
         // Initialize menu elements
-        this.initLightcurve(maxP);
+        this.initLightcurveMenu();
+        // Just to initialize the values
+        this.calculateTimes(maxP);
+
 
     }
 
@@ -18,8 +21,7 @@ export class LightcurveMenu {
     }
 
 
-
-    initLightcurve(maxP) {
+    initLightcurveMenu() {
         /// Datapoints
         const datapointsInput = document.getElementById("input-datapoints");
         this.datapoints = parseInt(datapointsInput.value);
@@ -30,16 +32,14 @@ export class LightcurveMenu {
         this.orbits = parseInt(orbitsInput.value);
         this.orbitsLabel = new ToolTipLabel("orbits")
 
-        this.calculateTimes(maxP);
-
         datapointsInput.addEventListener("input", (event) => {
             const min = parseFloat(event.target.min);
             if (event.target.value < min) {
                 event.target.value = min; // Reset to minimum
             }
-            this.datapoints = parseInt(event.target.value);
-
-            this.onUpdate(); // Trigger simulation update
+            this.datapoints = parseInt(event.target.value); 
+            this.onDatapointsUpdate(); // Trigger simulation update
+            
         });
 
         orbitsInput.addEventListener("input", (event) => {
@@ -49,10 +49,7 @@ export class LightcurveMenu {
             }
 
             this.orbits = parseInt(event.target.value);
-
-            this.calculateTimes(maxP);
-
-            this.onUpdate(); // Trigger simulation update
+            this.onOrbitsUpdate(); // Trigger simulation update
         });
 
     }
@@ -60,7 +57,7 @@ export class LightcurveMenu {
     calculateTimes(maxP){
         this.times = linspace(0, this.orbits * maxP, this.datapoints);
         this.timesDays = this.times.map((t) => t / DaysToSeconds);
-        console.log("Time days", this.timesDays)
+        console.log("Time days", this.timesDays);
     }
    
 

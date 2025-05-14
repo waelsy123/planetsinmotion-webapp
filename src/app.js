@@ -126,7 +126,6 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
 }
  */
 function onStarUpdate() {
-    clearInterval(id);
     planetMenu.setStar(starMenu.star)
     starMenu.setTimes(lightcurveMenu.times)
     planetMenu.setTimes(lightcurveMenu.times)
@@ -134,10 +133,22 @@ function onStarUpdate() {
 }
 
 function onStarColorChange() {
-    clearInterval(id);
     edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
     faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
     restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
+}
+
+function onDatapointsUpdate() {
+    onOrbitsUpdate();
+    frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
+
+}
+
+function onOrbitsUpdate() {
+    lightcurveMenu.calculateTimes(planetMenu.maxP)
+    starMenu.setTimes(lightcurveMenu.times);
+    planetMenu.setTimes(lightcurveMenu.times);
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
 }
 
 
@@ -163,7 +174,6 @@ function init() {
     edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
     faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
 
-
     if (!planetMenu) {
         planetMenu = new PlanetMenu(() => {
             lightcurveMenu.calculateTimes(planetMenu.maxP)
@@ -188,13 +198,7 @@ function init() {
     }
 
     if (!lightcurveMenu) {
-        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, () => {
-            lightcurveMenu.calculateTimes(planetMenu.maxP)
-            starMenu.setTimes(lightcurveMenu.times)
-            planetMenu.setTimes(lightcurveMenu.times)
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);
-            frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
-        })
+        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, onDatapointsUpdate, onOrbitsUpdate);
     }
 
     // Add listener to the export button
@@ -321,6 +325,7 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) 
         id = window.setInterval(animate, ms);
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     } else {
+        console.log("No planets to animate, clearing canvas");
         lightcurveHandler.clear();
         faceOnCanvasHandler.clear();
         edgeOnCanvasHandler.clear();
