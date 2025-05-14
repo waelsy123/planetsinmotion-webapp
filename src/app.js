@@ -125,6 +125,49 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
 
 }
  */
+function onStarUpdate() {
+    planetMenu.setStar(starMenu.star)
+    starMenu.setTimes(lightcurveMenu.times)
+    planetMenu.setTimes(lightcurveMenu.times)
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
+}
+
+function onStarColorChange() {
+    edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
+    faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
+}
+
+function onDatapointsUpdate() {
+    onOrbitsUpdate();
+    frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
+
+}
+
+function onOrbitsUpdate() {
+    lightcurveMenu.calculateTimes(planetMenu.maxP)
+    starMenu.setTimes(lightcurveMenu.times);
+    planetMenu.setTimes(lightcurveMenu.times);
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
+}
+
+function onUpdatePlanets() {
+    onOrbitsUpdate();
+    /* Uodate buttons state */
+    if (planetMenu.planets.length > 0) {
+        exportButton.disabled = false // Enable the button
+        exportButton.style.cursor = "pointer"
+        frameMenu.saveAnimationButton.disabled = false // Enable the button
+        frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
+    } else if (planetMenu.planets.length == 0) {
+        exportButton.disabled = true // Disable the button
+        exportButton.style.cursor = "auto"
+        frameMenu.saveAnimationButton.disabled = true // Disable the button
+        frameMenu.saveAnimationButton.style.cursor = "auto"
+    }
+}
+
+
 function init() {
 
     if (!lightcurveHandler) {
@@ -141,52 +184,18 @@ function init() {
     }
 
     if (!starMenu) {
-        starMenu = new StarMenu(() => {
-            clearInterval(id);
-            planetMenu.setStar(starMenu.star)
-            starMenu.setTimes(lightcurveMenu.times)
-            planetMenu.setTimes(lightcurveMenu.times)
-            edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
-            faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
-        });
+        starMenu = new StarMenu(onStarUpdate, onStarColorChange)
     }
     // Set the star color gradient in the canvas handlers
     edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
     faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
 
-
     if (!planetMenu) {
-        planetMenu = new PlanetMenu(() => {
-            lightcurveMenu.calculateTimes(planetMenu.maxP)
-            starMenu.setTimes(lightcurveMenu.times)
-            planetMenu.setTimes(lightcurveMenu.times)
-            /* Uodate buttons state */
-            if (planetMenu.planets.length > 0) {
-                exportButton.disabled = false // Enable the button
-                exportButton.style.cursor = "pointer"
-                frameMenu.saveAnimationButton.disabled = false // Enable the button
-                frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
-            } else if (planetMenu.planets.length == 0) {
-                exportButton.disabled = true // Disable the button
-                exportButton.style.cursor = "auto"
-                frameMenu.saveAnimationButton.disabled = true // Disable the button
-                frameMenu.saveAnimationButton.style.cursor = "auto"
-            }
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms); // Restart the simulation
-
-        }, starMenu.star);
-
+        planetMenu = new PlanetMenu(onUpdatePlanets, pauseAnimation, restartAnimation, starMenu.star);
     }
 
     if (!lightcurveMenu) {
-        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, () => {
-            lightcurveMenu.calculateTimes(planetMenu.maxP)
-            starMenu.setTimes(lightcurveMenu.times)
-            planetMenu.setTimes(lightcurveMenu.times)
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms);
-            frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
-        })
+        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, onDatapointsUpdate, onOrbitsUpdate);
     }
 
     // Add listener to the export button
@@ -218,7 +227,7 @@ function init() {
     const mainCanvas = document.getElementById("main-canvas-container")
 
     mainCanvas.addEventListener("click", () => {
-        pauseAnimation()
+        pauseAnimation();
     });
     
     // Pause animation on space bar pressing
@@ -313,6 +322,7 @@ function restartSimulation(starMenu, planetMenu, lightcurveMenu, ms, start = 0) 
         id = window.setInterval(animate, ms);
         /*Instead clear the canvas if we run out of planets i.e. if the list if fully removed */
     } else {
+        console.log("No planets to animate, clearing canvas");
         lightcurveHandler.clear();
         faceOnCanvasHandler.clear();
         edgeOnCanvasHandler.clear();
