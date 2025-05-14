@@ -6,10 +6,12 @@ import { ToolTipLabel } from './toolTipLabel.js';
 const iconPlanetsize = 15
 
 export class PlanetMenu {
-    constructor(onUpdate, star) {
+    constructor(onUpdate, onMenuOpened, onMenuClosed, star) {
         this.onUpdate = onUpdate; // Callback to restart the simulation
-        this.planets = []
-        this.star = star
+        this.onMenuOpened = onMenuOpened;
+        this.onMenuClosed = onMenuClosed;
+        this.planets = [];
+        this.star = star;
         // Initialize menu elements
 
         this.defaultColor = document.getElementById("planet-period").style.color
@@ -61,9 +63,12 @@ export class PlanetMenu {
 
         /* Buttons from the pop up window */
         this.cancelPlanetBtn = document.getElementById("cancel-planet-btn");
-        this.cancelPlanetBtn.addEventListener("click", () => this.closePlanetForm());
+        this.cancelPlanetBtn.addEventListener("click", () => {
+            this.closePlanetForm()
+            this.onMenuClosed();
+        });
         this.closePlanetBtn = document.getElementById("close-planet-btn");
-        this.closePlanetBtn.addEventListener("click", () => this.closePlanetForm());
+        this.closePlanetBtn.addEventListener("click", () => this.cancelPlanetBtn.click());
 
         this.planetList = document.getElementById("planet-list");
 
@@ -86,7 +91,6 @@ export class PlanetMenu {
 
         const inputs = [this.periodInput, this.iInput, this.eInput, this.massInput, this.radiusInput, this.phaseInput, this.Omega0Input]
 
-
         /* Add min max functionality */
         inputs.forEach(input => {
             input.addEventListener("input", (event) => {
@@ -107,7 +111,6 @@ export class PlanetMenu {
                 this.errorLabel.classList.add("hidden");
                 
                 if (this.supressedListener) return;
-
                 this.createPlanet();
                 this.drawOrbit()
             });
@@ -116,6 +119,8 @@ export class PlanetMenu {
         this.colorInput.addEventListener("input", (event) => {
             // This prevents randomize from triggering the event
             if (this.supressedListener) return;
+            console.log("Input Triggered")
+
             this.createPlanet();
             this.drawOrbit();
         });
@@ -136,6 +141,21 @@ export class PlanetMenu {
         });
 
         */
+        this.randomizeBtn = document.getElementById("randomize-planet-btn");
+
+        this.randomizeBtn.addEventListener("click", () => {
+            // do not update the orbit with each parameter change, only at the end
+            this.supressedListener = true
+            //Randomize inputs
+            this.randomizeInputs()
+
+            this.errorLabel.classList.remove("hidden")
+            this.createPlanet();
+            this.drawOrbit()
+            // activate the listeners back
+            this.supressedListener = false
+        });
+
 
         // Tooltip elements
         const OmegaLabel = new ToolTipLabel("longitude-ascending-node")
@@ -240,27 +260,14 @@ export class PlanetMenu {
 
     showPlanetForm(index = null) {
 
+        this.onMenuOpened();
+
         /* Button to add planet*/
 
         // This listener is dynamic because of the index so needs to be done in each call to the menu
         this.savePlanetBtn = document.getElementById("save-planet-btn");
         this.savePlanetListener = () => this.addPlanet(index);
         this.savePlanetBtn.addEventListener("click", this.savePlanetListener);
-
-        this.randomizeBtn = document.getElementById("randomize-planet-btn");
-
-        this.randomizeBtn.addEventListener("click", () => {
-            // do not update the orbit with each parameter change, only at the end
-            this.supressedListener = true
-            //Randomize inputs
-            this.randomizeInputs()
-
-            this.errorLabel.classList.remove("hidden")
-            this.createPlanet();
-            this.drawOrbit()
-            // activate the listeners back
-            this.supressedListener = false
-        });
 
         this.planetForm.classList.remove("hidden");
         this.planetForm.focus()
@@ -369,6 +376,7 @@ export class PlanetMenu {
         if (this.savePlanetListener) {
             this.savePlanetListener = null
         }
+
     }
     /**
      * Adds a planet to the list of planets when the user press the button. If index is null, it adds a new planet.

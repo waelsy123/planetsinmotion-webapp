@@ -151,6 +151,22 @@ function onOrbitsUpdate() {
     restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0);
 }
 
+function onUpdatePlanets() {
+    onOrbitsUpdate();
+    /* Uodate buttons state */
+    if (planetMenu.planets.length > 0) {
+        exportButton.disabled = false // Enable the button
+        exportButton.style.cursor = "pointer"
+        frameMenu.saveAnimationButton.disabled = false // Enable the button
+        frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
+    } else if (planetMenu.planets.length == 0) {
+        exportButton.disabled = true // Disable the button
+        exportButton.style.cursor = "auto"
+        frameMenu.saveAnimationButton.disabled = true // Disable the button
+        frameMenu.saveAnimationButton.style.cursor = "auto"
+    }
+}
+
 
 function init() {
 
@@ -175,26 +191,7 @@ function init() {
     faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
 
     if (!planetMenu) {
-        planetMenu = new PlanetMenu(() => {
-            lightcurveMenu.calculateTimes(planetMenu.maxP)
-            starMenu.setTimes(lightcurveMenu.times)
-            planetMenu.setTimes(lightcurveMenu.times)
-            /* Uodate buttons state */
-            if (planetMenu.planets.length > 0) {
-                exportButton.disabled = false // Enable the button
-                exportButton.style.cursor = "pointer"
-                frameMenu.saveAnimationButton.disabled = false // Enable the button
-                frameMenu.saveAnimationButton.style.cursor = "pointer" // Enable the button
-            } else if (planetMenu.planets.length == 0) {
-                exportButton.disabled = true // Disable the button
-                exportButton.style.cursor = "auto"
-                frameMenu.saveAnimationButton.disabled = true // Disable the button
-                frameMenu.saveAnimationButton.style.cursor = "auto"
-            }
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms); // Restart the simulation
-
-        }, starMenu.star);
-
+        planetMenu = new PlanetMenu(onUpdatePlanets, pauseAnimation, restartAnimation, starMenu.star);
     }
 
     if (!lightcurveMenu) {
@@ -230,7 +227,7 @@ function init() {
     const mainCanvas = document.getElementById("main-canvas-container")
 
     mainCanvas.addEventListener("click", () => {
-        pauseAnimation()
+        pauseAnimation();
     });
     
     // Pause animation on space bar pressing
