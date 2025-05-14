@@ -141,7 +141,6 @@ function onStarColorChange() {
 function onDatapointsUpdate() {
     onOrbitsUpdate();
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
-
 }
 
 function onOrbitsUpdate() {
