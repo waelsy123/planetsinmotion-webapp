@@ -125,6 +125,22 @@ function drawLightcurve(linecontext, timesDays, fraction, color, j) {
 
 }
  */
+function onStarUpdate() {
+    clearInterval(id);
+    planetMenu.setStar(starMenu.star)
+    starMenu.setTimes(lightcurveMenu.times)
+    planetMenu.setTimes(lightcurveMenu.times)
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
+}
+
+function onStarColorChange() {
+    clearInterval(id);
+    edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
+    faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
+    restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
+}
+
+
 function init() {
 
     if (!lightcurveHandler) {
@@ -141,15 +157,7 @@ function init() {
     }
 
     if (!starMenu) {
-        starMenu = new StarMenu(() => {
-            clearInterval(id);
-            planetMenu.setStar(starMenu.star)
-            starMenu.setTimes(lightcurveMenu.times)
-            planetMenu.setTimes(lightcurveMenu.times)
-            edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
-            faceOnCanvasHandler.defineSunGradient(starMenu.star.color)
-            restartSimulation(starMenu, planetMenu, lightcurveMenu, frameMenu.ms, 0)
-        });
+        starMenu = new StarMenu(onStarUpdate, onStarColorChange)
     }
     // Set the star color gradient in the canvas handlers
     edgeOnCanvasHandler.defineSunGradient(starMenu.star.color)
