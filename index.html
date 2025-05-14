@@ -167,7 +167,18 @@
                             <label class="menu-label">Planet</label>
                             <div class="menu-row">
                                 <label for="planet-name">Name:</label>
-                                <input type="text" id="planet-name" />
+                                <!--<input type="text" id="planet-name" />-->
+                                <input id="planet-name" list="planet-options" placeholder="Enter planet name" />
+                                <datalist id="planet-options">
+                                    <option value="Mercury"></option>
+                                    <option value="Venus"></option>
+                                    <option value="Earth"></option>
+                                    <option value="Mars"></option>
+                                    <option value="Jupiter"></option>
+                                    <option value="Saturn"></option>
+                                    <option value="Uranus"></option>
+                                    <option value="Neptune"></option>
+                                </datalist>
                             </div>
                             <div class="menu-row">
                                 <label for="planet-mass">Mass (M<sub>☉</sub>):</label>
