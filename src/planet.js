@@ -33,7 +33,7 @@ export class Planet extends Body{
         
         this._rmax = this.a * (1. + this.e);
         this.rmin = this.a * (1. - this._e)
-        console.log(`Planet max distance: ${(this.rmax / AU).toFixed(2)} AU`);
+        console.log(`Planet max distance: ${(this.rmax / AU).toFixed(3)} AU`);
     }
 
 
@@ -321,7 +321,7 @@ export class Planet extends Body{
 
 export class StarPlanetDistanceError extends Error {
     constructor(rmin, Rs) {
-        const message = `Star-planet distance ${(rmin/AU).toFixed(2)} AU is below stellar radius ${(Rs/AU).toFixed(2)} AU!`
+        const message = `Star-planet distance ${(rmin/AU).toFixed(3)} AU is below stellar radius ${(Rs/AU).toFixed(2)} AU!`
         super(message); // Call the parent class constructor with the error message
         this.name = "StarPlanetDistanceError"; // Set the error name
         this.rmin = rmin; // Minimum distance between the star and the planet

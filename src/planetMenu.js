@@ -18,6 +18,8 @@ export class PlanetMenu {
         this.supressedListener = false
         this.initPlanetMenu()
         //this.initCanvas()
+        this.planetNameCounter = 0;
+
     }
 
 
@@ -27,7 +29,6 @@ export class PlanetMenu {
             label.setLanguage(translations)
         });
 
-        this.planetNameCounter = 0;
     }
     /**
      * This method is just in case we want add zoom capabilities, otherwise ignore

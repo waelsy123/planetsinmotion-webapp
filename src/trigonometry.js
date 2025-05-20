@@ -32,43 +32,45 @@ export function getBeta(R0, Rplanet, planetry, planetrz, ry=0, rz=0) {
     return beta;
 };
 
-function betaFunc(beta_i, ry, Rs, Rp, phi) {
+function betaFunc(beta_i, ry_cosy, Rs, Rp) {
     const alpha = getAlpha(Rs, Rp, beta_i);
     const projectedStar = Rs * cos(alpha);
-    const argument = (projectedStar - ry / cos(phi)) / Rp;
+    const argument = (projectedStar - ry_cosy) / Rp;
     return beta_i - acos(argument)
 }
 
 /**
  * Solves for the angle beta using a numerical method.
  *
- * @param {Array} ry - Array of positions in the y-axis.
- * @param {Array} rz - Array of positions in the z-axis.
+ * @param {number} dy - Distance between the two bodies on the y-axis
+ * @param {number} dz - Distance between the two bodies on the z-axis
  * @param {number} Rs - Radius of the star.
  * @param {number} Rp - Radius of the planet.
  * @param {number} [errTol=0.001] - Error tolerance for the solution.
  * @returns {Array} - The solved angle beta for each input.
  */
-export function solveBeta(ry, rz, Rs, Rp, errTol = 0.001){
+export function solveBeta(dy, dz, Rs, Rp, errTol = 0.001){
         let betaA = 0;
         let betaB = Math.PI;
-        const phi = atan(rz / ry);
-
+        const phi = atan(dz / dy);
+        // when deltay is close to 0 we get 0 = 0 in one of the equations, so best to use the vertical component of the equation
+        const dy_cosphi = dy > 1e-3 ? dy / cos(phi) : dz / sin(phi)
+        
         let betaC = (betaA + betaB) / 2
 
-        let fC = betaFunc(betaC, ry, Rs, Rp, phi)
+        let fC = betaFunc(betaC, dy_cosphi, Rs, Rp)
         // Check if the function is discontinuous at the midpoint
         if (isNaN(fC)) {
             // if so redefine the initial guess for betaA
-            betaA = findInitBeta(betaC, ry, Rs, Rp, phi)
+            betaA = findInitBeta(betaC, dy_cosphi, Rs, Rp)
         }
         
         let err = (betaB - betaA) / 2;
-        let fA = betaFunc(betaA, ry, Rs, Rp, phi);
+        let fA = betaFunc(betaA, dy_cosphi, Rs, Rp);
 
         while ((err > errTol) && (fC !== 0)) {
             betaC = (betaA + betaB) / 2;
-            fC = betaFunc(betaC, ry, Rs, Rp, phi);
+            fC = betaFunc(betaC, dy_cosphi, Rs, Rp);
             if (fC * fA < 0) {
                 betaB = betaC;
             } else {
@@ -83,13 +85,13 @@ export function solveBeta(ry, rz, Rs, Rp, errTol = 0.001){
 /**
 * Find initial guess value for beta when the function _betafunc is discontinuous.
 */
-function findInitBeta(init_beta, ry, Rs, Rp, phi) {
+function findInitBeta(init_beta, ry_cosphi, Rs, Rp) {
     
     let beta_a = init_beta
-    let f_a = betaFunc(beta_a, ry, Rs, Rp, phi)
+    let f_a = betaFunc(beta_a, ry_cosphi, Rs, Rp)
     while (isNaN(f_a)) {
         beta_a += 0.01
-        f_a = betaFunc(beta_a, ry, Rs, Rp, phi)
+        f_a = betaFunc(beta_a, ry_cosphi, Rs, Rp)
     }
     return beta_a
 }
