@@ -1,5 +1,6 @@
-import { sqrt } from 'mathjs';
+import { combinations, sqrt } from 'mathjs';
 import { getBeta, getAlpha, transitArea } from './trigonometry.js'
+import { linspace } from './utils.js';
 
 
 export class Body {
@@ -49,28 +50,26 @@ export class Body {
      * ----------
      * @param {Body} body - The eclipsing body (e.g. planet)
     */
-    getTransits(body) {
-        const proj_distance = this.getProjectedDistance(body.ry, body.rz)
+    getTransits(body, checkInFront = true) {
 
         const datapoints = this.rx.length
         var fullTransitArray = new Array(datapoints).fill(false);
         var partialTransitArray = new Array(datapoints).fill(false);
 
         for (let i = 0; i < datapoints; i++) {
-            if (this.rx[i] > body.rx[i]) {
+            if (this.rx[i] > body.rx[i] || !checkInFront) {
+
+                const projectedDistance = this.getProjectedDistance(body, i);
                 // Full transit
-                if (proj_distance[i] + this._R <= body._R) {
+                if (projectedDistance + this._R <= body._R) {
                     fullTransitArray[i] = true;
-                    // Partial transit
-                } else if ((proj_distance[i] - this._R < body._R) && (proj_distance[i] + this._R > body._R)) {
+                    // Partial transit  
+                } else if ((projectedDistance - this._R < body._R) && (projectedDistance + this._R > body._R)) {
                     partialTransitArray[i] = true;
                 }
             }
         }
-        return {
-            fullTransit: fullTransitArray,
-            partialTransit: partialTransitArray
-        }
+        return [fullTransitArray, partialTransitArray];
     }
     /**
      * Parameters
@@ -78,54 +77,43 @@ export class Body {
      * @param {Body} body - The body being eclipsed (e.g. the star)
      */
     getFullTransits(body) {
-        const proj_distance = this.getProjectedDistance(body.ry, body.rz)
-        return proj_distance.map((dist, index) => (dist + this._R <= body._R) && (this.rx[index] > body.rx[index]));
-    }
+        const datapoints = this.rx.length
+        var fullTransits = new Array(datapoints).fill(false);
+        for (let i = 0; i < datapoints; i++) {
+            if (this.rx[i] > body.rx[i]) {
+                const projectedDistance = this.getProjectedDistance(body, i);
+                // Full transit
+                if (projectedDistance + this._R <= body._R) {
+                    transits[i] = true;
+                }
+            }
 
-    getPartialTransits(body) {
-        /**
-         * Parameters
-         * ----------
-         * @param {Body} body - The transiting body (e.g. planet)
-         */
-        const proj_distance = this.getProjectedDistance(body.ry, body.rz)
-        const partialtransit = proj_distance.map((dist, index) => (((dist - this._R < body._R) && (dist + this._R > body._R)) && (this.rx[index] > body.rx[index])));
-        return partialtransit;
+            return fullTransits
+        }
     }
 
     /**
-     * Calculates the projected distance between two points in a 2D plane.
-     *
-     * @param {number|number[]} ry - The y-coordinate(s) of the first point(s). Can be a single number or an array of numbers.
-     * @param {number|number[]} rz - The z-coordinate(s) of the second point(s). Can be a single number or an array of numbers.
-     * @throws {Error} Throws an error if `ry` and `rz` are not both arrays or both single values.
-     * @returns {number|number[]} The projected distance(s) between the points. Returns a single number if `ry` and `rz` are numbers, 
-     * or an array of distances if they are arrays.
+     * Parameters
+     * ----------
+     * @param {Body} body - The transiting body (e.g. planet)
      */
-    getProjectedDistance(ry, rz) {
-
-        if ((Array.isArray(ry) && !Array.isArray(rz)) || (Array.isArray(rz) && !Array.isArray(ry))) {
-            throw Error("Both ry and rz must be arrays");
-        } else if (Array.isArray(ry) && Array.isArray(rz)) {
-            if ((ry.length !== rz.length) || (ry.length !== this.ry.length)) {
-                throw Error("ry and rz must have the same length");
+    getPartialTransits(body) {
+        const datapoints = this.rx.length
+        var partialTransits = new Array(datapoints).fill(false);
+        for (let i = 0; i < datapoints; i++) {
+            if (this.rx[i] > body.rx[i]) {
+                const projectedDistance = this.getProjectedDistance(body, i);
+                //Partial transit
+                partialTransits[i] = (dist - this._R < body._R) && (dist + this._R > body._R)
             }
         }
-
-        let projected_distance;
-
-        if (Array.isArray(rz)) {
-            projected_distance = this.ry.map((ry_i, index) =>
-                sqrt((ry_i - ry[index]) ** 2 + (this.rz[index] - rz[index]) ** 2));
-        } else {
-            projected_distance = this.ry.map((ry_i, index) =>
-                sqrt((ry_i - ry) ** 2 + (this.rz[index] - rz) ** 2));
-        }
-
-        return projected_distance
+        return partialTransits;
     }
 
-
+    getProjectedDistance(body, i) {
+        const projectedDistance = sqrt((body.ry[i] - this.ry[i]) ** 2 + (body.rz[i] - this.rz[i]) ** 2);
+        return projectedDistance;
+    }
     /**
      * Calculates the area eclipsed by this body on the input body (e.g., a star).
      *
@@ -139,7 +127,6 @@ export class Body {
     getEclipsedArea(body) {
         const datapoints = this.rx.length
         var A = new Array(datapoints).fill(0);
-
         const { fullTransit, partialTransit } = this.getTransits(body);
         partialTransit.forEach((partialTransitItem, index) => {
 
@@ -218,35 +205,73 @@ export class Body {
         var previousPlanets = new Array(planets.length)
         var A = new Array(datapoints).fill(0);
 
-        /*Sort planets by size*/
+        /*Sort planets by size, biggest first*/
         const sortedPlanets = planets.slice().sort((a, b) => b.R - a.R);
 
         sortedPlanets.forEach((planet, planetIndex) => {
             /* Get eclipses due to this planet*/
-            const Aplanet = planet.getEclipsedArea(this);
-            A = A.map((area, index) => area + Aplanet[index]);
+            const [fullTransits, partialTransits] = planet.getTransits(this);
+            partialTransits.forEach((partialTransitItem, index) => {
+
+                if (partialTransitItem) {
+                    const beta = getBeta(this._R, planet._R, planet.ry[index], planet.rz[index], this.ry[index],
+                        this.rz[index]);
+                    const alpha = getAlpha(this._R, planet._R, beta);
+                    A[index] += transitArea(this._R, planet._R, beta, alpha);
+                    // Set transit area for full transits
+                } else if (fullTransits[index]) {
+                    A[index] += planet.Area; // Full transit area is the area of the planet
+                }
+
+            });
 
             /* Get eclipses due to other planets and subtract them */
             previousPlanets.forEach((prevPlanet) => {
-                const fullTransits = planet.getFullTransits(previousPlanets);
-                const fullTransitsStar = planet.getFullTransits(this);
-                const fullPartialStar = planet.getPartialTransits(this);
-                fullTransits.forEach((transit, index) => {
-                    if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
-                        A[index] -= planet.Area; // Full transit area is the area of the planet
+                console.log("Iterating previous planets", prevPlanet.planetName)
+                // for the transits between planets, we do no care whether which one is in front of each other
+                const [fullTransitPlanet, partialTransitPlanet] = planet.getTransits(prevPlanet, false);
+                console.log("Full transit planet", fullTransitPlanet);
+                console.log("Partial transit planet", partialTransitPlanet);
+                const [fullTransitPrevPlanet, partialTransitPrevPlanet] = prevPlanet.getTransits(this);
+                // There are 8 combinations of transits, but one cannot exist as the previous planet is always larger
+                fullTransitPlanet.forEach((fullTransit, index) => {
+                    // if there is a full transit of the two planets, check if it occurred while the other planet was transiting
+                    if (fullTransit) {
+                        prevPlanetTransits = fullTransitPrevPlanet[index] || partialTransitPrevPlanet[index];
+                        //while the other is also transiting we subtrated the total area of the planet if the other is in partial or full
+                        // full/partial - full - full
+                        if (fullTransits[index] && prevPlanetTransits) {
+                            console.log("Full - Full - Full");
+                            A[index] -= planet.Area; // Full transit area is the area of the planet
+                            // partial - partial - full (full - partial - full cannot exist as the prev is always larger)
+                        } else if (partialTransits[index] && partialTransitPrevPlanet[index]) {
+                            console.log("partial - partial - full");
+                            const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
+                            const alpha = getAlpha(prevPlanet._R, planet._R, beta);
+                            A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                        }
+                        // partial transit between the two planets
+                    } else if (partialTransitPlanet[index]) {
+                        console.log("Partial transit between the two planets");
+                        const thisplanetTransits = fullTransits[index] || partialTransits[index];
+                        // if the big planet is in full transit and the small planet is in partial or full transit, we remove shared areas
+                        // full - partial/full - partial or partial - full - partial
+                        if ((fullTransitPrevPlanet[index] && thisplanetTransits) || (partialTransitPrevPlanet[index] && fullTransits[index])) {
+                            console.log("Full/Partial - Partial/Full - Partial", index);
+                            const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
+                            const alpha = getAlpha(prevPlanet._R, planet._R, beta);
+                            console.log("Transit area", transitArea(prevPlanet._R, planet._R, beta, alpha) / this.Area);
+                            A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                            // partial - partial - partial
+                        } else if (partialTransitPrevPlanet[index] && partialTransits[index]) {
+                            console.log("To be implemented", index);
+                            //removeSharedAreas();
+                            A[index] = 1; // Full transit area is the area of the planet
+                        }
+
                     }
-                });
-
-                const partialtransit = prevPlanet.getPartialTransits(planet);
-                partialtransit.forEach((transit, index) => {
-                    if (transit && (fullTransitsStar[index]) | (transit && fullPartialStar[index])) {
-                        const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                        const alpha = getAlpha(prevPlanet._R, planet._R, beta);
-                        A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
-                    }
 
                 });
-
             });
             /*Append planet to the previous planets*/
             previousPlanets[planetIndex] = planet;
@@ -255,12 +280,139 @@ export class Body {
         console.log("fraction", fraction);
         return fraction
     }
-
+    /**
+     * Get the largeest coordinate of the body, useful for screen sizing
+     * @returns {number} - The maximum coordinate of the body
+     */
     maxCoordinate() {
         const maxRx = Math.max(...this.rx.map(Math.abs));
         const maxRy = Math.max(...this.ry.map(Math.abs));
         const maxRz = Math.max(...this.rz.map(Math.abs));
         return Math.max(maxRx, maxRy, maxRz);
+    }
+
+    /**
+     * Numerically calculates the observable area of the star when multiple bodies past across it.
+     * @param {Array} planets 
+     * @param {number} segments 
+     * @returns 
+     */
+    getEclipsingAreasNumerical(planets, rsegments = 500, thetasegments = 250) {
+
+        const rArray = linspace(0, this._R, rsegments)
+        const thetaArray = linspace(0, 2 * Math.PI, thetasegments)
+        const datapoints = this.rx.length;
+        let fraction = new Array(datapoints).fill(0);
+        const dr = rArray[1] - rArray[0];
+        const dtheta = thetaArray[1] - thetaArray[0];
+
+        for (let t = 0; t < datapoints; t++) {
+            // With these we keep track of which star areas are still not covered
+            let rArrayCurrent = rArray.slice();
+            let thetaArrayCurrent = thetaArray.slice();
+            planets.forEach(planet => {
+                console.log("Iterating planets", planet.planetName)
+                // see if the planet is in front of the star and covering it
+                if (planet.rx[t] > this.rx[t]) {
+                    const proj_distance = sqrt((this.ry[t] - planet.ry[t]) ** 2 + (this.rz[t] - planet.rz[t] ** 2))
+                    // Check if the planet is covering the star
+                    if (proj_distance - planet._R < this._R) {
+                        console.log("Planet covers the star at time", t)
+                        let newRArray = [];
+                        let newThetaArray = [];
+
+                        rArrayCurrent.forEach(r => {
+                            //dA depends on r
+                            const dA = (dr * dtheta * r);
+                            let keepR = false;
+                            thetaArrayCurrent.forEach(theta => {
+                                const dy = r * Math.cos(theta);
+                                const dz = r * Math.sin(theta);
+                                const distance = sqrt((dy - planet.ry[t]) ** 2 + (dz - planet.rz[t]) ** 2);
+                                if (distance < planet._R) {
+                                    fraction[t] += dA;
+                                } else {
+                                    // If one theta is NOT covered, we keep this r
+                                    keepR = true;
+                                    newThetaArray.push(theta);
+                                }
+                            });
+
+                            if (keepR) {
+                                newRArray.push(r)
+                            }
+
+                        });
+
+                        rArrayCurrent = newRArray;
+                        thetaArrayCurrent = newThetaArray;
+                    }
+
+
+                }
+            });
+            // Store the fraction at the end of each time t
+            fraction[t] = 1 - fraction[t] / this.Area;
+
+        }
+        //const fraction = coveredArea.map((area) => 1 - area / this.Area);
+        console.log("fraction", fraction);
+        return fraction;
+        for (let i = 0; i < segments; i++) {
+            const dy = this._R * Math.cos(i * 2 * Math.PI / segments);
+            for (let j = 0; j < segments; j++) {
+                const dz = this._R * Math.sin(j * 2 * Math.PI / segments);
+                for (let k = 0; k < planets.length; k++) {
+                    const planet = planets[k];
+                    if (planet.rx[t] > this.rx[t]) {
+                        if ((planet.ry[t] + planet._R > dy) && (planet.ry[t] - planet._R < dy) && (planet.rz[t] + planet._R > dz) && (planet.rz[t] - planet._R < dz)) {
+                            coveredArea[t] = dA;
+                            // if only one planet already covers this datapoint, we no need to explore the rest
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
+
+
+
+    /**
+     * Numerically calculates the observable area of the star when multiple bodies past across it.
+     * @param {Array} planets 
+     * @param {number} segments 
+     * @returns 
+     */
+    getEclipsingAreasMonteCarlo(planets, numSamples = 100000) {
+        const datapoints = this.rx.length;
+        let fraction = new Array(datapoints).fill(0);
+        let coveredArea = 0;
+        const dr = this._R / numSamples;
+        const dtheta = 2 * Math.PI / numSamples;
+        for (let t = 0; t < datapoints; t++) {
+            coveredArea = 0;
+            for (let i = 0; i < numSamples; i++) {
+                const r = Math.random() * this._R;
+                const theta = Math.random() * 2 * Math.PI;
+                const dy = r * Math.cos(theta);
+                const dz = r * Math.sin(theta);
+                for (let k = 0; k < planets.length; k++) {
+                    const planet = planets[k];
+                    const distance = sqrt((dy - planet.ry[t]) ** 2 + (dz - planet.rz[t]) ** 2);
+                    if ((distance < planet._R) && (planet.rx[t] > this.rx[t])) {
+                        coveredArea += dr * dtheta * r;
+                        break;
+                    }
+                }
+            }
+            // Store the fraction at the end of each time t
+            fraction[t] = 1 - coveredArea / this.Area;
+
+        }
+        return fraction;
     }
 
 }
