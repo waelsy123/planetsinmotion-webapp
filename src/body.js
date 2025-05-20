@@ -51,14 +51,13 @@ export class Body {
      * @param {Body} body - The eclipsing body (e.g. planet)
     */
     getTransits(body, checkInFront = true) {
-
         const datapoints = this.rx.length
         var fullTransitArray = new Array(datapoints).fill(false);
         var partialTransitArray = new Array(datapoints).fill(false);
-
+        
         for (let i = 0; i < datapoints; i++) {
             if (this.rx[i] > body.rx[i] || !checkInFront) {
-
+                
                 const projectedDistance = this.getProjectedDistance(body, i);
                 // Full transit
                 if (projectedDistance + this._R <= body._R) {
@@ -210,8 +209,8 @@ export class Body {
 
         sortedPlanets.forEach((planet, planetIndex) => {
             /* Get eclipses due to this planet*/
-            const [fullTransits, partialTransits] = planet.getTransits(this);
-            partialTransits.forEach((partialTransitItem, index) => {
+            const [fullTransitsPlanetStar, partialTransitsPlanetStar] = planet.getTransits(this);
+            partialTransitsPlanetStar.forEach((partialTransitItem, index) => {
 
                 if (partialTransitItem) {
                     const beta = getBeta(this._R, planet._R, planet.ry[index], planet.rz[index], this.ry[index],
@@ -219,7 +218,7 @@ export class Body {
                     const alpha = getAlpha(this._R, planet._R, beta);
                     A[index] += transitArea(this._R, planet._R, beta, alpha);
                     // Set transit area for full transits
-                } else if (fullTransits[index]) {
+                } else if (fullTransitsPlanetStar[index]) {
                     A[index] += planet.Area; // Full transit area is the area of the planet
                 }
 
@@ -229,47 +228,68 @@ export class Body {
             previousPlanets.forEach((prevPlanet) => {
                 console.log("Iterating previous planets", prevPlanet.planetName)
                 // for the transits between planets, we do no care whether which one is in front of each other
-                const [fullTransitPlanet, partialTransitPlanet] = planet.getTransits(prevPlanet, false);
-                console.log("Full transit planet", fullTransitPlanet);
-                console.log("Partial transit planet", partialTransitPlanet);
-                const [fullTransitPrevPlanet, partialTransitPrevPlanet] = prevPlanet.getTransits(this);
+                const [fullTransitPlanetPlanet, partialTransitPlanetPlanet] = planet.getTransits(prevPlanet, false);
+                const [fullTransitsPPlanetStar, partialTransitsPPlanetStar] = prevPlanet.getTransits(this);
                 // There are 8 combinations of transits, but one cannot exist as the previous planet is always larger
-                fullTransitPlanet.forEach((fullTransit, index) => {
-                    // if there is a full transit of the two planets, check if it occurred while the other planet was transiting
-                    if (fullTransit) {
-                        prevPlanetTransits = fullTransitPrevPlanet[index] || partialTransitPrevPlanet[index];
-                        //while the other is also transiting we subtrated the total area of the planet if the other is in partial or full
-                        // full/partial - full - full
-                        if (fullTransits[index] && prevPlanetTransits) {
-                            console.log("Full - Full - Full");
-                            A[index] -= planet.Area; // Full transit area is the area of the planet
-                            // partial - partial - full (full - partial - full cannot exist as the prev is always larger)
-                        } else if (partialTransits[index] && partialTransitPrevPlanet[index]) {
-                            console.log("partial - partial - full");
-                            const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                            const alpha = getAlpha(prevPlanet._R, planet._R, beta);
-                            A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
-                        }
-                        // partial transit between the two planets
-                    } else if (partialTransitPlanet[index]) {
-                        console.log("Partial transit between the two planets");
-                        const thisplanetTransits = fullTransits[index] || partialTransits[index];
-                        // if the big planet is in full transit and the small planet is in partial or full transit, we remove shared areas
-                        // full - partial/full - partial or partial - full - partial
-                        if ((fullTransitPrevPlanet[index] && thisplanetTransits) || (partialTransitPrevPlanet[index] && fullTransits[index])) {
-                            console.log("Full/Partial - Partial/Full - Partial", index);
-                            const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                            const alpha = getAlpha(prevPlanet._R, planet._R, beta);
-                            console.log("Transit area", transitArea(prevPlanet._R, planet._R, beta, alpha) / this.Area);
-                            A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
-                            // partial - partial - partial
-                        } else if (partialTransitPrevPlanet[index] && partialTransits[index]) {
-                            console.log("To be implemented", index);
-                            //removeSharedAreas();
-                            A[index] = 1; // Full transit area is the area of the planet
-                        }
+                fullTransitsPPlanetStar.forEach((fullTransitPPlanetStar, index) => {
+                    // full
+                    if (fullTransitPPlanetStar) {
+                        // full
+                        if (fullTransitsPlanetStar[index]) {
+                            // full
+                            if (fullTransitPlanetPlanet[index]) {
+                                console.log(index, "Full - Full - Full");
+                                A[index] -= planet.Area; // Full transit area is the area of the planet
+                                // partial
+                            } else if (partialTransitPlanetPlanet[index]) {
+                                console.log(index, "Full - Full - Partial");
+                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
+                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
+                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                            }
+                            // partial
+                        } else if (partialTransitsPlanetStar[index]) {
 
+                            if (fullTransitPlanetPlanet[index]) {
+                                throw new Error("Full - Partial - Full cannot exist as the previous planet is always larger");
+                            } else if (partialTransitPlanetPlanet[index]) {
+                                console.log(index, "Full - Partial - Partial");
+                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
+                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
+                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                            }
+                        }
+                        // partial
+                    } else if (partialTransitsPPlanetStar[index]) {
+                        // full
+                        if (fullTransitsPlanetStar[index]) {
+                            // full
+                            if (fullTransitPlanetPlanet[index]) {
+                                console.log(index, "Partial - Full - Full");
+                                A[index] -= planet.Area; // Full transit area is the area of the planet
+                                // partial
+                            } else if (partialTransitPlanetPlanet[index]) {
+                                console.log(index, "Partial - Full - Partial");
+                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
+                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
+                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                            }
+                            // partial
+                        } else if (partialTransitsPlanetStar[index]) {
+                            // full
+                            if (fullTransitPlanetPlanet[index]) {
+                                console.log(index, "Partial - Partial - Full");
+                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
+                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
+                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                                // partial
+                            } else if (partialTransitPlanetPlanet[index]) {
+                                console.log(index, "Partial - Partial - Partial");
+                                console.log("Partial - Partial - Partial not implemented yet!");
+                            }
+                        }
                     }
+
 
                 });
             });
