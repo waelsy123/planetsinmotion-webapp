@@ -133,10 +133,10 @@ export class Body {
             if (partialTransitItem) {
                 const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], body.ry[index], body.rz[index]);
                 const alpha = getAlpha(body._R, this._R, beta);
-                A[index] += transitArea(body._R, this._R, beta, alpha);
+                A[index] = transitArea(body._R, this._R, beta, alpha);
                 // Set transit area for full transits
             } else if (fullTransit[index]) {
-                A[index] += this.Area; // Full transit area is the area of the planet
+                A[index] = this.Area; // Full transit area is the area of the planet
             }
 
         });
