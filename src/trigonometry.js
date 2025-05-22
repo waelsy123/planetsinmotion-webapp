@@ -1,4 +1,4 @@
-import { sin, cos, asin, acos, atan } from 'mathjs';
+import { sin, cos, asin, acos, atan2, atan, sqrt } from 'mathjs';
 
 /**
  * Computes the angle alpha.
@@ -25,7 +25,6 @@ export function getAlpha(Rs, Rp, beta) {
  * @returns {number} - The angle beta transit.
  */
 export function getBeta(R0, Rplanet, planetry, planetrz, ry=0, rz=0) {
-
     const deltaY = Math.abs(planetry - ry)
     const deltaZ = planetrz - rz
     const beta = Math.PI - solveBeta(deltaY, deltaZ, R0, Rplanet);
@@ -96,6 +95,18 @@ function findInitBeta(init_beta, ry_cosphi, Rs, Rp) {
     return beta_a
 }
 
+export function getTransitArea(star, planet, index) {
+    const beta = getBeta(star._R, planet._R, planet.ry[index], planet.rz[index], star.ry[index], star.rz[index]);
+    const alpha = getAlpha(star._R, planet._R, beta);
+    const area = transitArea(star._R, planet._R, beta, alpha);
+    return area
+}
+
+export function getDistance(pointA, pointB=[0, 0]) {
+    const distance = sqrt((pointA[0] - pointB[0]) ** 2 + (pointA[1] - pointB[1]) ** 2);
+    return distance;
+}
+
 /**
  * Computes the transit area.
  *
@@ -106,8 +117,35 @@ function findInitBeta(init_beta, ry_cosphi, Rs, Rp) {
  * @returns {area} - The transit area.
  */
 export function transitArea(Rs, Rp, beta, alpha){
-    const area = Rp ** 2 * (beta - cos(beta) * sin(beta)) +
-               Rs ** 2 * (alpha - cos(alpha) * sin(alpha));
-    
+    const planetArea = pizza_triangle(Rp, beta);
+    const starArea = pizza_triangle(Rs, alpha);
+    const area = planetArea + starArea;
     return area;
 };
+
+function pizza_triangle(R, half_angle) {
+    const area =  R**2 * (half_angle - cos(half_angle) * sin(half_angle));
+    return area;
+}
+
+
+function triangle_area(a, b, c){
+    /**Calculate the area of a triangle give the lenght of its side. This is Heron's formula
+    a: array-like or float,
+        Length of side 1
+    b:array-like or float
+        Length of side 2
+    c: array-like or float
+        Length of side 3
+    */
+    s = (a + b + c) / 2.;
+    area = sqrt(s* (s- a) * (s - b) * (s - c));
+    return area;
+}
+
+
+function cos_law(a, b, c) {
+    gamma = acos((a**2 + b**2 - c**2) / (2 * a * b));
+    return gamma;
+
+}
