@@ -1,4 +1,4 @@
-import { R_sun, M_J, M_sun } from './constants.js';
+import { R_sun, M_J, M_sun, AU } from './constants.js';
 import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet.js';
 import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
@@ -222,19 +222,24 @@ export class PlanetMenu {
         }
     }
 
-    updateCanvas(nOrbitTimes = 5000) {
+    updateCanvas(nOrbitTimes = 6000) {
         if (this.planet != null) {
             const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * nOrbitTimes)));
             this.planet.setOrbitingTimes(times);
+            this.star.setOrbitingTimes(times);
             this.drawOrbit();
-            this.drawLightcurve(times)
+
+            const A = this.planet.getEclipsedArea(this.star);
+            const fraction = A.map(area => 1 - area /this.star.Area);
+            this.drawLightcurve(fraction, times);
+            document.getElementById("perihelion").innerText = (this.planet.rmin/AU).toFixed(2) + " AU";
+            document.getElementById("aphelion").innerText = (this.planet.rmax/ AU).toFixed(2) + " AU";
+            document.getElementById("transit-depth").innerText = (1 - Math.min(...fraction)).toFixed(3);
         }
     }
 
-    drawLightcurve(times) {
+    drawLightcurve(fraction, times) {
         
-        const A = this.planet.getEclipsedArea(this.star);
-        const fraction = A.map(area => 1 - area /this.star.Area);
 
         const timesDays = times.map((t) => t / (24 * 3600));
 
