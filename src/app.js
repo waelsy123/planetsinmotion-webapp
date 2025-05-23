@@ -245,7 +245,9 @@ function init() {
     if (!donateMenu) {
         donateMenu = new DonateMenu("donate")
     }
-    
+    // this needs to be done for the planet menu form canvas to work!
+    starMenu.setTimes(lightcurveMenu.times);
+    planetMenu.setTimes(lightcurveMenu.times);
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
 
     const mainCanvas = document.getElementById("main-canvas-container")
