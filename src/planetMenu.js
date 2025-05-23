@@ -2,7 +2,6 @@ import { R_sun, M_J, M_sun } from './constants.js';
 import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet.js';
 import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
-import { timeDays } from 'd3';
 
 const iconPlanetsize = 15
 
@@ -225,28 +224,50 @@ export class PlanetMenu {
 
     updateCanvas(nOrbitTimes = 5000) {
         if (this.planet != null) {
-            const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * ntimes)));
+            const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * nOrbitTimes)));
             this.planet.setOrbitingTimes(times);
             this.drawOrbit();
-            this.drawLightcurve()
+            this.drawLightcurve(times)
         }
     }
 
-    drawLightcurve() {
+    drawLightcurve(times) {
+        
         const A = this.planet.getEclipsedArea(this.star);
-        const fraction = A.map(area => 1 - area /this.star.Area());
+        const fraction = A.map(area => 1 - area /this.star.Area);
+
+        const timesDays = times.map((t) => t / (24 * 3600));
+
         const canvas = document.getElementById("lightcurve-canvas-planet-form");
-        const widthRatio = canvas.width / 2 / (fraction);
-        const lenghtRatio = canvas.length / 2 / (this.timeDays);
+        const ctx = canvas.getContext("2d");
+        // Define the axis ranges
+        const xMin = Math.min(...timesDays);
+        const xMax = Math.max(...timesDays);
+        const yMin = Math.min(...fraction) * 0.95;
+        const yMax = Math.max(...fraction) * 1.05;
+
+        // Map axis units to canvas units
+        const mapXToCanvas = (x) => ((x - xMin) / (xMax - xMin)) * canvas.width;
+        const mapYToCanvas = (y) => canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         ctx.save()
 
         ctx.beginPath();
         ctx.lineWidth = 1.5
-        ctx.moveTo(this.timeDays[0] * widthRatio, fraction[0] * lenghtRatio);
-        for (let i = 0; i < times.length; i++) {
-            ctx.lineTo(this.timeDays[i] * widthRatio, fraction[i] * lenghtRatio);
+        ctx.strokeStyle = this.star.color;
+
+        // first point
+        const x1 = mapXToCanvas(timesDays[0]);
+        const y1 = mapYToCanvas(fraction[0]);
+        ctx.moveTo(x1, y1);
+        
+        for (let i = 1; i < times.length; i++) {
+            const x = mapXToCanvas(timesDays[i]);
+            const y = mapYToCanvas(fraction[i]);
+            ctx.lineTo(x, y);
         }
+        ctx.stroke();
+        ctx.restore();
     }
 
     drawOrbit() {
@@ -271,7 +292,7 @@ export class PlanetMenu {
         ctx.lineWidth = 1.5
         ctx.setLineDash([5, 10]);
         ctx.moveTo(this.planet.ry[0] * ratio + canvas.width / 2, this.planet.rx[0] * ratio + canvas.height / 2);
-        for (let i = 0; i < times.length; i++) {
+        for (let i = 0; i < this.planet.rx.length; i++) {
             ctx.lineTo(this.planet.ry[i] * ratio + canvas.width / 2, this.planet.rx[i] * ratio + canvas.height / 2);
         }
 

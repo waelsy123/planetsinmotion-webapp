@@ -135,7 +135,7 @@ export class Body {
         partialTransit.forEach((partialTransitItem, index) => {
 
             if (partialTransitItem) {
-                A[index] = getTransitArea(this, body, index);
+                A[index] = getTransitArea(body, this, index);
                 // Set transit area for full transits
             } else if (fullTransit[index]) {
                 A[index] = this.Area; // Full transit area is the area of the planet
