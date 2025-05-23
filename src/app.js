@@ -148,9 +148,20 @@ function onTimesUpdate() {
 }
 
 function updateSimulation() {
+    console.log("Updating simulation")
     starMenu.setTimes(lightcurveMenu.times);
     planetMenu.setTimes(lightcurveMenu.times);
-    fraction = starMenu.star.getEclipsingAreas(planetMenu.planets);
+    try {
+        console.time("getEclipsingAreasMonteCarlo"); // Start timing
+        fraction = starMenu.star.getEclipsingAreasMonteCarloFast(planetMenu.planets, 1000000);
+        console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
+    }
+    catch (error) {
+        console.error("Error calculating eclipsing areas: ", error);
+    }
+    console.log("Transit depth: ", (Math.min(...fraction)).toFixed(3));
+    //fraction = starMenu.star.getEclipsingAreasNumerically(planetMenu.planets);
+    //fraction = starMenu.star.getEclipsingAreasMonteCarlo(planetMenu.planets);
     const limits = Math.abs(planetMenu.maxDistance *1.02);
     faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true);
     edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false);
@@ -234,8 +245,7 @@ function init() {
     if (!donateMenu) {
         donateMenu = new DonateMenu("donate")
     }
-
-    updateSimulation();
+    
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
 
     const mainCanvas = document.getElementById("main-canvas-container")
@@ -255,7 +265,8 @@ function init() {
             }
         // Show planet form on pressing the "+" button (and not pressing Ctrl)
         } else if ((event.code == "NumpadAdd") && (!event.ctrlKey)) {
-            planetMenu.showPlanetForm()
+            console.log("Show planet form");
+            planetMenu.showPlanetForm();
         }
     });
 
@@ -263,13 +274,13 @@ function init() {
         lightcurveMenu.exportLightcurve(lightcurveMenu.timesDays, fraction)
     });
 
-    exportButton.disabled = true
+    exportButton.disabled = true;
     
     frameMenu.saveAnimationButton.addEventListener("click", () => {
-        saveAnimation()
+        saveAnimation();
     });
 
-    loadLanguage()
+    loadLanguage();
 }
 
 function saveAnimation(format = "video/webm") {
