@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exoplanet Transit Animation</title>
+    <link rel="stylesheet" href="./styles/planet_form.css">
     <link rel="stylesheet" href="./styles/style.css"> <!-- Link to your CSS file -->
     <link rel="stylesheet" href="./styles/tooltip.css">
     <link rel="stylesheet" href="./styles/planet_form_buttons.css">
@@ -242,6 +243,32 @@
                 </div>
                 <div class="planet-form-canvas">
                     <canvas id="planet-canvas" style="cursor: auto;" width="300px" height="300px"></canvas>
+                    <canvas id="lightcurve-canvas-planet-form" style="cursor: auto;" width="300px"
+                        height="100px"></canvas>
+                    <div id="container" class="orbit-parameters-section">
+                        <div class="menu-row-planet-form">
+                            <!--<label for="transit-duration">T<sub>duration</sub>(s):</labels>
+                        <label id="transit-duration-label">0</label>-->
+                            <label>Aphelion:</label>
+                            <label id="aphelion">0 AU</label>
+                        </div>
+                        <div class="menu-row-planet-form">
+                            <label>Perihelion:</label>
+                            <label id="perihelion">0 AU</label>
+                        </div>
+
+                        <div class="menu-row-planet-form">
+                            <label>T<sub>depth</sub>:</label>
+                            <label id="transit-depth">0</label>
+                        </div>
+
+
+                        <div class="menu-row-planet-form">
+                            <label>T<sub>duration</sub>:</label>
+                            <label id="transit-duration">0 s</label>
+                        </div>
+                    </div>
+
                     <!--
                     <div class="menu" style="background-color: black;">
                     <div class="menu-row">
@@ -286,7 +313,8 @@
                 <label class="information-title">Support This Project &lt;3</label>
                 <label id="donate-text" class="information-content"></label>
                 <div class="donate-content">
-                    <img src="./icons/bitcoin-btc-logo.svg" class="crypto-logo"> <p> Wallet Address</p>
+                    <img src="./icons/bitcoin-btc-logo.svg" class="crypto-logo">
+                    <p> Wallet Address</p>
                     <div class="wallet-box">
                         <code>bc1q4xr9agec3ldug0xezqxy252y3kvqmcz62xr6pm</code>
                     </div>
@@ -297,7 +325,8 @@
                 </div>
 
                 <div class="donate-content">
-                    <img src="./icons/ethereum-eth-logo.svg" class="crypto-logo"> <p>Wallet Address</p> 
+                    <img src="./icons/ethereum-eth-logo.svg" class="crypto-logo">
+                    <p>Wallet Address</p>
                     <div class="wallet-box">
                         <code>0xaFE3DB130E71404Ed038397D25C26777d4EC8e4F</code>
                     </div>

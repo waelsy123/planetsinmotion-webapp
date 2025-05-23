@@ -1,4 +1,4 @@
-import { R_sun, M_J, M_sun } from './constants.js';
+import { R_sun, M_J, M_sun, AU } from './constants.js';
 import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet.js';
 import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
@@ -48,12 +48,12 @@ export class PlanetMenu {
         // add button event listeners
         document.getElementById("plus").addEventListener("click", () => {
             this.scale /= this.scaleMultiplier;
-            this.drawOrbit();
+            this.updateCanvas();
         }, false);
 
         document.getElementById("minus").addEventListener("click", () => {
             this.scale *= this.scaleMultiplier;
-            this.drawOrbit();
+            this.updateCanvas();
         }, false);
     }
 
@@ -115,7 +115,7 @@ export class PlanetMenu {
                 
                 if (this.supressedListener) return;
                 this.createPlanet();
-                this.drawOrbit()
+                this.updateCanvas()
             });
         });
 
@@ -125,7 +125,7 @@ export class PlanetMenu {
             console.log("Input Triggered")
 
             this.createPlanet();
-            this.drawOrbit();
+            this.updateCanvas();
         });
 
         this.planetNameInput.addEventListener("input", (event) => {
@@ -140,7 +140,7 @@ export class PlanetMenu {
         logscaleInput.addEventListener("click", (event) => {
             this.logscale = event.target.checked
             console.log("logscale " + event.target.checked)
-            this.drawOrbit()
+            this.updateCanvas()
         });
 
         */
@@ -154,7 +154,7 @@ export class PlanetMenu {
 
             this.errorLabel.classList.remove("hidden")
             this.createPlanet();
-            this.drawOrbit()
+            this.updateCanvas()
             // activate the listeners back
             this.supressedListener = false
         });
@@ -222,43 +222,89 @@ export class PlanetMenu {
         }
     }
 
-    drawOrbit(n = 5000) {
+    updateCanvas(nOrbitTimes = 6000) {
         if (this.planet != null) {
-            const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * n)));
-
+            const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * nOrbitTimes)));
             this.planet.setOrbitingTimes(times);
+            this.star.setOrbitingTimes(times);
+            this.drawOrbit();
 
-            const canvas = document.getElementById("planet-canvas");
+            const A = this.planet.getEclipsedArea(this.star);
+            const fraction = A.map(area => 1 - area /this.star.Area);
+            this.drawLightcurve(fraction, times);
+            document.getElementById("perihelion").innerText = (this.planet.rmin/AU).toFixed(2) + " AU";
+            document.getElementById("aphelion").innerText = (this.planet.rmax/ AU).toFixed(2) + " AU";
+            document.getElementById("transit-depth").innerText = (1 - Math.min(...fraction)).toFixed(3);
+        }
+    }
 
-            const ctx = canvas.getContext("2d");
+    drawLightcurve(fraction, times) {
+        
 
-            const ratio = canvas.width / 2 / (this.planet.maxCoordinate() * 1.1);
+        const timesDays = times.map((t) => t / (24 * 3600));
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
+        const canvas = document.getElementById("lightcurve-canvas-planet-form");
+        const ctx = canvas.getContext("2d");
+        // Define the axis ranges
+        const xMin = Math.min(...timesDays);
+        const xMax = Math.max(...timesDays);
+        const yMin = Math.min(...fraction) * 0.95;
+        const yMax = Math.max(...fraction) * 1.05;
 
-            ctx.save()
-            if (this.star.rx[0] < this.planet.rx[0]) {
-                this.star.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
-                this.planet.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
+        // Map axis units to canvas units
+        const mapXToCanvas = (x) => ((x - xMin) / (xMax - xMin)) * canvas.width;
+        const mapYToCanvas = (y) => canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.save()
 
-            } else {
-                this.planet.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
-                this.star.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
-            }
-            ctx.beginPath();
-            ctx.lineWidth = 1.5
-            ctx.setLineDash([5, 10]);
-            ctx.moveTo(this.planet.ry[0] * ratio + canvas.width / 2, this.planet.rx[0] * ratio + canvas.height / 2);
-            for (let i = 0; i < times.length; i++) {
-                ctx.lineTo(this.planet.ry[i] * ratio + canvas.width / 2, this.planet.rx[i] * ratio + canvas.height / 2);
-            }
+        ctx.beginPath();
+        ctx.lineWidth = 1.5
+        ctx.strokeStyle = this.star.color;
 
-            ctx.closePath();
-            ctx.strokeStyle = this.planet.color;
-            ctx.stroke();
-            ctx.restore();
+        // first point
+        const x1 = mapXToCanvas(timesDays[0]);
+        const y1 = mapYToCanvas(fraction[0]);
+        ctx.moveTo(x1, y1);
+        
+        for (let i = 1; i < times.length; i++) {
+            const x = mapXToCanvas(timesDays[i]);
+            const y = mapYToCanvas(fraction[i]);
+            ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawOrbit() {
+        const canvas = document.getElementById("planet-canvas");
+
+        const ctx = canvas.getContext("2d");
+
+        const ratio = canvas.width / 2 / (this.planet.maxCoordinate() * 1.1);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        ctx.save()
+        if (this.star.rx[0] < this.planet.rx[0]) {
+            this.star.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
+            this.planet.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
+
+        } else {
+            this.planet.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
+            this.star.draw(ctx, [canvas.width / 2, canvas.height / 2], ratio, 0, true)
+        }
+        ctx.beginPath();
+        ctx.lineWidth = 1.5
+        ctx.setLineDash([5, 10]);
+        ctx.moveTo(this.planet.ry[0] * ratio + canvas.width / 2, this.planet.rx[0] * ratio + canvas.height / 2);
+        for (let i = 0; i < this.planet.rx.length; i++) {
+            ctx.lineTo(this.planet.ry[i] * ratio + canvas.width / 2, this.planet.rx[i] * ratio + canvas.height / 2);
         }
 
+        ctx.closePath();
+        ctx.strokeStyle = this.planet.color;
+        ctx.stroke();
+        ctx.restore();
     }
 
     showPlanetForm(index = null) {
@@ -302,7 +348,7 @@ export class PlanetMenu {
         }
 
         this.createPlanet();
-        this.drawOrbit()
+        this.updateCanvas()
         this.supressedListener = false
 
         // Keyboard listeners

@@ -131,12 +131,11 @@ export class Body {
     getEclipsedArea(body) {
         const datapoints = this.rx.length
         var A = new Array(datapoints).fill(0);
-        const { fullTransit, partialTransit } = this.getTransits(body);
+        const [fullTransit, partialTransit ] = this.getTransits(body);
         partialTransit.forEach((partialTransitItem, index) => {
 
             if (partialTransitItem) {
-                console.log("GetTransitArea")
-                A[index] = getTransitArea(this, body, index);
+                A[index] = getTransitArea(body, this, index);
                 // Set transit area for full transits
             } else if (fullTransit[index]) {
                 A[index] = this.Area; // Full transit area is the area of the planet
