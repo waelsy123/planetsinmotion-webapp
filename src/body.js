@@ -1,5 +1,5 @@
-import { combinations, sqrt } from 'mathjs';
-import { getBeta, getAlpha, transitArea } from './trigonometry.js'
+import { sqrt, atan2, sin, cos, add } from 'mathjs';
+import { getBeta, getTransitArea, getDistance } from './trigonometry.js'
 import { linspace } from './utils.js';
 
 
@@ -54,10 +54,10 @@ export class Body {
         const datapoints = this.rx.length
         var fullTransitArray = new Array(datapoints).fill(false);
         var partialTransitArray = new Array(datapoints).fill(false);
-        
+
         for (let i = 0; i < datapoints; i++) {
             if (this.rx[i] > body.rx[i] || !checkInFront) {
-                
+
                 const projectedDistance = this.getProjectedDistance(body, i);
                 // Full transit
                 if (projectedDistance + this._R <= body._R) {
@@ -108,9 +108,14 @@ export class Body {
         }
         return partialTransits;
     }
-
+    /**
+     * 
+     * @param {Body} body 
+     * @param {number} i 
+     * @returns 
+     */
     getProjectedDistance(body, i) {
-        const projectedDistance = sqrt((body.ry[i] - this.ry[i]) ** 2 + (body.rz[i] - this.rz[i]) ** 2);
+        const projectedDistance = getDistance([body.ry[i], body.rz[i]], [this.ry[i], this.rz[i]])
         return projectedDistance;
     }
     /**
@@ -130,9 +135,8 @@ export class Body {
         partialTransit.forEach((partialTransitItem, index) => {
 
             if (partialTransitItem) {
-                const beta = getBeta(body._R, this._R, this.ry[index], this.rz[index], body.ry[index], body.rz[index]);
-                const alpha = getAlpha(body._R, this._R, beta);
-                A[index] = transitArea(body._R, this._R, beta, alpha);
+                console.log("GetTransitArea")
+                A[index] = getTransitArea(this, body, index);
                 // Set transit area for full transits
             } else if (fullTransit[index]) {
                 A[index] = this.Area; // Full transit area is the area of the planet
@@ -210,13 +214,11 @@ export class Body {
         sortedPlanets.forEach((planet, planetIndex) => {
             /* Get eclipses due to this planet*/
             const [fullTransitsPlanetStar, partialTransitsPlanetStar] = planet.getTransits(this);
+            console.log("HHH")
             partialTransitsPlanetStar.forEach((partialTransitItem, index) => {
 
                 if (partialTransitItem) {
-                    const beta = getBeta(this._R, planet._R, planet.ry[index], planet.rz[index], this.ry[index],
-                        this.rz[index]);
-                    const alpha = getAlpha(this._R, planet._R, beta);
-                    A[index] += transitArea(this._R, planet._R, beta, alpha);
+                    A[index] += getTransitArea(this, planet, index)
                     // Set transit area for full transits
                 } else if (fullTransitsPlanetStar[index]) {
                     A[index] += planet.Area; // Full transit area is the area of the planet
@@ -243,9 +245,7 @@ export class Body {
                                 // partial
                             } else if (partialTransitPlanetPlanet[index]) {
                                 console.log(index, "Full - Full - Partial");
-                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
-                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                                A[index] -= getTransitArea(prevPlanet, planet, index)
                             }
                             // partial
                         } else if (partialTransitsPlanetStar[index]) {
@@ -254,9 +254,7 @@ export class Body {
                                 throw new Error("Full - Partial - Full cannot exist as the previous planet is always larger");
                             } else if (partialTransitPlanetPlanet[index]) {
                                 console.log(index, "Full - Partial - Partial");
-                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
-                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                                A[index] -= getTransitArea(prevPlanet, planet, index)
                             }
                         }
                         // partial
@@ -270,21 +268,21 @@ export class Body {
                                 // partial
                             } else if (partialTransitPlanetPlanet[index]) {
                                 console.log(index, "Partial - Full - Partial");
-                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
-                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                                A[index] -= getTransitArea(prevPlanet, planet, index)
                             }
                             // partial
                         } else if (partialTransitsPlanetStar[index]) {
                             // full
                             if (fullTransitPlanetPlanet[index]) {
                                 console.log(index, "Partial - Partial - Full");
-                                const beta = getBeta(prevPlanet._R, planet._R, planet.ry[index], planet.rz[index], prevPlanet.ry[index], prevPlanet.rz[index])
-                                const alpha = getAlpha(prevPlanet._R, planet._R, beta);
-                                A[index] -= transitArea(prevPlanet._R, planet._R, beta, alpha);
+                                A[index] -= getTransitArea(star, planet, index)
                                 // partial
                             } else if (partialTransitPlanetPlanet[index]) {
                                 console.log(index, "Partial - Partial - Partial");
+                                planet_planet_contact_points = prevPlanet.getContactPoints(planet, index)
+
+
+
                                 console.log("Partial - Partial - Partial not implemented yet!");
                             }
                         }
@@ -398,41 +396,103 @@ export class Body {
 
     }
 
+    getContactPoints(planet, index) {
+        const beta = getBeta(this._R, planet._R, planet.ry[index], planet.rz[index], this.ry[index], this.rz[index]);
+        const ry = planet.ry[index]
+        const rz = planet.rz[index]
+        const phi = atan2(rz, ry)
+        const origin = (ry, rz)
+        const point_up = (pointy(origin[0], 1, planet._R, beta, phi), pointz(origin[1], 1, planet._R, beta, phi))
+        const point_down = (pointy(origin[0], -1, planet._R, beta, phi), pointz(origin[1], -1, planet._R, beta, phi))
+        return (point_up, point_down)
+    }
+
+    pointy(origin, R, sign, beta, phi) {
+        return origin - R * cos(beta + sign * phi)
+    }
+    pointz(origin, R, sign, beta, phi) {
+        return origin - sign * R * sin(beta + sign * phi)
+    }
+
+    filterByEclipses(planets) {
+        const eclipsingPlanets = new Set();
+        const eclipsingTimes = new Set();
+        for (let t = 0; t < planets[0].rx.length; t++) {
+            planets.forEach(planet => {
+                const dist = this.getProjectedDistance(planet, t);
+                if (((dist - planet._R) <= this._R) && (planet.rx[t] > this.rx[t])) {
+                    eclipsingTimes.add(t);
+                    eclipsingPlanets.add(planet);
+                }
+            });
+        }
+        return [eclipsingPlanets, eclipsingTimes];
+    }
+
+    /**
+     * Numerically calculates the observable area of the star when multiple bodies past across it.
+     * @param {Array} planets 
+     * @param {number} numSamples 
+     * @returns 
+     */
+    getEclipsingAreasMonteCarloFast(planets, numSamples = 10000) {
+        const datapoints = this.rx.length;
+        let fraction = new Array(datapoints).fill(1);
+        const [eclipsingPlanets, eclipsingTimes] = this.filterByEclipses(planets);
+        const r = Array.from({ length: numSamples }, () => Math.sqrt(Math.random()) * this._R);
+        const theta = Array.from({ length: numSamples }, () => Math.random() * 2 * Math.PI);
+        const y = r.map((rVal, i) => rVal * Math.cos(theta[i]));
+        const z = r.map((rVal, i) => rVal * Math.sin(theta[i]));
+
+        eclipsingTimes.forEach(t => {
+            let remainingIndexes = Array.from({ length: numSamples }, (_, i) => i);
+            eclipsingPlanets.forEach(planet => {
+                // Filter remaining indexes based on whether the points are eclipsed
+                remainingIndexes = remainingIndexes.filter(index => {
+                    const distanceSquared = (y[index] - planet.ry[t]) ** 2 + (z[index] - planet.rz[t]) ** 2;
+                    return distanceSquared >= planet._R ** 2; // Keep points that are not eclipsed
+                });
+            });
+            const coveredPoints = numSamples - remainingIndexes.length;
+            fraction[t] = 1 - coveredPoints / numSamples;
+
+        });
+        return fraction;
+    }
 
 
     /**
      * Numerically calculates the observable area of the star when multiple bodies past across it.
      * @param {Array} planets 
-     * @param {number} segments 
+     * @param {number} numSamples 
      * @returns 
      */
-    getEclipsingAreasMonteCarlo(planets, numSamples = 100000) {
+    getEclipsingAreasMonteCarlo(planets, numSamples = 10000) {
         const datapoints = this.rx.length;
-        let fraction = new Array(datapoints).fill(0);
-        let coveredArea = 0;
-        const dr = this._R / numSamples;
-        const dtheta = 2 * Math.PI / numSamples;
-        for (let t = 0; t < datapoints; t++) {
-            coveredArea = 0;
+        let fraction = new Array(datapoints).fill(1);
+        const [eclipsingPlanets, eclipsingTimes] = this.filterByEclipses(planets);
+        eclipsingTimes.forEach(t => {
+            let coveredPoints = 0;
             for (let i = 0; i < numSamples; i++) {
-                const r = Math.random() * this._R;
-                const theta = Math.random() * 2 * Math.PI;
-                const dy = r * Math.cos(theta);
-                const dz = r * Math.sin(theta);
-                for (let k = 0; k < planets.length; k++) {
+                for (let k = 0; k < eclipsingPlanets.size; k++) {
+                    const r = Math.sqrt(Math.random()) * this._R;
                     const planet = planets[k];
-                    const distance = sqrt((dy - planet.ry[t]) ** 2 + (dz - planet.rz[t]) ** 2);
-                    if ((distance < planet._R) && (planet.rx[t] > this.rx[t])) {
-                        coveredArea += dr * dtheta * r;
+                    const theta = Math.random() * 2 * Math.PI;
+                    const y = r * Math.cos(theta);
+                    const z = r * Math.sin(theta);
+                    if ((y - planet.ry[t]) ** 2 + (z - planet.rz[t]) ** 2 < planet._R ** 2) {
+                        coveredPoints += 1;
                         break;
                     }
                 }
             }
             // Store the fraction at the end of each time t
-            fraction[t] = 1 - coveredArea / this.Area;
+            fraction[t] = 1 - coveredPoints / numSamples;
 
-        }
+        });
         return fraction;
     }
+
+
 
 }
