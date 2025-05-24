@@ -175,8 +175,8 @@
                             <label class="menu-label">Planet</label>
                             <div class="menu-row">
                                 <label for="planet-name">Name:</label>
-                                <!--<input type="text" id="planet-name" />-->
-                                <input id="planet-name" list="planet-options" placeholder="Enter planet name" />
+                                <input type="text" id="planet-name" />
+                                <!--<input id="planet-name" list="planet-options" placeholder="Enter planet name" />
                                 <datalist id="planet-options">
                                     <option value="Mercury"></option>
                                     <option value="Venus"></option>
@@ -186,16 +186,16 @@
                                     <option value="Saturn"></option>
                                     <option value="Uranus"></option>
                                     <option value="Neptune"></option>
-                                </datalist>
+                                </datalist>-->
                             </div>
                             <div class="menu-row">
                                 <label for="planet-mass">Mass (M<sub>☉</sub>):</label>
-                                <input type="number" id="planet-mass" min="0.0" step="0.1" value="1" max="100000000" />
+                                <input type="number" id="planet-mass" min="0.000000001" step="0.01" value="1" max="100000000" />
                             </div>
 
                             <div class="menu-row">
                                 <label for="planet-radius">Radius (R<sub>☉</sub>):</label>
-                                <input type="number" id="planet-radius" min="0.0" step="0.1" value="1"
+                                <input type="number" id="planet-radius" min="0.0001" step="0.1" value="1"
                                     max="100000000" />
                             </div>
 
@@ -275,6 +275,7 @@
                             <label id="transit-duration">0 days</label>
                         </div>
                     </div>
+                    <label class="planet-form-error-message" id="transit-error">"No transit!"</label>
 
                     <!--
                     <div class="menu" style="background-color: black;">
