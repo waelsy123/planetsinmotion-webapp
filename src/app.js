@@ -5,6 +5,7 @@ import { FrameMenu } from './frameMenu.js';
 import { InfoDisplay } from './infoDisplay.js';
 import { LightcurveHandler } from './lightcurveHandler.js';
 import { DonateMenu } from './donateMenu.js';
+import { Transit } from './transit.js';
 import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js';
 
 
@@ -151,14 +152,17 @@ function updateSimulation() {
     console.log("Updating simulation")
     starMenu.setTimes(lightcurveMenu.times);
     planetMenu.setTimes(lightcurveMenu.times);
-    try {
-        console.time("getEclipsingAreasMonteCarlo"); // Start timing
+    console.time("getEclipsingAreasMonteCarlo"); // Start timing
+    if (planetMenu.planets.length ==1) {
+        // Use analytical calculation if only one planet
+        const transit = new Transit(starMenu.star, planetMenu.planets[0]);
+        fraction = transit.visibleFraction;
+    } else {
+        // Monte Carlo calculation for multiple planets
         fraction = starMenu.star.getEclipsingAreasMonteCarloFast(planetMenu.planets, 1000000);
-        console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
     }
-    catch (error) {
-        console.error("Error calculating eclipsing areas: ", error);
-    }
+    console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
+    
     console.log("Transit depth: ", (Math.min(...fraction)).toFixed(3));
     //fraction = starMenu.star.getEclipsingAreasNumerically(planetMenu.planets);
     //fraction = starMenu.star.getEclipsingAreasMonteCarlo(planetMenu.planets);
