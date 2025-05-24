@@ -2,6 +2,8 @@ import { R_sun, M_J, M_sun, AU } from './constants.js';
 import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet.js';
 import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
+import { Transit } from './transit.js';
+import { timeDay } from 'd3';
 
 const iconPlanetsize = 15
 
@@ -224,25 +226,25 @@ export class PlanetMenu {
 
     updateCanvas(nOrbitTimes = 6000) {
         if (this.planet != null) {
+            console.log("Updating canvas for " + this.planet.planetName);
             const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * nOrbitTimes)));
             this.planet.setOrbitingTimes(times);
             this.star.setOrbitingTimes(times);
             this.drawOrbit();
+            const transit = new Transit(this.star, this.planet);
+            const timesDays = times.map(t => t / (24 * 3600));
+            const fraction = transit.visibleFraction;
+            this.drawLightcurve(fraction, timesDays);
 
-            const A = this.planet.getEclipsedArea(this.star);
-            const fraction = A.map(area => 1 - area /this.star.Area);
-            this.drawLightcurve(fraction, times);
+            // Update labels
             document.getElementById("perihelion").innerText = (this.planet.rmin/AU).toFixed(2) + " AU";
             document.getElementById("aphelion").innerText = (this.planet.rmax/ AU).toFixed(2) + " AU";
-            document.getElementById("transit-depth").innerText = (1 - Math.min(...fraction)).toFixed(3);
+            document.getElementById("transit-depth").innerText = transit.transitDepth.toFixed(3);
+            document.getElementById("transit-duration").innerText = (transit.transitDuration * (timesDays[1] - timesDays[0])).toFixed(2) + " days";
         }
     }
 
-    drawLightcurve(fraction, times) {
-        
-
-        const timesDays = times.map((t) => t / (24 * 3600));
-
+    drawLightcurve(fraction, timesDays) {
         const canvas = document.getElementById("lightcurve-canvas-planet-form");
         const ctx = canvas.getContext("2d");
         // Define the axis ranges
@@ -266,7 +268,7 @@ export class PlanetMenu {
         const y1 = mapYToCanvas(fraction[0]);
         ctx.moveTo(x1, y1);
         
-        for (let i = 1; i < times.length; i++) {
+        for (let i = 1; i < timesDays.length; i++) {
             const x = mapXToCanvas(timesDays[i]);
             const y = mapYToCanvas(fraction[i]);
             ctx.lineTo(x, y);
