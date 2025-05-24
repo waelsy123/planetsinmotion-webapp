@@ -94,6 +94,13 @@ export class Body {
         return projectedDistance;
     }
 
+    copy() {
+        // Create a new instance of Body with the same properties
+        const newBody = new Body();
+        Object.assign(newBody, this); // Copy all properties from the current object to the new instance
+        return newBody;
+    }
+
 
     draw(context, center, scale, i, faceon = true) {
         context.save()

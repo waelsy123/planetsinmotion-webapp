@@ -3,7 +3,6 @@ import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet
 import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
 import { Transit } from './transit.js';
-import { timeDay } from 'd3';
 
 const iconPlanetsize = 15
 
@@ -13,7 +12,7 @@ export class PlanetMenu {
         this.onMenuOpened = onMenuOpened;
         this.onMenuClosed = onMenuClosed;
         this.planets = [];
-        this.star = star;
+        this.star = star.copy();
         // Initialize menu elements
 
         this.defaultColor = document.getElementById("planet-period").style.color
@@ -558,7 +557,7 @@ export class PlanetMenu {
     }
 
     setStar(star) {
-        this.star = star
+        this.star = star;
         this.planets.forEach(planet => {
             planet.setStar(star);
         });
