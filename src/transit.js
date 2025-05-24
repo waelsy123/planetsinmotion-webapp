@@ -22,6 +22,8 @@ export class Transit {
 
     workoutTransits() {
         const [fullTransitIndexes, partialTransitIndexes ] = this.getTransits(this.eclipsingBody, this.eclipsedBody, this.checkFront);
+        console.log("Number of full transits: ", fullTransitIndexes.length);
+        console.log("Number of partial transits: ", partialTransitIndexes.length);
         this.eclipsedArea = this.getEclipsedArea(fullTransitIndexes, partialTransitIndexes)
         this.visibleFraction = this.eclipsedArea.map(area => 1 - area / this.eclipsedBody.Area)
 
@@ -77,7 +79,7 @@ export class Transit {
 
         const partialTransitIndices = inFrontIndices.filter(i =>
             (star.getProjectedDistance(body, i) - body._R < star._R) &&
-            (star.getProjectedDistance(body, i) + body._R > star._R)
+            (star.getProjectedDistance(body, i) + body._R >= star._R)
         );
         return [fullTransitIndices, partialTransitIndices];
     }

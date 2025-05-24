@@ -1,0 +1,17 @@
+
+.autor-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 20px;
+}
+
+
+
+.autor-text-container {
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    padding: 20px;
+  }

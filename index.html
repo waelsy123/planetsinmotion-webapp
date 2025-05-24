@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="./styles/svg.css">
     <link rel="stylesheet" href="./styles/recording_dialog.css">
     <link rel="stylesheet" href="./styles/information.css">
+    <link rel="stylesheet" href="./styles/about.css">
     <style>
 
     </style>
@@ -175,8 +176,8 @@
                             <label class="menu-label">Planet</label>
                             <div class="menu-row">
                                 <label for="planet-name">Name:</label>
-                                <!--<input type="text" id="planet-name" />-->
-                                <input id="planet-name" list="planet-options" placeholder="Enter planet name" />
+                                <input type="text" id="planet-name" />
+                                <!--<input id="planet-name" list="planet-options" placeholder="Enter planet name" />
                                 <datalist id="planet-options">
                                     <option value="Mercury"></option>
                                     <option value="Venus"></option>
@@ -186,16 +187,16 @@
                                     <option value="Saturn"></option>
                                     <option value="Uranus"></option>
                                     <option value="Neptune"></option>
-                                </datalist>
+                                </datalist>-->
                             </div>
                             <div class="menu-row">
                                 <label for="planet-mass">Mass (M<sub>☉</sub>):</label>
-                                <input type="number" id="planet-mass" min="0.0" step="0.1" value="1" max="100000000" />
+                                <input type="number" id="planet-mass" min="0.000000001" step="0.01" value="1" max="100000000" />
                             </div>
 
                             <div class="menu-row">
                                 <label for="planet-radius">Radius (R<sub>☉</sub>):</label>
-                                <input type="number" id="planet-radius" min="0.0" step="0.1" value="1"
+                                <input type="number" id="planet-radius" min="0.0001" step="0.1" value="1"
                                     max="100000000" />
                             </div>
 
@@ -275,6 +276,7 @@
                             <label id="transit-duration">0 days</label>
                         </div>
                     </div>
+                    <label class="planet-form-error-message" id="transit-error">"No transit!"</label>
 
                     <!--
                     <div class="menu" style="background-color: black;">
@@ -299,6 +301,16 @@
             <div class="information-container">
                 <label class="information-title">Welcome to the Exoplanet Transit Animator!</label>
                 <label id="about-text" class="information-content"></label>
+                <div class="autor-container">
+                    <div class="autor-text-container">
+                    <label><strong>Author:</strong> Andrés Gúrpide Lasheras</label>
+                    <label><strong>Website:</strong><a href="www.andresgurpide.com"> www.andresgurpide.com </a></label>
+                    <label><strong>Contact:</strong> andres.gurpide.astro@gmail.com</label>
+                </div>
+                <a href="https://www.andresgurpide.com" target="_blank">
+                    <img src="./icons/andresg.png" style="transform: scale(0.9);" alt="Andrés Gúrpide">
+                </a>
+                </div>
             </div>
         </div>
     </div>

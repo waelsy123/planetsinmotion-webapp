@@ -14,8 +14,16 @@ export class InfoDisplay {
         this.closeWindowListener = () =>{
             this.closeWindow(content);
         }
-        this.closeButton.addEventListener("click", this.closeWindowListener)
+        this.closeButton.addEventListener("click", this.closeWindowListener);
 
+        this.contentName = contentName;
+
+    }
+
+    setLanguage(language) {
+        const body = document.getElementById(this.contentName + "-text");
+        console.log("Setting language for " + this.contentName);
+        body.innerHTML = language[this.contentName + "-text"];
     }
 
 
@@ -23,18 +31,6 @@ async showContent (content, contentName) {
     console.log("Showing " + contentName)
     content.classList.remove("hidden")
     content.focus()
-    try {
-        // Fetch the content from the external HTML file
-        const response = await fetch(contentName + ".html");
-        if (!response.ok) throw new Error("Failed to load About content");
-
-        const textContent = await response.text();
-        const textHolder = document.getElementById(contentName + "-text")
-        textHolder.innerHTML = textContent
-    } catch (error) {
-        console.error(error);
-        content.innerHTML = "<p>Failed to load" + contentName + " content.</p>";
-    }
     // Keyboard listeners
     this.keydownListener = (event) => {
     if (event.key === "Escape") {

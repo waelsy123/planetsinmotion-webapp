@@ -77,21 +77,22 @@ export class PlanetMenu {
         this.planetList = document.getElementById("planet-list");
 
         /* Error message for the add planet menu*/
-        this.errorLabel = document.getElementById("planet-error")
+        this.errorLabel = document.getElementById("planet-error");
+        this.transitWarningLabel = document.getElementById("transit-error");
 
         /* Inputs for the pop up menu */
         // Orbit
-        this.planetNameInput = document.getElementById("planet-name")
-        this.periodInput = document.getElementById("planet-period")
-        this.iInput = document.getElementById("inclination-input")
-        this.phaseInput = document.getElementById("phase-input")
-        this.Omega0Input = document.getElementById("longitude-ascending-node-input")
-        this.eInput = document.getElementById("eccentricity-input")
+        this.planetNameInput = document.getElementById("planet-name");
+        this.periodInput = document.getElementById("planet-period");
+        this.iInput = document.getElementById("inclination-input");
+        this.phaseInput = document.getElementById("phase-input");
+        this.Omega0Input = document.getElementById("longitude-ascending-node-input");
+        this.eInput = document.getElementById("eccentricity-input");
 
         // Planet
-        this.massInput = document.getElementById("planet-mass")
-        this.radiusInput = document.getElementById("planet-radius")
-        this.colorInput = document.getElementById("planet-color")
+        this.massInput = document.getElementById("planet-mass");
+        this.radiusInput = document.getElementById("planet-radius");
+        this.colorInput = document.getElementById("planet-color");
 
         const inputs = [this.periodInput, this.iInput, this.eInput, this.massInput, this.radiusInput, this.phaseInput, this.Omega0Input]
 
@@ -225,8 +226,9 @@ export class PlanetMenu {
 
     updateCanvas(nOrbitTimes = 6000) {
         if (this.planet != null) {
-            console.log("Updating canvas for " + this.planet.planetName);
-            const times = linspace(0, this.planet._P, Math.floor(((this.planet.e + 0.01 ) * nOrbitTimes)));
+            const datapoints = Math.floor(this.planet.e + 0.01 * (this.planet.P * nOrbitTimes));
+            console.log("Updating canvas for " + this.planet.planetName + "with " + datapoints + " datapoints");
+            const times = linspace(0, this.planet._P, datapoints);
             this.planet.setOrbitingTimes(times);
             this.star.setOrbitingTimes(times);
             this.drawOrbit();
@@ -236,10 +238,19 @@ export class PlanetMenu {
             this.drawLightcurve(fraction, timesDays);
 
             // Update labels
-            document.getElementById("perihelion").innerText = (this.planet.rmin/AU).toFixed(2) + " AU";
-            document.getElementById("aphelion").innerText = (this.planet.rmax/ AU).toFixed(2) + " AU";
+            document.getElementById("perihelion").innerText = (this.planet.rmin/AU).toFixed(3) + " AU";
+            document.getElementById("aphelion").innerText = (this.planet.rmax/ AU).toFixed(3) + " AU";
             document.getElementById("transit-depth").innerText = transit.transitDepth.toFixed(3);
-            document.getElementById("transit-duration").innerText = (transit.transitDuration * (timesDays[1] - timesDays[0])).toFixed(2) + " days";
+            console.log("Transit duration", transit.transitDuration);
+            const dt = (timesDays[1] - timesDays[0]);
+            console.log("dt", dt);
+            if (transit.transitDuration == 0) {
+                this.transitWarningLabel.classList.remove("hidden");
+            } else {
+                this.transitWarningLabel.classList.add("hidden");
+            }
+
+            document.getElementById("transit-duration").innerText = (transit.transitDuration * dt).toFixed(3) + " days";
         }
     }
 
