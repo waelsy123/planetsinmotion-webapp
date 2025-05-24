@@ -40,9 +40,12 @@ let record = false
 async function loadLanguage(lang = "en") {
     const res = await fetch(`./locales/${lang}.json`);
     translations = await res.json();
-    lightcurveMenu.setLanguage(translations)
-    frameMenu.setLanguage(translations)
-    planetMenu.setLanguage(translations)
+    lightcurveMenu.setLanguage(translations);
+    frameMenu.setLanguage(translations);
+    planetMenu.setLanguage(translations);
+    aboutMenu.setLanguage(translations);
+    helpMenu.setLanguage(translations);
+    donateMenu.setLanguage(translations);
 }
 
 
@@ -208,8 +211,6 @@ function onUpdatePlanets() {
         faceOnCanvasHandler.clear();
         edgeOnCanvasHandler.clear();
     }
-
-
 }
 
 
