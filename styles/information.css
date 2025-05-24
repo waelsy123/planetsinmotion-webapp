@@ -15,8 +15,10 @@
             border-radius: 5px;
             flex-direction: column;
             display: flex;
-            width: 850px;
+            width: 950px;
             overflow-y: auto;
+            height: auto    ;
+            max-height: 700px;
         }
 
         .information-title {
