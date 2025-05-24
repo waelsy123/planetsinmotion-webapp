@@ -1,6 +1,7 @@
-import { sqrt, atan2, sin, cos, add } from 'mathjs';
+import { sqrt, atan2, sin, cos} from 'mathjs';
 import { getBeta, getTransitArea, getDistance } from './trigonometry.js'
 import { linspace } from './utils.js';
+import { Transit } from './transit.js';
 
 
 export class Body {
@@ -44,32 +45,6 @@ export class Body {
         this.ry = new Array(times.length).fill(0);
         this.rz = new Array(times.length).fill(0);
     }
-
-    /**
-     * Parameters
-     * ----------
-     * @param {Body} body - The eclipsing body (e.g. planet)
-    */
-    getTransits(body, checkInFront = true) {
-        const datapoints = this.rx.length
-        var fullTransitArray = new Array(datapoints).fill(false);
-        var partialTransitArray = new Array(datapoints).fill(false);
-
-        for (let i = 0; i < datapoints; i++) {
-            if (this.rx[i] > body.rx[i] || !checkInFront) {
-
-                const projectedDistance = this.getProjectedDistance(body, i);
-                // Full transit
-                if (projectedDistance + this._R <= body._R) {
-                    fullTransitArray[i] = true;
-                    // Partial transit  
-                } else if ((projectedDistance - this._R < body._R) && (projectedDistance + this._R > body._R)) {
-                    partialTransitArray[i] = true;
-                }
-            }
-        }
-        return [fullTransitArray, partialTransitArray];
-    }
     /**
      * Parameters
      * ----------
@@ -101,7 +76,7 @@ export class Body {
         var partialTransits = new Array(datapoints).fill(false);
         for (let i = 0; i < datapoints; i++) {
             if (this.rx[i] > body.rx[i]) {
-                const projectedDistance = this.getProjectedDistance(body, i);
+                const dist = this.getProjectedDistance(body, i);
                 //Partial transit
                 partialTransits[i] = (dist - this._R < body._R) && (dist + this._R > body._R)
             }
@@ -118,33 +93,7 @@ export class Body {
         const projectedDistance = getDistance([body.ry[i], body.rz[i]], [this.ry[i], this.rz[i]])
         return projectedDistance;
     }
-    /**
-     * Calculates the area eclipsed by this body on the input body (e.g., a star).
-     *
-     * @param {Body} body - The body being eclipsed (e.g., the star).
-     *
-     * Notes:
-     * - The method calculates the eclipsed area based on the relative positions and radii of the two bodies.
-     * - It distinguishes between full transits (where the entire planet is within the star's disk) and partial transits.
-     * - The calculation uses the angles `alpha` (angle between the centers of the two bodies) and `beta` (angle between the center of the planet and the edge of the star).
-     */
-    getEclipsedArea(body) {
-        const datapoints = this.rx.length
-        var A = new Array(datapoints).fill(0);
-        const [fullTransit, partialTransit ] = this.getTransits(body);
-        partialTransit.forEach((partialTransitItem, index) => {
 
-            if (partialTransitItem) {
-                A[index] = getTransitArea(body, this, index);
-                // Set transit area for full transits
-            } else if (fullTransit[index]) {
-                A[index] = this.Area; // Full transit area is the area of the planet
-            }
-
-        });
-        return A
-
-    }
 
     draw(context, center, scale, i, faceon = true) {
         context.save()
@@ -213,7 +162,6 @@ export class Body {
         sortedPlanets.forEach((planet, planetIndex) => {
             /* Get eclipses due to this planet*/
             const [fullTransitsPlanetStar, partialTransitsPlanetStar] = planet.getTransits(this);
-            console.log("HHH")
             partialTransitsPlanetStar.forEach((partialTransitItem, index) => {
 
                 if (partialTransitItem) {
