@@ -34,6 +34,7 @@ let edgeOnCanvasHandler;
 let exportButton;
 let i = 0;
 let recordedFrames;
+let mainCanvas;
 let record = false
 
 async function loadLanguage(lang = "en") {
@@ -139,33 +140,46 @@ function onStarColorChange() {
 }
 
 function onDatapointsUpdate() {
+    // Trigger simulation update when the times have changed
     onTimesUpdate();
+    // update Frame Menu duration
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
 }
 
 function onTimesUpdate() {
+    // Calculate the times based on the current maxP
     lightcurveMenu.calculateTimes(planetMenu.maxP)
+    // update simulation
     updateSimulation();
+}
+
+function recalculateEclipse() {
+    console.time("getEclipsingAreasMonteCarlo"); // Start timing
+    if (planetMenu.planets.length ==1) {
+        // Use analytical calculation if only one planet
+        const transit = new Transit(starMenu.star, planetMenu.planets[0]);
+        fraction = transit.visibleFraction;
+        lightcurveMenu.mcPointsInput.disabled = true; // Disable MC points input if only one planet
+    } else {
+        // Monte Carlo calculation for multiple planets
+        fraction = starMenu.star.getEclipsingAreasMonteCarloFast(planetMenu.planets, lightcurveMenu.mcPoints);
+        lightcurveMenu.mcPointsInput.disabled = false; // Disable MC points input if only one planet
+    }
+    console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
+    
+    console.log("Transit depth: ", (Math.min(...fraction)).toFixed(3));
+}
+
+function onMcPointsUpdate() {
+    recalculateEclipse();
+    restartSimulation(0);
 }
 
 function updateSimulation() {
     console.log("Updating simulation")
     starMenu.setTimes(lightcurveMenu.times);
     planetMenu.setTimes(lightcurveMenu.times);
-    console.time("getEclipsingAreasMonteCarlo"); // Start timing
-    if (planetMenu.planets.length ==1) {
-        // Use analytical calculation if only one planet
-        const transit = new Transit(starMenu.star, planetMenu.planets[0]);
-        fraction = transit.visibleFraction;
-    } else {
-        // Monte Carlo calculation for multiple planets
-        fraction = starMenu.star.getEclipsingAreasMonteCarloFast(planetMenu.planets, 1000000);
-    }
-    console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
-    
-    console.log("Transit depth: ", (Math.min(...fraction)).toFixed(3));
-    //fraction = starMenu.star.getEclipsingAreasNumerically(planetMenu.planets);
-    //fraction = starMenu.star.getEclipsingAreasMonteCarlo(planetMenu.planets);
+    recalculateEclipse();
     const limits = Math.abs(planetMenu.maxDistance *1.02);
     faceOnCanvasHandler.setDomains(-limits, limits, -limits, limits, true);
     edgeOnCanvasHandler.setDomains(-limits, limits, -limits, limits, false);
@@ -226,7 +240,8 @@ function init() {
     }
 
     if (!lightcurveMenu) {
-        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, onDatapointsUpdate, onTimesUpdate);
+        lightcurveMenu = new LightcurveMenu(planetMenu.maxP, onDatapointsUpdate, onTimesUpdate, onMcPointsUpdate);
+        lightcurveMenu.mcPointsInput.disabled = true; // Disable MC points input if only one planet
     }
 
     // Add listener to the export button
@@ -253,22 +268,14 @@ function init() {
     starMenu.setTimes(lightcurveMenu.times);
     planetMenu.setTimes(lightcurveMenu.times);
     frameMenu.setDuration((lightcurveMenu.datapoints) * frameMenu.ms);
-
-    const mainCanvas = document.getElementById("main-canvas-container")
-
-    mainCanvas.addEventListener("click", () => {
-        pauseAnimation();
-    });
+    mainCanvas = document.getElementById("main-canvas-container")
+    mainCanvas.addEventListener("click", toggleAnimation);
     
     // Pause animation on space bar pressing
     document.addEventListener("keydown", (event) => {
         if (event.code === "Space") {
             event.preventDefault(); // Prevent the default behavior of the space bar (e.g., scrolling)
-            if (id) {
-                pauseAnimation(); // Pause the animation if it's running
-            } else {
-                restartAnimation(); // Restart the animation if it's paused
-            }
+            toggleAnimation(); // Toggle the animation state
         // Show planet form on pressing the "+" button (and not pressing Ctrl)
         } else if ((event.code == "NumpadAdd") && (!event.ctrlKey)) {
             console.log("Show planet form");
@@ -289,6 +296,7 @@ function init() {
     loadLanguage();
 }
 
+
 function saveAnimation(format = "video/webm") {
     // Set the pointer to "loading" mode
     document.body.style.cursor = "wait";
@@ -305,16 +313,19 @@ function saveAnimation(format = "video/webm") {
     restartSimulation(0);
 }
 
+function toggleAnimation() {
+    if (id) {
+        pauseAnimation(); // Pause the animation if it's running
+    } else {
+        restartAnimation(); // Restart the animation if it's paused
+    }
+}
 
 function restartAnimation() {
     console.log("Restarting animation");
     if (!id) {
         restartSimulation(i)
     }
-    const mainCanvas = document.getElementById("main-canvas-container")
-    // Change the event listener back to pause the animation
-    mainCanvas.removeEventListener("click", restartAnimation);
-    mainCanvas.addEventListener("click", pauseAnimation);
 }
 
 function pauseAnimation() {
@@ -323,10 +334,6 @@ function pauseAnimation() {
         clearInterval(id); // Stop the animation
         id = null; // Reset the interval ID
     }
-    // Change the event listener to restart the animation
-    const mainCanvas = document.getElementById("main-canvas-container")
-    mainCanvas.removeEventListener("click", pauseAnimation);
-    mainCanvas.addEventListener("click", restartAnimation);
 }
 
 
