@@ -5,6 +5,7 @@
     "longitude-ascending-node_tooltip": "Longitude of the ascending node (0<=Ω<=1).\n Selects the position of closest point of the orbit to the star. Use it to rotate the orbit. For planar orbit (i.e. i=0) and circular (e = 0) it is undefined and has the same effect as the phase.",
     "phase_tooltip": "Phase of the planet at t<sub>0</sub> (0<=ϕ<=1). Use to select the initial position of the planet",
     "eccentricity_tooltip": "Eccentricity of the orbit (0<=<i>e</i><=1).<br> <i>e</i> = 0 sets a circular orbit.",
-    "inclination_tooltip": "Inclination or orientation of the orbit (-90°<=<i>i</i><=+90°) with respect to the ecliptic.<br> <i>i</i> = 0° for a co-planar orbit. \n The sign controls the direction of the rotation.\nPositive inclinations set the rotation counterclockwise.\nNegative inclinations set the rotation clockwise."
+    "inclination_tooltip": "Inclination or orientation of the orbit (-90°<=<i>i</i><=+90°) with respect to the ecliptic.<br> <i>i</i> = 0° for a co-planar orbit. \n The sign controls the direction of the rotation.\nPositive inclinations set the rotation counterclockwise.\nNegative inclinations set the rotation clockwise.",
+    "mc-points_tooltip": "Number of Monte Carlo samples drawn from the stellar surface for the calculation of the transit profile. Keep it low while you experiment as it slows down the calculation. Once you are happy increase it until the lightcurve transit looks smooth. Only relevant for multiplanetary transits."
   }
   

@@ -4,9 +4,10 @@ import { ToolTipLabel } from './toolTipLabel';
 
 
 export class LightcurveMenu {
-    constructor(maxP, onDatapointsUpdate, onOrbitsUpdate) {
+    constructor(maxP, onDatapointsUpdate, onOrbitsUpdate, recaculateEclipse) {
         this.onDatapointsUpdate = onDatapointsUpdate; // Callback to restart the simulation when datapoints is updated
-        this.onOrbitsUpdate = onOrbitsUpdate; // Callback to restart the simulation when orbits is updated
+        this.onOrbitsUpdate = onOrbitsUpdate; // Callback to restart the simulation when orbits is updated  
+        this.onMcPointsUpdate = recaculateEclipse;
         // Initialize menu elements
         this.initLightcurveMenu();
         // Just to initialize the values
@@ -16,8 +17,10 @@ export class LightcurveMenu {
     }
 
     setLanguage(translations) {
-        this.datapointsLabel.setLanguage(translations)
-        this.orbitsLabel.setLanguage(translations)
+        // Add all the labels that require language
+        this.datapointsLabel.setLanguage(translations);
+        this.orbitsLabel.setLanguage(translations);
+        this.mcPointsLabel.setLanguage(translations);
     }
 
 
@@ -30,7 +33,23 @@ export class LightcurveMenu {
         /// Orbits
         const orbitsInput = document.getElementById("orbits");
         this.orbits = parseInt(orbitsInput.value);
-        this.orbitsLabel = new ToolTipLabel("orbits")
+        this.orbitsLabel = new ToolTipLabel("orbits");
+
+        // MC points
+        this.mcPointsInput = document.getElementById("input-mc-points");
+        this.mcPoints = parseInt(this.mcPointsInput.value);
+        this.mcPointsLabel = new ToolTipLabel("mc-points");
+        // Add event listeners for inputs
+        this.mcPointsInput.addEventListener("input", (event) => {
+            const min = parseFloat(event.target.min);
+            if (event.target.value < min) {
+                event.target.value = min; // Reset to minimum
+            }
+            this.mcPoints = parseInt(event.target.value); 
+            this.onMcPointsUpdate(); // Trigger recalculation of eclipse
+        });
+
+
 
         datapointsInput.addEventListener("input", (event) => {
             const min = parseFloat(event.target.min);

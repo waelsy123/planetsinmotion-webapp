@@ -1,9 +1,9 @@
 export class ToolTipLabel {
     constructor(name) {
 
-        this.name = name
+        this.name = name;
 
-        this.toolTipElement = document.getElementById("tooltip-" + name)
+        this.toolTipElement = document.getElementById("tooltip-" + name);
 
     }
 
