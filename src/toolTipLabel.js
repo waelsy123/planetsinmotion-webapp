@@ -5,6 +5,10 @@ export class ToolTipLabel {
 
         this.toolTipElement = document.getElementById("tooltip-" + name);
 
+        if (this.toolTipElement==null) {
+            console.warn("ToolTip tooltip-" + name + " not found");
+        }
+
     }
 
 
