@@ -7,6 +7,7 @@ import { LightcurveHandler } from './lightcurveHandler.js';
 import { DonateMenu } from './donateMenu.js';
 import { Transit } from './transit.js';
 import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js';
+import { MonteCarloTransitCalculator } from './MonteCarloTransitCalculator.js';
 
 
 //const faceoncanvas = document.getElementById("faceoncanvas")
@@ -35,7 +36,8 @@ let exportButton;
 let i = 0;
 let recordedFrames;
 let mainCanvas;
-let record = false
+let record = false;
+let monteCarloTransitCalculator;
 
 async function loadLanguage(lang = "en") {
     const res = await fetch(`./locales/${lang}.json`);
@@ -99,40 +101,9 @@ const animate = () => {
     i = (i + 1) % datapoints;
 }
 
-/**
-function drawLightcurve(linecontext, timesDays, fraction, color, j) {
-    // Define the axis ranges
-    const xMin = Math.min(...timesDays);
-    const xMax = Math.max(...timesDays);
-    const yMin = Math.min(...fraction) * 0.95;
-    const yMax = Math.max(...fraction) * 1.05;
-
-    // Map axis units to canvas units
-    const mapXToCanvas = (x) => ((x - xMin) / (xMax - xMin)) * linecanvas.width;
-    const mapYToCanvas = (y) => linecanvas.height - ((y - yMin) / (yMax - yMin)) * linecanvas.height;
-
-    // Clear the line canvas
-    if (j==timesDays.length - 1) {
-        linecontext.clearRect(0, 0, linecanvas.width, linecanvas.height);   
-    }
-    // Draw the light curve
-    linecontext.save();
-    linecontext.beginPath();
-    const x1 = mapXToCanvas(timesDays[j]);
-    const y1 = mapYToCanvas(fraction[j]);
-    const x2 = mapXToCanvas(timesDays[j + 1]);
-    const y2 = mapYToCanvas(fraction[j + 1]);
-
-    linecontext.moveTo(x1, y1);
-    linecontext.lineTo(x2, y2);
-    linecontext.strokeStyle = color;
-    linecontext.stroke();
-    linecontext.restore();
-
-}
- */
 function onStarUpdate() {
     planetMenu.setStar(starMenu.star)
+    monteCarloTransitCalculator.setStar(starMenu.star);
     updateSimulation();
 }
 
@@ -158,15 +129,18 @@ function onTimesUpdate() {
 
 function recalculateEclipse() {
     console.time("getEclipsingAreasMonteCarlo"); // Start timing
-    if (planetMenu.planets.length ==1) {
+    // TODO: fix this
+    if (planetMenu.planets.length ==0) {
         // Use analytical calculation if only one planet
         const transit = new Transit(starMenu.star, planetMenu.planets[0]);
         fraction = transit.visibleFraction;
         lightcurveMenu.mcPointsInput.disabled = true; // Disable MC points input if only one planet
     } else {
         // Monte Carlo calculation for multiple planets
-        fraction = starMenu.star.getEclipsingAreasMonteCarloFast(planetMenu.planets, lightcurveMenu.mcPoints);
+        //fraction = starMenu.star.getEclipsingAreasMonteCarloPrecompute(planetMenu.planets, lightcurveMenu.mcPoints);
+        fraction = monteCarloTransitCalculator.getEclipsedFraction(planetMenu.planets);
         lightcurveMenu.mcPointsInput.disabled = false; // Disable MC points input if only one planet
+    
     }
     console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
     
@@ -174,6 +148,8 @@ function recalculateEclipse() {
 }
 
 function onMcPointsUpdate() {
+    // this already redraws the random samples
+    monteCarloTransitCalculator.numSamples = lightcurveMenu.mcPoints;
     recalculateEclipse();
     restartSimulation(0);
 }
@@ -295,6 +271,8 @@ function init() {
     });
 
     loadLanguage();
+
+    monteCarloTransitCalculator = new MonteCarloTransitCalculator(starMenu.star, lightcurveMenu.mcPoints);
 }
 
 
