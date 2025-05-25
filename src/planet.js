@@ -1,10 +1,12 @@
 import { getSemiMajorAxis, trueAnomaly, meanAnomaly, solveEccentricAnomaly, getRadialDistance } from './orbits.js';
 import { pi, sin, cos, sqrt } from 'mathjs';
-import {R_sun, M_sun, DaysToSeconds, AU} from './constants.js'
-import {Body} from './body.js'
-import {darkenColor} from './utils.js'
+import { Units } from './units.js'
+import { DaysToSeconds, AU } from './constants.js'
+import { Body } from './body.js'
+import { darkenColor } from './utils.js'
 
-export class Planet extends Body{
+export class Planet extends Body {
+
     /**
      * Parameters
      * ----------
@@ -14,9 +16,16 @@ export class Planet extends Body{
      * @param {number} phase - Inital orbital phase
      * @param {Star} star - Host star body
      * @param {string} color - Color of the planet
+     * @param {string} planetName - Name of the planet
+     * @param {Units} units - Units of the planet 
      */
-    constructor(M, R, P, star, i=0, e=0., omega0=0, Omega0=0., phase0=0, color='blue', planetName="Planet 1") {
-        super(M * M_sun, R * R_sun, color);
+    constructor(M, R, P, star, i = 0, e = 0., omega0 = 0, Omega0 = 0., phase0 = 0, color = 'blue', planetName = "Planet 1", units = new Units("jupyter")) {
+
+        super(M * units.M, R * units.R, color);
+        this.units = units;
+        this.Runits = this.units.R;
+        this.Munits = this.units.M;
+
         this.checkInputParams(M, R, P, i, e, omega0, Omega0, star);
         this._e = e;
         this._Ms = star.M
@@ -29,8 +38,8 @@ export class Planet extends Body{
         this.color = color
         this.planetName = planetName
         this._a = getSemiMajorAxis(star.M, this._M, this._P)
-        this._b = this._a * sqrt(1 - this._e**2);
-        
+        this._b = this._a * sqrt(1 - this._e ** 2);
+
         this._rmax = this.a * (1. + this.e);
         this.rmin = this.a * (1. - this._e)
         console.log(`Planet max distance: ${(this.rmax / AU).toFixed(3)} AU`);
@@ -50,7 +59,7 @@ export class Planet extends Body{
     }
 
     set R(newRadius) {
-        const newR = newRadius * R_sun
+        const newR = newRadius * this.Runits;
         // Check if the planet is too close to the star
         if ((this.rmin - newR) < this._Rs) {
             throw new StarPlanetDistanceError(this.rmin, this._Rs)
@@ -59,11 +68,11 @@ export class Planet extends Body{
         }
 
     }
-    set phase0(phase0){
+    set phase0(phase0) {
         return this._phase0 = phase0
     }
-    
-    get phase0(){
+
+    get phase0() {
         return this._phase0
     }
 
@@ -95,7 +104,7 @@ export class Planet extends Body{
         } else {
             this._Ms = newMs
             this._a = a
-            this._b = this._a * sqrt(1 - this._e**2);
+            this._b = this._a * sqrt(1 - this._e ** 2);
             this._rmin = rmin
             this._rmax = this._a * (1 + this._e);
         }
@@ -120,13 +129,13 @@ export class Planet extends Body{
         } else {
             this._e = newe
             this.rmin = rmin
-            this._rmax =  this._a * (1 + this._e);
-            this._b = this._a * sqrt(1 - this._e**2);
+            this._rmax = this._a * (1 + this._e);
+            this._b = this._a * sqrt(1 - this._e ** 2);
         }
     }
 
     set M(newMass) {
-        const newM = newMass * M_sun;
+        const newM = newMass * this.Munits;
 
         const a = getSemiMajorAxis(this._Ms, newM, this._P);
 
@@ -137,14 +146,14 @@ export class Planet extends Body{
         } else {
             this._M = newM
             this._a = a
-            this._b = this._a * sqrt(1 - this._e**2);
+            this._b = this._a * sqrt(1 - this._e ** 2);
             this.rmin = rmin
-            this._rmax =  a * (1 + this._e);
+            this._rmax = a * (1 + this._e);
         }
     }
 
 
-    set P(newPeriod) { 
+    set P(newPeriod) {
         const newP = newPeriod * DaysToSeconds;
         const a = getSemiMajorAxis(this._Ms, this._M, newP);
 
@@ -155,19 +164,19 @@ export class Planet extends Body{
         } else {
             this._P = newP;
             this._a = a;
-            this._b = this._a * sqrt(1 - this._e**2);
+            this._b = this._a * sqrt(1 - this._e ** 2);
             this.rmin = rmin
-            this._rmax =  a * (1 + this._e);
-            
+            this._rmax = a * (1 + this._e);
+
         }
     }
 
     get R() {
-        return super.R / R_sun
+        return super.R / this.Runits
     }
 
     get M() {
-        return super.M / M_sun
+        return super.M / this.Munits
     }
 
     get e() {
@@ -186,7 +195,7 @@ export class Planet extends Body{
         this._i = i / 180. * Math.PI
     }
     get i() {
-        return this._i  / Math.PI * 180
+        return this._i / Math.PI * 180
     }
 
     get P() {
@@ -194,55 +203,55 @@ export class Planet extends Body{
     }
 
 
-    toString(){
+    toString() {
         return `Planet: ${(this.R).toFixed(1)} $R_\Earth$ \n ${(this.M).toFixed(1)} g \n i: ${(this.i).toFixed(0)} deg`;
     }
-    equals(other){
+    equals(other) {
         return this.R === other.R && this.M === other.M && this.i === other.i && this.e === other.e && this.P === other.P;
     }
 
-    checkInputParams(M, R, P, i, e, omega0, Omega0, star){
+    checkInputParams(M, R, P, i, e, omega0, Omega0, star) {
 
-        if (M * M_sun > star.M) {
+        if (M * this.Munits > star.M) {
             throw new PlanetDimensionsError(`Planet cannot be heavier than host star!`);
         }
 
-        if (R * R_sun > star.R) {
+        if (R * this.Runits > star.R) {
             throw new PlanetDimensionsError(`Planet cannot be larger than host star!`);
         }
 
-        if (!(-90<=i && i<=90)) {
+        if (!(-90 <= i && i <= 90)) {
             throw new Error(`Inclination ${i.toFixed(1)} must be between -90 and 90!`);
         }
-        if (!(0<=omega0 && omega0<=pi)) {
+        if (!(0 <= omega0 && omega0 <= pi)) {
             throw new Error(`Argument of periastron ${omega0.toFixed(1)} must be between 0 and pi!`);
         }
-        if (!(0<=Omega0 && Omega0<=1)) {
+        if (!(0 <= Omega0 && Omega0 <= 1)) {
             throw new Error(`Longitude of the ascending ${Omega0} has to be between 0 and 1!`);
         }
-        if (!(0<=e && e <=1)) {
+        if (!(0 <= e && e <= 1)) {
             throw new Error(`Eccentricity ${e} needs to be between 0 and 1!`);
         }
 
-        const a = getSemiMajorAxis(star.M, M * M_sun, P * DaysToSeconds)
+        const a = getSemiMajorAxis(star.M, M * this.Munits, P * DaysToSeconds)
         const rmin = a * (1 - e)
-        if ((rmin - R * R_sun) < star.R) {
+        if ((rmin - R * this.Runits) < star.R) {
             throw new StarPlanetDistanceError(rmin, star.R)
         }
     }
-        /**
-     * Parameters
-     * ----------
-     * @param {Star} star - Star object
-     */ 
+    /**
+ * Parameters
+ * ----------
+ * @param {Star} star - Star object
+ */
     setStar(star) {
 
         this.Ms = star.M
         this.Rs = star.R
 
     }
-    
-    setOrbitingTimes(times){
+
+    setOrbitingTimes(times) {
         /**
          * Parameters
          * ----------
@@ -251,11 +260,11 @@ export class Planet extends Body{
         const M = meanAnomaly(times, 2 * pi / this._P, 0);
 
         const E = M.map(M_i => solveEccentricAnomaly(M_i, this._e));
-        
+
         const nu = trueAnomaly(this._e, E, this.phase0)
-        
+
         const r = getRadialDistance(this._a, this._e, nu);
-        
+
         const sinnu = nu.map((nu_i) => sin(nu_i + this.omega0));
         const cosnu = nu.map((nu_i) => cos(nu_i + this.omega0));
         const cosOmega = cos(this._Omega0); // Omega0 is constant
@@ -268,13 +277,13 @@ export class Planet extends Body{
         this.rz = r.map((r_i, index) => -r_i * cosnu[index] * sini);
     }
 
-    draw(context, center, scale, i, faceon=true) {
+    draw(context, center, scale, i, faceon = true) {
         context.save()
         context.globalAlpha = 1
 
         const x = this.ry[i] * scale
         var y = scale;
-        var z  = scale
+        var z = scale
         if (faceon) {
             y *= this.rx[i]
             z *= this.rz[i]
@@ -286,9 +295,9 @@ export class Planet extends Body{
         const planetX = center[0] + x
         const planetY = center[1] + y
         const theta = Math.atan2(y, x)
-        const r = Math.sqrt(x**2 + y**2 + z**2)
-        const phi = Math.acos(Math.sqrt(x**2 + y**2) / r)
-        const startangle =  ((theta + 3 * Math.PI / 2) + Math.sign(z) * phi)
+        const r = Math.sqrt(x ** 2 + y ** 2 + z ** 2)
+        const phi = Math.acos(Math.sqrt(x ** 2 + y ** 2) / r)
+        const startangle = ((theta + 3 * Math.PI / 2) + Math.sign(z) * phi)
         const endangle = ((theta + Math.PI / 2) - Math.sign(z) * phi)
 
         /// Shadow part
@@ -296,7 +305,7 @@ export class Planet extends Body{
         context.fillStyle = darkenColor(this.color, 50)
 
         context.beginPath();
-        context.arc(planetX, 
+        context.arc(planetX,
             planetY, this._R * scale, endangle, startangle, true);
         context.fill();
         context.closePath();
@@ -306,22 +315,22 @@ export class Planet extends Body{
         context.fillStyle = this.color
         //context.globalAlpha = 1
         context.beginPath();
-        context.arc(planetX, 
-            planetY, this._R * scale, 
-           endangle, startangle, false);
-    
+        context.arc(planetX,
+            planetY, this._R * scale,
+            endangle, startangle, false);
+
         context.fill();
         context.closePath();
         context.restore()
-        
+
     }
 
-    
+
 }
 
 export class StarPlanetDistanceError extends Error {
     constructor(rmin, Rs) {
-        const message = `Star-planet distance ${(rmin/AU).toFixed(3)} AU is below stellar radius ${(Rs/AU).toFixed(2)} AU!`
+        const message = `Star-planet distance ${(rmin / AU).toFixed(3)} AU is below stellar radius ${(Rs / AU).toFixed(2)} AU!`
         super(message); // Call the parent class constructor with the error message
         this.name = "StarPlanetDistanceError"; // Set the error name
         this.rmin = rmin; // Minimum distance between the star and the planet
