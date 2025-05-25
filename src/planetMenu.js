@@ -78,8 +78,6 @@ export class PlanetMenu {
 
     initPlanetMenu() {
 
-        
-
         /* Buttons from the main window */
         this.addPlanetBtn = document.getElementById("add-planet-btn");
         this.addPlanetBtn.addEventListener("click", () => this.showPlanetForm());
@@ -240,7 +238,7 @@ export class PlanetMenu {
         }
     }
 
-    updateCanvas(nOrbitTimes = 6000) {
+    updateCanvas(nOrbitTimes = 10000) {
         if (this.planet != null) {
             const datapoints = Math.floor(this.planet.e + 0.01 * (this.planet.P * nOrbitTimes));
             console.log("Updating canvas for " + this.planet.planetName + "with " + datapoints + " datapoints");

@@ -130,7 +130,7 @@ function onTimesUpdate() {
 function recalculateEclipse() {
     console.time("getEclipsingAreasMonteCarlo"); // Start timing
     // TODO: fix this
-    if (planetMenu.planets.length ==0) {
+    if (planetMenu.planets.length ==1) {
         // Use analytical calculation if only one planet
         const transit = new Transit(starMenu.star, planetMenu.planets[0]);
         fraction = transit.visibleFraction;
