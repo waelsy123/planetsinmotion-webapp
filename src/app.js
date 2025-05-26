@@ -7,16 +7,7 @@ import { LightcurveHandler } from './lightcurveHandler.js';
 import { DonateMenu } from './donateMenu.js';
 import { Transit } from './transit.js';
 import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js';
-import { MonteCarloTransitCalculator } from './MonteCarloTransitCalculator.js';
-
-
-//const faceoncanvas = document.getElementById("faceoncanvas")
-//const faceoncontext = faceoncanvas.getContext('2d');
-//const edgeoncanvas = document.getElementById("edgeoncanvas")
-//const linecanvas = document.getElementById("linecanvas")
-//const edgeoncontext = edgeoncanvas.getContext('2d');
-//const linecontext = linecanvas.getContext('2d');
-//linecontext.lineWidth = 1.8
+import { MonteCarloTransitCalculator } from './monteCarloTransitCalculator.js';
 
 
 let planetMenu;
@@ -103,7 +94,7 @@ const animate = () => {
 
 function onStarUpdate() {
     planetMenu.setStar(starMenu.star)
-    monteCarloTransitCalculator.setStar(starMenu.star);
+    monteCarloTransitCalculator.star = starMenu.star;
     updateSimulation();
 }
 
@@ -128,8 +119,7 @@ function onTimesUpdate() {
 }
 
 function recalculateEclipse() {
-    console.time("getEclipsingAreasMonteCarlo"); // Start timing
-    // TODO: fix this
+    //console.time("getEclipsingAreasMonteCarlo"); // Start timing
     if (planetMenu.planets.length ==1) {
         // Use analytical calculation if only one planet
         const transit = new Transit(starMenu.star, planetMenu.planets[0]);
@@ -142,7 +132,7 @@ function recalculateEclipse() {
         lightcurveMenu.mcPointsInput.disabled = false; // Disable MC points input if only one planet
     
     }
-    console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
+    //console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
     
     console.log("Transit depth: ", (Math.min(...fraction)).toFixed(3));
 }
