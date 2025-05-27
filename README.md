@@ -1,11 +1,7 @@
-## Welcome to the most tremendous exoplanet transit animator. 
-
+## Welcome to the most tremendous exoplanet transit animator.
 
 [Website Link](https://www.planetsinmotion.live/)
 
-
-
 ## Deploying to Vercel
 
-This project is a static website. When creating a new project on Vercel, select **Other** as the framework, leave the build command empty, and set the output directory to `./`. The included `vercel.json` file contains basic configuration so you can simply link this repository and deploy.
-
+This project now uses [Next.js](https://nextjs.org/). You can deploy by selecting the **Next.js** framework on Vercel and running the default build command `next build`.
