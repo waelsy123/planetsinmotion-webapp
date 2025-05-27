@@ -4,8 +4,9 @@ import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
 import { Transit } from './transit.js';
 import {Units} from './units.js'
+import { color } from 'chart.js/helpers';
 
-const iconPlanetsize = 15
+const iconPlanetsize = 15;
 
 export class PlanetMenu {
     constructor(onUpdate, onMenuOpened, onMenuClosed, star) {
@@ -352,7 +353,7 @@ export class PlanetMenu {
         if (index != null) {
             console.log("Editing planet " + index)
 
-            this.savePlanetBtn.textContent = "Edit"
+            this.savePlanetBtn.textContent = "Accept";
 
             // do not update the orbit with each parameter change, only at the end
             this.supressedListener = true
@@ -480,8 +481,7 @@ export class PlanetMenu {
         }
         
         // Errors are handled by createPlanet so no need to do anything here
-            const success = this.createPlanet() // possibly no need but just in case
-            if (success) {
+            if (this.planet!=null) {
                 /* If planet did not exist */
                 if (index == null) {
                     this.planets.push(this.planet)
@@ -535,39 +535,7 @@ export class PlanetMenu {
         this.planetList.innerHTML = ""; // Clear the list
 
         this.planets.forEach((planet, index) => {
-            const planetItem = document.createElement("div");
-            planetItem.className = "planet-item";
-            /* Create dot */
-            const dotContainer = document.createElement("div");
-            dotContainer.className = "dot-planet-container";
-
-            // Create the dot
-            const colorCircle = document.createElement("span");
-            colorCircle.className = "dot-planet";
-            colorCircle.style.backgroundColor = planet.color;
-
-            /* Rescale width and height of the circle */
-            const width = planet.R * iconPlanetsize / this.maxRadius
-            colorCircle.style.width = width.toString() + "px";
-            colorCircle.style.height = width.toString() + "px";
-
-            dotContainer.appendChild(colorCircle);
-
-            const planetName = document.createElement("span");
-            planetName.textContent = planet.planetName;
-            /*edit button */
-
-            const editButton = this.createPlanetButton("../icons/edit.png", () => this.onEditListener(index),
-                "Edit")
-
-            /* remove button */
-            const deleteButton = this.createPlanetButton("../icons/delete-button.svg", () => this.onRemoveListener(index),
-                "Delete")
-
-            planetItem.appendChild(colorCircle);
-            planetItem.appendChild(planetName);
-            planetItem.appendChild(editButton);
-            planetItem.appendChild(deleteButton);
+            const planetItem = this.createPlanetItem(planet, index);
 
             this.planetList.appendChild(planetItem);
         });
@@ -576,6 +544,68 @@ export class PlanetMenu {
         this.planetCounter.textContent = "Planets (" + this.planets.length + ")";
         /* Trigger the update of the simulation */
         this.onUpdate()
+    }
+    /**
+     * Create planet HTML item for the list
+     * @param {} planet 
+     * @param {*} index 
+     * @returns 
+     */
+    createPlanetItem(planet, index) {
+        const planetItem = document.createElement("div");
+        planetItem.className = "planet-item";
+        planetItem.dataset.name = planet.planetName; // Use dataset to track the planet name
+    
+        // Create dot
+        // dot container so everything is aligned
+        const dotContainer = document.createElement("div");
+        dotContainer.className = "dot-planet-container";
+
+        // create the dot
+        const colorCircle = document.createElement("span");
+        colorCircle.className = "dot-planet";
+        colorCircle.style.backgroundColor = planet.color;
+        // make it an input color picker
+        const inputColor = document.createElement("input");
+        inputColor.type = "color";
+        inputColor.value = planet.color;
+
+        inputColor.style.display = "none"; // Enable the color input
+        colorCircle.addEventListener("click", () => {
+            inputColor.click();
+        });
+        inputColor.addEventListener("input", (event) => {
+
+            this.planets[index].color = event.target.value;
+            colorCircle.style.backgroundColor = event.target.value;
+        });
+        
+    
+        // Rescale width and height of the circle
+        const width = planet.R * iconPlanetsize / this.maxRadius;
+        colorCircle.style.width = width.toString() + "px";
+        colorCircle.style.height = width.toString() + "px";
+        dotContainer.appendChild(colorCircle);
+        
+        colorCircle.appendChild(inputColor);
+    
+        const planetName = document.createElement("span");
+        planetName.className = "planet-name-label";
+        planetName.title = planet.planetName;
+        planetName.textContent = planet.planetName;
+    
+        // Edit button
+        const editButton = this.createPlanetButton("../icons/edit.png", () => this.onEditListener(index), "Edit");
+    
+        // Remove button
+        const deleteButton = this.createPlanetButton("../icons/delete-button.svg", () => this.onRemoveListener(index), "Delete");
+    
+        planetItem.appendChild(dotContainer);
+        planetItem.appendChild(planetName);
+        planetItem.appendChild(editButton);
+        planetItem.appendChild(deleteButton);
+    
+        return planetItem;
     }
 
     setTimes(times) {

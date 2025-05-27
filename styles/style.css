@@ -219,17 +219,21 @@
 
         .dot-planet-container {
             align-items: center;
-            width: 40px;
-            height: 40px;
-            display: inline-block;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            display: flex;
         }
 
-        .dot-planet {
-            align-items: center;
+        .dot-planet  {
+            cursor: pointer;
+            display: block;
             border-radius: 50%;
-            width: 15px;
-            height: 15px;
             padding: 15px;
+        }
+        .dot-planet:hover {
+            transform: scale(1.1);
+            /* Slightly enlarge the dot on hover */
         }
 
         .dot-star {
@@ -243,9 +247,14 @@
             margin-bottom: 2px;
         }
 
+        .dot-star:hover {
+            transform: scale(1.1);
+            /* Slightly enlarge the star on hover */
+        }
+
         /* Scrollable Planet List */
         .planet-list {
-            max-height: 200px;
+            max-height: 1000px;
             overflow-y: auto;
             border-radius: 5px;
             margin-bottom: 10px;
@@ -260,6 +269,12 @@
             padding: 5px;
             border-radius: 5px;
             color: white;
+        }
+
+        .planet-name-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .menu-label {
