@@ -20,13 +20,11 @@ class CopyWalletButton {
             navigator.clipboard.writeText(this.walletAddress);
             // Show feedback popup
             const feedback = document.getElementById("copy-feedback");
-            feedback.classList.remove("hidden");
             feedback.classList.add("visible");
 
             // Hide the popup after 2 seconds
             setTimeout(() => {
                 feedback.classList.remove("visible");
-                feedback.classList.add("hidden");
             }, 1000);
         });
     }

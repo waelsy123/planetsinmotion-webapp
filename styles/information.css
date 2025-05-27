@@ -58,6 +58,8 @@
             opacity: 1; /* Show the popup */
         }
 
+    
+
         .wallet-box {
             display: inline-block; /* Ensure it behaves like an inline element */
             padding: 5px 10px; /* Add padding inside the box */
