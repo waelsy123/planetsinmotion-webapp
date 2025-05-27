@@ -1,7 +1,7 @@
 import { R_sun, M_J, AU, DaysToSeconds } from './constants.js';
 import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet.js';
 import { getPeriod } from './orbits.js';
-import { linspace, } from './utils.js';
+import { linspace, playBeep } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
 import { Transit } from './transit.js';
 import { Units } from './units.js';
@@ -504,6 +504,7 @@ export class PlanetMenu {
 
             this.closePlanetForm();
             this.updateParameters();
+            playBeep();
         }
     }
 

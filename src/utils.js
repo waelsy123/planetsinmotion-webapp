@@ -39,3 +39,20 @@ export function downloadBlob(blob, name, format) {
         document.body.removeChild(a);
     }, 100); // 100ms buffer
 }
+export function playBeep(duration = 200, frequency = 440, volume = 0.5, type = "sine") {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+    gain.gain.value = volume;
+    oscillator.start();
+    setTimeout(() => {
+        oscillator.stop();
+        ctx.close();
+    }, duration);
+}
