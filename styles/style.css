@@ -52,12 +52,12 @@
         body {
             justify-content: center;
             align-items: center;
-            margin: 0;
+            margin: 1px;
             /* Top margin with the browser menu */
             height: 100vh;
             /* Full viewport height */
-            width: 100%;
-            overflow-x: hidden;
+            width: 99.9vw;
+            ;
             background-color: black;
         }
 
@@ -290,14 +290,4 @@
         a:hover {
             color: #1e90ff;
             text-decoration: underline;
-        }
-
-        /* Responsive layout adjustments */
-        @media (max-width: 768px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
-            .top-canvas-container {
-                flex-direction: column;
-            }
         }
