@@ -15,9 +15,10 @@
             border-radius: 5px;
             flex-direction: column;
             display: flex;
-            width: 950px;
+            width: 90vw;
+            max-width: 950px;
             overflow-y: auto;
-            height: auto    ;
+            height: auto;
             max-height: 700px;
         }
 
