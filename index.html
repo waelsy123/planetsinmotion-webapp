@@ -36,7 +36,7 @@
                         <div for="input-datapoints" class="tooltip"><i>N</i>:
                             <span class="tooltiptext" id="tooltip-datapoints"></span>
                         </div>
-                        <input type="number" min="1" step="10" max="5000" value="100" id="input-datapoints">
+                        <input type="number" min="10" step="10" max="5000" value="100" id="input-datapoints">
                     </div>
                     <div class="menu-row">
                         <div for="orbits" class="tooltip">Orbits:
@@ -49,7 +49,7 @@
                         <div for="mc-points" class="tooltip">MC Points:
                             <span class="tooltiptext" id="tooltip-mc-points"></span>
                         </div>
-                        <input type="number" min="500000" max="1000000000000" value="1000000"
+                        <input type="number" min="500000" max="1000000000000" value="5000000" step="500000"
                             id="input-mc-points">
                     </div>
                     <button id="export-lightcurve">Export</button>
@@ -262,8 +262,6 @@
                         height="100px"></canvas>
                     <div id="container" class="orbit-parameters-section">
                         <div class="menu-row-planet-form">
-                            <!--<label for="transit-duration">T<sub>duration</sub>(s):</labels>
-                        <label id="transit-duration-label">0</label>-->
                             <label>Aphelion:</label>
                             <label id="aphelion">0 AU</label>
                         </div>
@@ -283,7 +281,7 @@
                             <label id="transit-duration">0 days</label>
                         </div>
                     </div>
-                    <label class="planet-form-error-message" id="transit-error">"No transit!"</label>
+                    <label class="planet-form-error-message" id="transit-error">No transit!</label>
 
                     <!--
                     <div class="menu" style="background-color: black;">
