@@ -1,0 +1,375 @@
+import Head from 'next/head'
+
+const bodyHtml = `
+    <!-- Top Banner -->
+    <div class="top-banner">
+        <button id="manual-button" class="banner-button">Manual</button>
+        <button id="donate-button" class="banner-button">Donate</button>
+        <button id="about-button" class="banner-button">About</button>
+    </div>
+    <div class="main-container">
+        <!-- Left Menus -->
+        <div class="left-menu-container">
+            <!-- Lightcurve Menu -->
+            <div class="menu">
+                <div class="menu-section">
+                    <label><strong>Lightcurve</strong></label>
+                    <div class="menu-row">
+                        <div for="input-datapoints" class="tooltip"><i>N</i>:
+                            <span class="tooltiptext" id="tooltip-datapoints"></span>
+                        </div>
+                        <input type="number" min="10" step="10" max="5000" value="100" id="input-datapoints">
+                    </div>
+                    <div class="menu-row">
+                        <div for="orbits" class="tooltip">Orbits:
+                            <span class="tooltiptext" id="tooltip-orbits"></span>
+                        </div>
+                        <input type="number" min="1" step="1" max="10" value="1" id="orbits">
+                    </div>
+
+                    <div class="menu-row">
+                        <div for="mc-points" class="tooltip">Points (10<sup>3</sup>):
+                            <span class="tooltiptext" id="tooltip-mc-points"></span>
+                        </div>
+                        <input type="number" min="500" max="1000000000" value="5000" step="500"
+                            id="input-mc-points">
+                    </div>
+                    <button id="export-lightcurve">Export</button>
+                </div>
+            </div>
+
+            <!-- Frame Menu -->
+            <div class="menu">
+                <div class="menu-section">
+                    <label><strong>Animation</strong></label>
+                    <div class="menu-row">
+                        <div for="ms" class="tooltip">Rate (ms):
+                            <span class="tooltiptext" id="tooltip-frame-rate"></span>
+                        </div>
+                        <input type="number" min="10" step="10" max="2000" value="20" id="ms">
+                    </div>
+                    <div class="menu-row">
+                        <div class="tooltip">
+                            <span class="tooltiptext" id="tooltip-animation-duration"></span>
+                            <label id="animation-duration-label" for="animation-duration-value">Duration (s): </label>
+                        </div>
+                        <label id="animation-duration-value">0</label>
+                    </div>
+                    <button id="save-animation-btn">Save Animation</button>
+                </div>
+            </div>
+        </div>
+        <!-- Canvases -->
+        <div class="main-canvas-container" id="main-canvas-container">
+            <div id="toggle-animation-feedback" class="copy-feedback">Copied!</div>
+            <div class="top-canvas-container">
+                <div class="axis-canvas-container">
+                    <!-- Y-axis label-->
+                    <label class="x-axis-label y-axis-label">z (AU)</label>
+                    <div class="x-axis-column-container">
+                        <label class="canvas-title">Edge-on</label>
+                        <div id="edgeoncanvas"></div>
+                        <label class="x-axis-label">y (AU)</label>
+                    </div>
+                </div>
+                <div class="axis-canvas-container">
+                    <label class="x-axis-label y-axis-label">x (AU)</label>
+                    <div class="x-axis-column-container">
+                        <label class="canvas-title">Face-on</label>
+                        <!-- <canvas id="faceoncanvas" width="600px" height="600px"></canvas>-->
+                        <div id="faceoncanvas"></div>
+                        <label class="x-axis-label">y (AU)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="low-canvas-container">
+                <div class="axis-canvas-container">
+                    <label class="x-axis-label y-axis-label">Relative Flux (%)</label>
+                    <div class="x-axis-column-container">
+                        <div id="d3-lightcurve-container"></div>
+                        <label class="x-axis-label">Time (Days)</label>
+                    </div>
+                </div>
+            </div>
+   
+        </div>
+
+        <div class="menu-container">
+            <!-- Objects Menu -->
+            <div class="menu">
+                <!-- Star Section -->
+                <div class="menu-section">
+                    <div class="label-body">
+                        <span class="dot-star" id="star-icon">
+                            <input type="color" id="star-color-picker" style="display:none;" />
+                        </span>
+                        <label class="menu-label">Star</label>
+                    </div>
+                    <div class="menu-row">
+                        <label for="star-mass">Mass (M<sub>☉</sub>):</label>
+                        <input type="number" min="0.001" step="0.1" id="star-mass" value="1">
+                    </div>
+                    <div class="menu-row">
+                        <label for="star-radius">Radius (R<sub>☉</sub>):</label>
+                        <input type="number" min="0.0" step="0.5" id="star-radius" value="10">
+                    </div>
+                    <div class="menu-row">
+                        <label for="star-color">Color:</label>
+                        <input type="color" id="star-color" value="#FFFF00">
+                    </div>
+                </div>
+
+            </div>
+            <!-- Planets Section -->
+            <div class="menu">
+                <div class="menu-section">
+                    <label class="menu-label" id="planet-title-number">Planets (0)</label>
+                    <div id="planet-list" class="planet-list">
+                        <!-- Planet items will be dynamically added here -->
+                    </div>
+                    <button class="button-cursor" id="add-planet-btn">+</button>
+                </div>
+            </div>
+
+
+        </div>
+        
+    </div>
+
+    <div id="planet-form" class="planet-form hidden">
+        <div class="planet-form-content">
+            <!-- Close Button -->
+            <button id="close-planet-btn" class="close-btn">×</button>
+            <div class="planet-form-main-panel">
+                <div class="menu-container">
+                    <!-- Objects Menu -->
+                    <div class="menu">
+                        <!-- Planet Section -->
+                        <div class="menu-section">
+
+                            <label class="menu-label">Planet</label>
+                            <div class="menu-row">
+                                <label for="planet-name">Name:</label>
+                                <input type="text" id="planet-name" />
+                                <!--<input id="planet-name" list="planet-options" placeholder="Enter planet name" />
+                                <datalist id="planet-options">
+                                    <option value="Mercury"></option>
+                                    <option value="Venus"></option>
+                                    <option value="Earth"></option>
+                                    <option value="Mars"></option>
+                                    <option value="Jupiter"></option>
+                                    <option value="Saturn"></option>
+                                    <option value="Uranus"></option>
+                                    <option value="Neptune"></option>
+                                </datalist>-->
+                            </div>
+                            <div class="menu-row">
+                                <div class="tooltip">
+                                    <label  id="planet-mass-label" for="planet-mass-input"></label>
+                                    <span class="tooltiptext" id="tooltip-planet-mass"></span>
+                                </div>
+                                <input id="planet-mass-input" type="number" min="0.001" step="0.01" value="1"
+                                    max="1000" />
+                            </div>
+                            <div class="menu-row">
+                                <div class="tooltip" >
+                                    <label id="planet-radius-label" for="planet-radius-input"></label>
+                                    <span class="tooltiptext" id="tooltip-planet-radius"></span>
+                                </div>
+                                <input id="planet-radius-input" type="number" min="0.0001" step="0.1" value="10"
+                                    max="10000000" />
+                            </div>
+
+                            <div class="menu-row">
+                                <label for="planet-color">Color:</label>
+                                <input type="color" id="planet-color">
+                            </div>
+
+                            <!-- Orbit Section -->
+                            <div class="menu-section">
+                                <label class="menu-label">Orbit</label>
+
+                                <div class="menu-row">
+                                    <label for="planet-period"><i>P</i> (days):</label>
+                                    <input type="number" min="0.1" step="1" id="planet-period" value="5" max="10000000">
+                                </div>
+                                <div class="menu-row">
+                                    <div class="tooltip" for="inclination-input"><i>i</i> (°):
+                                        <span class="tooltiptext" id="tooltip-inclination"></span>
+                                    </div>
+                                    <input type="number" min="-90" step="1" max="90" value="0" id="inclination-input">
+                                </div>
+                                <div class="menu-row">
+                                    <div class="tooltip" for="eccentricity-input"><i>e</i>:
+                                        <span class="tooltiptext" id="tooltip-eccentricity"></span>
+                                    </div>
+                                    <input type="number" min="0" step="0.1" max="1" value="0" id="eccentricity-input">
+                                </div>
+                                <div class="menu-row">
+                                    <div class="tooltip" for="phase-input"><i>ɸ</i>:
+                                        <span class="tooltiptext" id="tooltip-phase"></span>
+                                    </div>
+                                    <input type="number" min="0" step="0.1" max="1" value="0.5" id="phase-input">
+                                </div>
+                                <div class="menu-row">
+                                    <div class="tooltip" for="longitude-ascending-node-input"><i>Ω</i>:
+                                        <span class="tooltiptext" id="tooltip-longitude-ascending-node"></span>
+                                    </div>
+                                    <input type="number" min="0" step="0.1" max="1" value="0.0"
+                                        id="longitude-ascending-node-input">
+                                </div>
+                            </div>
+                            <!-- Controls -->
+                            <div class="form-controls">
+                                <button id="cancel-planet-btn" type="buton" class="planet-form-btn">Cancel</button>
+                                <button id="randomize-planet-btn" type="buton"
+                                    class="planet-form-btn">Randomize</button>
+                                <button id="save-planet-btn" type="buton" class="planet-form-btn">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="planet-form-canvas">
+                    <canvas id="planet-canvas" style="cursor: auto;" width="300px" height="300px"></canvas>
+                    <canvas id="lightcurve-canvas-planet-form" style="cursor: auto;" width="300px"
+                        height="100px"></canvas>
+                    <div id="container" class="orbit-parameters-section">
+                        <div class="menu-row-planet-form">
+                            <label>Aphelion:</label>
+                            <label id="aphelion">0 AU</label>
+                        </div>
+                        <div class="menu-row-planet-form">
+                            <label>Perihelion:</label>
+                            <label id="perihelion">0 AU</label>
+                        </div>
+
+                        <div class="menu-row-planet-form">
+                            <label>T<sub>depth</sub>:</label>
+                            <label id="transit-depth">0</label>
+                        </div>
+
+
+                        <div class="menu-row-planet-form">
+                            <label>T<sub>duration</sub>:</label>
+                            <label id="transit-duration">0 days</label>
+                        </div>
+                    </div>
+                    <label class="planet-form-error-message" id="transit-error">No transit!</label>
+
+                    <!--
+                    <div class="menu" style="background-color: black;">
+                    <div class="menu-row">
+                        
+                        <label for="log-scale">log-scale</label>
+                        <input id="planet-form-log-scale" type="checkbox" onclick='updateLogScale(this);'>
+
+                    </div>
+                </div>
+                -->
+                </div>
+            </div>
+            <label class="planet-form-error-message" id="planet-error"></label>
+        </div>
+    </div>
+
+
+    <div class="planet-form hidden" id="about-content">
+        <div class="information-form">
+            <button id="close-about-btn" class="close-btn">×</button>
+            <div class="information-container">
+                <label class="information-title">Welcome to the Exoplanet Transit Animator!</label>
+                <label id="about-text" class="information-content"></label>
+                <div class="autor-container">
+                    <div class="autor-text-container">
+                        <label><strong>Author:</strong> Andrés Gúrpide Lasheras</label>
+                        <label><strong>Website:</strong><a target="_blank" rel="noopener noreferrer" href="https://www.andresgurpide.com"> www.andresgurpide.com
+                            </a></label>
+                        <label><strong>Contact:</strong> andres.gurpide.astro@gmail.com</label>
+                    </div>
+                    <a target="_blank" rel="noopener noreferrer" href="https://www.andresgurpide.com" target="_blank">
+                        <img src="/icons/andresg.png" style="transform: scale(0.9);" alt="Andrés Gúrpide">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="planet-form hidden" id="manual-content">
+        <div class="information-form">
+            <button id="close-manual-btn" class="close-btn">×</button>
+            <div class="information-container">
+                <label class="information-title">Manual</label>
+                <label id="manual-text" class="information-content"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="planet-form hidden" id="donate-content">
+        <div class="information-form">
+            <button id="close-donate-btn" class="close-btn">×</button>
+            <div class="information-container">
+                <label class="information-title">Support This Project &lt;3</label>
+                <label id="donate-text" class="information-content"></label>
+                <div class="donate-content">
+                    <img src="/icons/bitcoin-btc-logo.svg" class="crypto-logo">
+                    <p> Wallet Address</p>
+                    <div class="wallet-box">
+                        <code>bc1q4xr9agec3ldug0xezqxy252y3kvqmcz62xr6pm</code>
+                    </div>
+                    <button class="planet-btns" id="copyBTCWalletAddressBtn" aria-label="Copy BTC Wallet Address">
+                        <img src="/icons/copy.png" alt="Copy BTC Icon" />
+                    </button>
+                    <div id="copy-feedback" class="copy-feedback">Copied!</div>
+                </div>
+
+                <div class="donate-content">
+                    <img src="/icons/ethereum-eth-logo.svg" class="crypto-logo">
+                    <p>Wallet Address</p>
+                    <div class="wallet-box">
+                        <code>0xaFE3DB130E71404Ed038397D25C26777d4EC8e4F</code>
+                    </div>
+                    <button class="planet-btns" id="copyETHWalletAddressBtn" aria-label="Copy Wallet Address">
+                        <img src="/icons/copy.png" alt="Copy ETH Icon" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--bc1q4xr9agec3ldug0xezqxy252y3kvqmcz62xr6pm -->
+
+    <dialog id="recording-dialog">
+        <div class="recording-content">
+            <label>Generating...</label>
+            <div class="spinner"></div>
+        </div>
+    </dialog>
+
+
+    <script type="module" src="./src/app.js"></script>
+
+
+
+`;
+
+export default function Home() {
+  return (
+    <>
+      <Head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Exoplanet Transit Animation</title>
+<link rel="stylesheet" href="/styles/planet_form.css" />
+<link rel="stylesheet" href="/styles/style.css" />
+<link rel="stylesheet" href="/styles/tooltip.css" />
+<link rel="stylesheet" href="/styles/planet_form_buttons.css" />
+<link rel="stylesheet" href="/styles/svg.css" />
+<link rel="stylesheet" href="/styles/recording_dialog.css" />
+<link rel="stylesheet" href="/styles/information.css" />
+<link rel="stylesheet" href="/styles/about.css" />
+<link rel="stylesheet" href="/styles/top_banner.css" />
+
+      </Head>
+      <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+    </>
+  );
+}
