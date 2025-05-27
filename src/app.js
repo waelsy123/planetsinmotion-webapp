@@ -105,6 +105,9 @@ function onStarColorChange() {
 }
 
 function onDatapointsUpdate() {
+    if (planetMenu.planets.length == 0) {
+        return;
+    }
     // Trigger simulation update when the times have changed
     onTimesUpdate();
     // update Frame Menu duration
@@ -112,6 +115,10 @@ function onDatapointsUpdate() {
 }
 
 function onTimesUpdate() {
+    if (planetMenu.planets.length == 0) {
+        return; // No planets, no need to update times
+    }
+    console.log("Updating times");
     // Calculate the times based on the current maxP
     lightcurveMenu.calculateTimes(planetMenu.maxP)
     // update simulation
@@ -126,11 +133,17 @@ function recalculateEclipse() {
         fraction = transit.visibleFraction;
         lightcurveMenu.mcPointsInput.disabled = true; // Disable MC points input if only one planet
     } else {
+        console.log("Showing modal")
+        const recordingDialog = document.getElementById("recording-dialog");
+        recordingDialog.showModal();
         // Monte Carlo calculation for multiple planets
         //fraction = starMenu.star.getEclipsingAreasMonteCarloPrecompute(planetMenu.planets, lightcurveMenu.mcPoints);
+        // Perform the Monte Carlo calculation asynchronously
         fraction = monteCarloTransitCalculator.getEclipsedFraction(planetMenu.planets);
-        lightcurveMenu.mcPointsInput.disabled = false; // Disable MC points input if only one planet
-    
+        lightcurveMenu.mcPointsInput.disabled = false; // Enable MC points input
+
+        // Close the modal after the calculation is complete
+        recordingDialog.close();
     }
     //console.timeEnd("getEclipsingAreasMonteCarlo"); // End timing and print result
     
@@ -145,7 +158,7 @@ function onMcPointsUpdate() {
 }
 
 function updateSimulation() {
-    console.log("Updating simulation")
+    console.log("Updating simulation");
     starMenu.setTimes(lightcurveMenu.times);
     planetMenu.setTimes(lightcurveMenu.times);
     recalculateEclipse();
@@ -171,7 +184,9 @@ function onUpdatePlanets() {
         frameMenu.saveAnimationButton.disabled = true // Disable the button
         frameMenu.saveAnimationButton.style.cursor = "auto"
 
-        // If there are no planets, clear the canvas
+        // If there are no planets, stop simulation and clear the canvas
+        clearInterval(id);
+        id = null; //
         console.log("No planets to animate, clearing canvas");
         lightcurveHandler.clear();
         faceOnCanvasHandler.clear();
