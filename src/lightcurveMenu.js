@@ -76,7 +76,6 @@ export class LightcurveMenu {
     calculateTimes(maxP){
         this.times = linspace(0, this.orbits * maxP, this.datapoints);
         this.timesDays = this.times.map((t) => t / DaysToSeconds);
-        console.log("Time days", this.timesDays);
     }
    
 
