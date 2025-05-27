@@ -297,10 +297,22 @@ function saveAnimation(format = "video/webm") {
     restartSimulation(0);
 }
 
+function showToggleAnimationFeedback(text) {
+    const dialog = document.getElementById("toggle-animation-feedback");
+    dialog.innerHTML = text;
+    dialog.classList.add("visible");
+      // Hide the popup after 2 seconds
+      setTimeout(() => {
+        dialog.classList.remove("visible");
+    }, 1000);
+}
+
 function toggleAnimation() {
     if (id) {
+        showToggleAnimationFeedback(translations["pause-animation"]);
         pauseAnimation(); // Pause the animation if it's running
     } else {
+        showToggleAnimationFeedback(translations["resume-animation"]);
         restartAnimation(); // Restart the animation if it's paused
     }
 }
