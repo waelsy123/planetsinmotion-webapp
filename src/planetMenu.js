@@ -1,10 +1,10 @@
 import { R_sun, M_J, AU, DaysToSeconds } from './constants.js';
 import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet.js';
+import { getPeriod } from './orbits.js';
 import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
 import { Transit } from './transit.js';
-import {Units} from './units.js'
-import { color } from 'chart.js/helpers';
+import { Units } from './units.js';
 
 const iconPlanetsize = 15;
 
@@ -20,12 +20,13 @@ export class PlanetMenu {
         this.units = new Units("jupyter"); // Default unit for the planets
         this.setLabelUnits();
         this.planetNameCounter = 0;
-        
+
         // Initialize menu elements
         this.defaultColor = document.getElementById("planet-period").style.color;
         this.supressedListener = false;
         this.initPlanetMenu();
-
+        this.createPlanet(); // Create a default planet to avoid null references
+        this.defaultPlanet = this.planet;
         //this.initCanvas()
 
 
@@ -35,7 +36,7 @@ export class PlanetMenu {
     setLanguage(translations) {
 
         this.labels.forEach(label => {
-            label.setLanguage(translations)
+            label.setLanguage(translations);
         });
 
     }
@@ -68,7 +69,7 @@ export class PlanetMenu {
     /**
      * Set the units to the radius and mass labels
      */
-    setLabelUnits () {
+    setLabelUnits() {
         // unit labels
         const radiusLabel = document.getElementById("planet-radius-label");
         console.log("Setting units: " + this.units.symbol);
@@ -82,27 +83,27 @@ export class PlanetMenu {
         /* Buttons from the main window */
         this.addPlanetBtn = document.getElementById("add-planet-btn");
         this.addPlanetBtn.addEventListener("click", () => this.showPlanetForm());
-        
+
         this.planetForm = document.getElementById("planet-form");
-        
+
         /* Buttons from the pop up window */
         this.cancelPlanetBtn = document.getElementById("cancel-planet-btn");
         this.cancelPlanetBtn.addEventListener("click", () => {
-            this.closePlanetForm()
+            this.closePlanetForm();
             this.onMenuClosed();
         });
         this.closePlanetBtn = document.getElementById("close-planet-btn");
         this.closePlanetBtn.addEventListener("click", () => this.cancelPlanetBtn.click());
-        
+
         this.planetList = document.getElementById("planet-list");
-        
+
         /* Error messages*/
         // for the add planet menu*/
         this.errorLabel = document.getElementById("planet-error");
         // for the no transit warning
         this.transitWarningLabel = document.getElementById("transit-error");
 
-        
+
         /* Inputs for the pop up menu */
         // Orbit
         this.planetNameInput = document.getElementById("planet-name");
@@ -136,14 +137,14 @@ export class PlanetMenu {
                     input.style.color = this.defaultColor
                 });
                 this.errorLabel.classList.add("hidden");
-                
+
                 if (this.supressedListener) return;
                 this.createPlanet();
-                this.updateCanvas()
+                this.updateCanvas();
             });
         });
 
-        this.colorInput.addEventListener("input", (event) => {
+        this.colorInput.addEventListener("input", () => {
             // This prevents randomize from triggering the event
             if (this.supressedListener) return;
             console.log("Input Triggered")
@@ -164,13 +165,13 @@ export class PlanetMenu {
             // do not update the orbit with each parameter change, only at the end
             this.supressedListener = true
             //Randomize inputs
-            this.randomizeInputs()
+            this.randomizeInputs();
 
             this.errorLabel.classList.remove("hidden")
             this.createPlanet();
-            this.updateCanvas()
+            this.updateCanvas();
             // activate the listeners back
-            this.supressedListener = false
+            this.supressedListener = false;
         });
 
 
@@ -181,13 +182,11 @@ export class PlanetMenu {
         const inclinationLabel = new ToolTipLabel("inclination");
         const massLabel = new ToolTipLabel("planet-mass");
         const radiusLabel = new ToolTipLabel("planet-radius");
-        
 
         this.labels = [OmegaLabel, phaseLabel, eccentricityLabel, inclinationLabel, massLabel, radiusLabel];
 
         // Planet counter
         this.planetCounter = document.getElementById("planet-title-number");
-
 
     }
     /**
@@ -213,28 +212,24 @@ export class PlanetMenu {
         const Omega0 = parseFloat(this.Omega0Input.value);
         const color = this.colorInput.value
         const name = this.planetNameInput.value
-        
+
         try {
             this.planet = new Planet(M, R, P, this.star, i, e, 0, Omega0, phase, color, name, this.units);
             this.errorLabel.classList.add("hidden");
-            return true;
         } catch (error) {
             if (error instanceof StarPlanetDistanceError) {
                 console.error(`Star-Planet Distance Error: ${error.message}`);
                 this.errorLabel.classList.remove("hidden");
                 this.errorLabel.textContent = "Orbit is whithin the star radius!";
                 this.planet = null;
-                return false;
             } else if (error instanceof PlanetDimensionsError) {
                 this.errorLabel.classList.remove("hidden");
                 this.errorLabel.textContent = error.message;
                 this.planet = null;
-                return false;
             } else {
                 console.error(`Unknown error: ${error.message}`);
                 // Possibly because the inputs are just do nothing
                 this.planet = null;
-                return false;
             }
         }
     }
@@ -253,12 +248,11 @@ export class PlanetMenu {
             this.drawLightcurve(fraction, timesDays);
 
             // Update labels
-            document.getElementById("perihelion").innerText = (this.planet.rmin/AU).toFixed(3) + " AU";
-            document.getElementById("aphelion").innerText = (this.planet.rmax/ AU).toFixed(3) + " AU";
+            document.getElementById("perihelion").innerText = (this.planet.rmin / AU).toFixed(3) + " AU";
+            document.getElementById("aphelion").innerText = (this.planet.rmax / AU).toFixed(3) + " AU";
             document.getElementById("transit-depth").innerText = transit.transitDepth.toFixed(3);
             console.log("Transit duration", transit.transitDuration);
             const dt = (timesDays[1] - timesDays[0]);
-            console.log("dt", dt);
             if (transit.transitDuration == 0) {
                 this.transitWarningLabel.classList.remove("hidden");
             } else {
@@ -292,7 +286,7 @@ export class PlanetMenu {
         const x1 = mapXToCanvas(timesDays[0]);
         const y1 = mapYToCanvas(fraction[0]);
         ctx.moveTo(x1, y1);
-        
+
         for (let i = 1; i < timesDays.length; i++) {
             const x = mapXToCanvas(timesDays[i]);
             const y = mapYToCanvas(fraction[i]);
@@ -358,25 +352,35 @@ export class PlanetMenu {
             // do not update the orbit with each parameter change, only at the end
             this.supressedListener = true
 
-            this.planetNameInput.value = this.planets[index].planetName
-            this.periodInput.value = this.planets[index].P
-            this.eInput.value = this.planets[index].e
-            this.iInput.value = parseFloat(this.planets[index].i).toFixed(2)
-            this.Omega0Input.value = parseFloat(this.planets[index].Omega0).toFixed(2)
-            this.massInput.value = this.planets[index].M
-            this.phaseInput.value = this.planets[index].phase0
-            this.radiusInput.value = this.planets[index].R
+            this.planetNameInput.value = this.planets[index].planetName;
+            this.periodInput.value = this.planets[index].P;
+            this.eInput.value = this.planets[index].e;
+            this.iInput.value = parseFloat(this.planets[index].i).toFixed(2);
+            this.Omega0Input.value = parseFloat(this.planets[index].Omega0).toFixed(2);
+            this.massInput.value = this.planets[index].M;
+            this.phaseInput.value = this.planets[index].phase0;
+            this.radiusInput.value = this.planets[index].R;
             this.colorInput.value = this.planets[index].color;
 
         } else {
-            this.colorInput.value = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
             this.savePlanetBtn.textContent = "Add";
+
+            this.periodInput.value = this.defaultPlanet.P;
+            this.eInput.value = this.defaultPlanet.e;
+            this.iInput.value = this.defaultPlanet.i.toFixed(2);
+            this.Omega0Input.value = this.defaultPlanet.Omega0.toFixed(2);
+            this.massInput.value = this.defaultPlanet.M;
+            this.radiusInput.value = this.defaultPlanet.R;
+            this.phaseInput.value = this.defaultPlanet.phase0;
+
+            // populate the form with default values
+            this.colorInput.value = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
             this.planetNameInput.value = "Planet " + (this.planetNameCounter + 1);
         }
 
         this.createPlanet();
-        this.updateCanvas()
-        this.supressedListener = false
+        this.updateCanvas();
+        this.supressedListener = false;
 
         // Keyboard listeners
         this.keydownListener = (event) => {
@@ -387,26 +391,26 @@ export class PlanetMenu {
             else if (event.key == "Enter") {
                 const active = document.activeElement;
 
-            // Prevent interference from inputs like color pickers or text fields
-            if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
-                // Optional: only override if it's a color input
-                if (active.type === "color") {
-                    event.preventDefault(); // Stop the default color picker submit
-                    event.stopPropagation();
+                // Prevent interference from inputs like color pickers or text fields
+                if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+                    // Optional: only override if it's a color input
+                    if (active.type === "color") {
+                        event.preventDefault(); // Stop the default color picker submit
+                        event.stopPropagation();
+                    }
                 }
-            }
                 this.savePlanetBtn.click();
             }
 
-            else if ((event.key=="R") || (event.key=="r")) {
+            else if ((event.key == "R") || (event.key == "r")) {
                 if (document.activeElement != this.planetNameInput) {
                     this.randomizeBtn.click();
                 }
             }
 
-            else if ((event.key=="c") || (event.key=="C")) {
+            else if ((event.key == "c") || (event.key == "C")) {
                 if (document.activeElement != this.planetNameInput) {
-                        this.cancelPlanetBtn.click();
+                    this.cancelPlanetBtn.click();
                 }
             }
         };
@@ -426,12 +430,18 @@ export class PlanetMenu {
         // radius go up to about 25 RE but we want to make it look nicer
         // make it 5 times smaller than the star value + 1 solar radius
         this.radiusInput.value = parseFloat((randomNumber * this.star._R / this.units.R / 5) + R_sun / this.units.R).toFixed(2);
-
-        // Orbit
-        this.periodInput.value = Math.floor(randomNumber * 500) + 0.01
-        this.iInput.value = parseFloat((2 * randomNumber - 1) * 89.9).toFixed(2);
         const randome = Math.random();
         this.eInput.value = parseFloat(randome.toFixed(2));
+
+        // Orbit
+        const rmin = this.star._R + this.radiusInput.value * this.units.R;
+        const a  = rmin / (1 - this.eInput.value);
+        const minPeriod = getPeriod(this.star._M, this.massInput.value * this.units.M, a);
+
+        console.log("Min period: " + (minPeriod / DaysToSeconds).toFixed(2) + " days");
+        this.periodInput.value = Math.floor(randomNumber * 500 + minPeriod / DaysToSeconds);
+        this.iInput.value = parseFloat((2 * randomNumber - 1) * 89.9).toFixed(2);
+        
         const randomPhase = Math.random();
         this.phaseInput.value = randomPhase.toFixed(2);
         const randomOmega0 = Math.random();
@@ -455,7 +465,7 @@ export class PlanetMenu {
         this.savePlanetBtn.removeEventListener("click", this.savePlanetListener);
 
         if (this.savePlanetListener) {
-            this.savePlanetListener = null
+            this.savePlanetListener = null;
         }
 
     }
@@ -471,7 +481,7 @@ export class PlanetMenu {
         const existingIndex = planetNames.indexOf(name);
         // Check if the planet name already exists in the list
         // If the planet name already exists and it's not the same planet being edited, show an error
-        if (existingIndex!= -1 && existingIndex!=index) {
+        if (existingIndex != -1 && existingIndex != index) {
             this.errorLabel.classList.remove("hidden");
             this.errorLabel.textContent = "Planet name already exists!";
             this.planetNameInput.style.color = "red";
@@ -479,19 +489,19 @@ export class PlanetMenu {
             this.planet = null;
             return;
         }
-        
-        // Errors are handled by createPlanet so no need to do anything here
-            if (this.planet!=null) {
-                /* If planet did not exist */
-                if (index == null) {
-                    this.planets.push(this.planet)
-                    this.planetNameCounter++;
 
-                } else {
-                    /* If existed update the list */
-                    this.planets[index] = this.planet
-                }
-                
+        // Errors are handled by createPlanet so no need to do anything here
+        if (this.planet != null) {
+            /* If planet did not exist */
+            if (index == null) {
+                this.planets.push(this.planet);
+                this.planetNameCounter++;
+
+            } else {
+                /* If existed update the list */
+                this.planets[index] = this.planet;
+            }
+
             this.closePlanetForm();
             this.updateParameters();
         }
@@ -499,33 +509,33 @@ export class PlanetMenu {
 
     createPlanetButton(image, listener, alt) {
         const button = document.createElement("button");
-        button.className = "planet-btns"
-        const buttonIcon = document.createElement("img")
+        button.className = "planet-btns";
+        const buttonIcon = document.createElement("img");
         buttonIcon.setAttribute("src", image);
         // Apply a white color to the icon using CSS filter
         buttonIcon.setAttribute("alt", alt);
-        buttonIcon.setAttribute("title", alt)
+        buttonIcon.setAttribute("title", alt);
         button.addEventListener("click", listener);
-        button.appendChild(buttonIcon)
-        return button
+        button.appendChild(buttonIcon);
+        return button;
 
     }
 
     onRemoveListener(index) {
-        console.log("Removing planet" + index)
+        console.log("Removing planet" + index);
         this.planets.splice(index, 1);
         this.updateParameters();
     }
 
     onEditListener(index) {
-        console.log("Editing planet " + index)
+        console.log("Editing planet " + index);
         this.showPlanetForm(index)
     }
 
     updateParameters() {
         this.maxRadius = Math.max(...this.planets.map(planet => planet.R));
         this.maxP = Math.max(...this.planets.map(planet => planet._P));
-        this.updatePlanetList()
+        this.updatePlanetList();
     }
 
 
@@ -543,7 +553,7 @@ export class PlanetMenu {
 
         this.planetCounter.textContent = "Planets (" + this.planets.length + ")";
         /* Trigger the update of the simulation */
-        this.onUpdate()
+        this.onUpdate();
     }
     /**
      * Create planet HTML item for the list
@@ -555,7 +565,7 @@ export class PlanetMenu {
         const planetItem = document.createElement("div");
         planetItem.className = "planet-item";
         planetItem.dataset.name = planet.planetName; // Use dataset to track the planet name
-    
+
         // Create dot
         // dot container so everything is aligned
         const dotContainer = document.createElement("div");
@@ -579,32 +589,32 @@ export class PlanetMenu {
             this.planets[index].color = event.target.value;
             colorCircle.style.backgroundColor = event.target.value;
         });
-        
-    
+
+
         // Rescale width and height of the circle
         const width = planet.R * iconPlanetsize / this.maxRadius;
         colorCircle.style.width = width.toString() + "px";
         colorCircle.style.height = width.toString() + "px";
         dotContainer.appendChild(colorCircle);
-        
+
         colorCircle.appendChild(inputColor);
-    
+
         const planetName = document.createElement("span");
         planetName.className = "planet-name-label";
         planetName.title = planet.planetName;
         planetName.textContent = planet.planetName;
-    
+
         // Edit button
         const editButton = this.createPlanetButton("/icons/edit.png", () => this.onEditListener(index), "Edit");
-    
+
         // Remove button
         const deleteButton = this.createPlanetButton("/icons/delete-button.svg", () => this.onRemoveListener(index), "Delete");
-    
+
         planetItem.appendChild(dotContainer);
         planetItem.appendChild(planetName);
         planetItem.appendChild(editButton);
         planetItem.appendChild(deleteButton);
-    
+
         return planetItem;
     }
 

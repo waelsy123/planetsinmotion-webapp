@@ -91,6 +91,17 @@ export function getSemiMajorAxis(M1, M2, P) {
     const a = (P ** 2 * Gcgs * (M1 + M2) / (4 * pi ** 2)) ** (1 / 3);
     return a;
 }
+/**
+ * Inverted Kepler's Law to calculate the period of the orbit from the semi-major axis.
+ * 
+ * @param {number} M1 
+ * @param {number} M2 
+ * @param {number} a 
+ * @returns 
+ */
+export function getPeriod(M1, M2, a) {
+    return 2 * pi * (a ** 3 / (Gcgs * (M1 + M2))) ** (0.5);
+}
 
 /**
  * Computes the radial distance as a function of the true anomaly.
