@@ -1,5 +1,5 @@
 {
-  "framework": "static",
+  "framework": "nextjs",
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]
