@@ -37,7 +37,7 @@ export class LightcurveMenu {
 
         // MC points
         this.mcPointsInput = document.getElementById("input-mc-points");
-        this.mcPoints = parseInt(this.mcPointsInput.value);
+        this.mcPoints = parseInt(this.mcPointsInput.value * 1000);
         this.mcPointsLabel = new ToolTipLabel("mc-points");
         // Add event listeners for inputs
         this.mcPointsInput.addEventListener("input", (event) => {
@@ -45,7 +45,7 @@ export class LightcurveMenu {
             if (event.target.value < min) {
                 event.target.value = min; // Reset to minimum
             }
-            this.mcPoints = parseInt(event.target.value); 
+            this.mcPoints = parseInt(event.target.value  * 1000); 
             this.onMcPointsUpdate(); // Trigger recalculation of eclipse
         });
 
@@ -76,7 +76,6 @@ export class LightcurveMenu {
     calculateTimes(maxP){
         this.times = linspace(0, this.orbits * maxP, this.datapoints);
         this.timesDays = this.times.map((t) => t / DaysToSeconds);
-        console.log("Time days", this.timesDays);
     }
    
 
