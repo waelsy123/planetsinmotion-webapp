@@ -2,6 +2,8 @@ import * as d3 from "d3";
 import fixWebmDuration from "fix-webm-duration";
 import { downloadBlob } from './utils.js';
 
+const DOMAIN_NAME = "planetsinmotion.live";
+
 export class CanvasHandler {
 
     constructor(id, width, height, margins, outputname) {
@@ -144,7 +146,7 @@ export class CanvasHandler {
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.strokeText("planetsinmotion.com", this.canvas.width - 500, this.canvas.height - 100);
+            this.ctx.strokeText(DOMAIN_NAME, this.canvas.width - 500, this.canvas.height - 100);
             URL.revokeObjectURL(url);
         };
     
