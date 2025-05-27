@@ -14,6 +14,10 @@ export class StarMenu {
         const starRadiusInput = document.getElementById("star-radius");
         const starColorSelect = document.getElementById("star-color");
         const starIcon = document.getElementById("star-icon");
+
+        starIcon.addEventListener("click", () => {
+            starColorSelect.click(); // Open color picker when icon is clicked
+        });
         
         // Add listeners for star inputs
         starMassInput.addEventListener("input", (event) => {
