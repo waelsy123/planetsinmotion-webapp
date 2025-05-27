@@ -31,7 +31,7 @@ let record = false;
 let monteCarloTransitCalculator;
 
 async function loadLanguage(lang = "en") {
-    const res = await fetch(`./locales/${lang}.json`);
+    const res = await fetch(`/locales/${lang}.json`);
     translations = await res.json();
     lightcurveMenu.setLanguage(translations);
     frameMenu.setLanguage(translations);
