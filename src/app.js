@@ -8,6 +8,7 @@ import { DonateMenu } from './donateMenu.js';
 import { Transit } from './transit.js';
 import { OrbitAnimatorCanvasHandler } from './orbitAnimatorCanvasHandler.js';
 import { MonteCarloTransitCalculator } from './monteCarloTransitCalculator.js';
+import { playBeep } from './utils.js';
 
 
 let planetMenu;
@@ -309,9 +310,11 @@ function showToggleAnimationFeedback(text) {
 
 function toggleAnimation() {
     if (id) {
+        playBeep();
         showToggleAnimationFeedback(translations["pause-animation"]);
         pauseAnimation(); // Pause the animation if it's running
     } else {
+        playBeep();
         showToggleAnimationFeedback(translations["resume-animation"]);
         restartAnimation(); // Restart the animation if it's paused
     }
