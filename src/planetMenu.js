@@ -595,10 +595,10 @@ export class PlanetMenu {
         planetName.textContent = planet.planetName;
     
         // Edit button
-        const editButton = this.createPlanetButton("../icons/edit.png", () => this.onEditListener(index), "Edit");
+        const editButton = this.createPlanetButton("/icons/edit.png", () => this.onEditListener(index), "Edit");
     
         // Remove button
-        const deleteButton = this.createPlanetButton("../icons/delete-button.svg", () => this.onRemoveListener(index), "Delete");
+        const deleteButton = this.createPlanetButton("/icons/delete-button.svg", () => this.onRemoveListener(index), "Delete");
     
         planetItem.appendChild(dotContainer);
         planetItem.appendChild(planetName);
