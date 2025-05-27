@@ -217,19 +217,17 @@
             border-color: #666;
         }
 
-        .dot-planet-container {
-            align-items: center;
-            width: 40px;
-            height: 40px;
-            display: inline-block;
-        }
-
-        .dot-planet {
+        .dot-planet  {
+            cursor: pointer;
             align-items: center;
             border-radius: 50%;
             width: 15px;
             height: 15px;
             padding: 15px;
+        }
+        .dot-planet:hover {
+            transform: scale(1.1);
+            /* Slightly enlarge the dot on hover */
         }
 
         .dot-star {
@@ -245,7 +243,7 @@
 
         /* Scrollable Planet List */
         .planet-list {
-            max-height: 200px;
+            max-height: 1000px;
             overflow-y: auto;
             border-radius: 5px;
             margin-bottom: 10px;
