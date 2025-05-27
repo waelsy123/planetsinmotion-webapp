@@ -68,10 +68,11 @@
                         <input type="number" min="10" step="10" max="2000" value="20" id="ms">
                     </div>
                     <div class="menu-row">
-                        <div for="animation-duration" class="tooltip">Duration (s):
+                        <div class="tooltip">
                             <span class="tooltiptext" id="tooltip-animation-duration"></span>
+                            <label id="animation-duration-label" for="animation-duration-value">Duration (s): </label>
                         </div>
-                        <label id="animation-duration-label">0</label>
+                        <label id="animation-duration-value">0</label>
                     </div>
                     <button id="save-animation-btn">Save Animation</button>
                 </div>
@@ -79,6 +80,7 @@
         </div>
         <!-- Canvases -->
         <div class="main-canvas-container" id="main-canvas-container">
+            <div id="toggle-animation-feedback" class="copy-feedback">Copied!</div>
             <div class="top-canvas-container">
                 <div class="axis-canvas-container">
                     <!-- Y-axis label-->
@@ -103,24 +105,12 @@
                 <div class="axis-canvas-container">
                     <label class="x-axis-label y-axis-label">Relative Flux (%)</label>
                     <div class="x-axis-column-container">
-                        <!--<canvas id="linecanvas" width="1260px" height="400px"></canvas>-->
                         <div id="d3-lightcurve-container"></div>
                         <label class="x-axis-label">Time (Days)</label>
                     </div>
                 </div>
             </div>
-            <!-- New D3.js Lightcurve Container 
-            <div class="low-canvas-container">
-                <div class="axis-canvas-container">
-                    <label class="x-axis-label y-axis-label">Relative Flux (%)</label>
-                    <div class="x-axis-column-container">
-                        <div id="d3-lightcurve-container" width="100%" height="400px"></div>
-                        <label class="x-axis-label">Time (Days)</label>
-                    </div>
-                </div>
-                
-</div>
--->
+   
         </div>
 
         <div class="menu-container">
@@ -162,6 +152,7 @@
 
 
         </div>
+        
     </div>
 
     <div id="planet-form" class="planet-form hidden">
@@ -347,7 +338,7 @@
                     <button class="planet-btns" id="copyBTCWalletAddressBtn" aria-label="Copy BTC Wallet Address">
                         <img src="/icons/copy.png" alt="Copy BTC Icon" />
                     </button>
-                    <div id="copy-feedback" class="copy-feedback hidden">Copied!</div>
+                    <div id="copy-feedback" class="copy-feedback">Copied!</div>
                 </div>
 
                 <div class="donate-content">

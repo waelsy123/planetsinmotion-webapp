@@ -43,11 +43,11 @@
         .copy-feedback {
             z-index: 1000;
             position: absolute;
-            background-color: #4caf50; /* Green background */
+            background-color: rgb(0, 0, 0, 0.8);
             color: white;
             padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 18px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             opacity: 0; /* Initially hidden */
             transition: opacity 0.3s ease-in-out;
@@ -57,6 +57,8 @@
         .copy-feedback.visible {
             opacity: 1; /* Show the popup */
         }
+
+    
 
         .wallet-box {
             display: inline-block; /* Ensure it behaves like an inline element */
