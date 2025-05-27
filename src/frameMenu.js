@@ -20,8 +20,10 @@ export class FrameMenu {
 
         this.saveAnimationButton = document.getElementById("save-animation-btn");
         this.saveAnimationButton.disabled = true;
-
-        this.durationLabel = document.getElementById("animation-duration-label");
+        // this is the label that shows the duration of the animation
+        this.durationLabel = document.getElementById("animation-duration-value");
+        //this is for the popup menu
+        this.durationToolTip = new ToolTipLabel("animation-duration");
     }
 
     setDuration(duration) {
@@ -32,6 +34,7 @@ export class FrameMenu {
 
     setLanguage(translations) {
         this.msLabel.setLanguage(translations);
+        this.durationToolTip.setLanguage(translations);
     }
     
     disable(disable) {
