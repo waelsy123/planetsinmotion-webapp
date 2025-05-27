@@ -58,7 +58,7 @@ export class Body {
                 const projectedDistance = this.getProjectedDistance(body, i);
                 // Full transit
                 if (projectedDistance + this._R <= body._R) {
-                    transits[i] = true;
+                    fullTransits[i] = true;
                 }
             }
 
@@ -367,86 +367,4 @@ export class Body {
     pointz(origin, R, sign, beta, phi) {
         return origin - sign * R * sin(beta + sign * phi)
     }
-
-    filterByEclipses(planets) {
-        const eclipsingPlanets = new Set();
-        const eclipsingTimes = new Set();
-        for (let t = 0; t < planets[0].rx.length; t++) {
-            planets.forEach(planet => {
-                const dist = this.getProjectedDistance(planet, t);
-                if (((dist - planet._R) <= this._R) && (planet.rx[t] > this.rx[t])) {
-                    eclipsingTimes.add(t);
-                    eclipsingPlanets.add(planet);
-                }
-            });
-        }
-        return [eclipsingPlanets, eclipsingTimes];
-    }
-
-    /**
-     * Numerically calculates the observable area of the star when multiple bodies past across it.
-     * @param {Array} planets 
-     * @param {number} numSamples 
-     * @returns 
-     */
-    getEclipsingAreasMonteCarloFast(planets, numSamples = 10000) {
-        const datapoints = this.rx.length;
-        let fraction = new Array(datapoints).fill(1);
-        const [eclipsingPlanets, eclipsingTimes] = this.filterByEclipses(planets);
-        const r = Array.from({ length: numSamples }, () => Math.sqrt(Math.random()) * this._R);
-        const theta = Array.from({ length: numSamples }, () => Math.random() * 2 * Math.PI);
-        const y = r.map((rVal, i) => rVal * Math.cos(theta[i]));
-        const z = r.map((rVal, i) => rVal * Math.sin(theta[i]));
-
-        eclipsingTimes.forEach(t => {
-            let remainingIndexes = Array.from({ length: numSamples }, (_, i) => i);
-            eclipsingPlanets.forEach(planet => {
-                // Filter remaining indexes based on whether the points are eclipsed
-                remainingIndexes = remainingIndexes.filter(index => {
-                    const distanceSquared = (y[index] - planet.ry[t]) ** 2 + (z[index] - planet.rz[t]) ** 2;
-                    return distanceSquared >= planet._R ** 2; // Keep points that are not eclipsed
-                });
-            });
-            const coveredPoints = numSamples - remainingIndexes.length;
-            fraction[t] = 1 - coveredPoints / numSamples;
-
-        });
-        return fraction;
-    }
-
-
-    /**
-     * Numerically calculates the observable area of the star when multiple bodies past across it.
-     * @param {Array} planets 
-     * @param {number} numSamples 
-     * @returns 
-     */
-    getEclipsingAreasMonteCarlo(planets, numSamples = 10000) {
-        const datapoints = this.rx.length;
-        let fraction = new Array(datapoints).fill(1);
-        const [eclipsingPlanets, eclipsingTimes] = this.filterByEclipses(planets);
-        eclipsingTimes.forEach(t => {
-            let coveredPoints = 0;
-            for (let i = 0; i < numSamples; i++) {
-                for (let k = 0; k < eclipsingPlanets.size; k++) {
-                    const r = Math.sqrt(Math.random()) * this._R;
-                    const planet = planets[k];
-                    const theta = Math.random() * 2 * Math.PI;
-                    const y = r * Math.cos(theta);
-                    const z = r * Math.sin(theta);
-                    if ((y - planet.ry[t]) ** 2 + (z - planet.rz[t]) ** 2 < planet._R ** 2) {
-                        coveredPoints += 1;
-                        break;
-                    }
-                }
-            }
-            // Store the fraction at the end of each time t
-            fraction[t] = 1 - coveredPoints / numSamples;
-
-        });
-        return fraction;
-    }
-
-
-
 }

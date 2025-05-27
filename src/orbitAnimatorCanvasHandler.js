@@ -1,8 +1,9 @@
 
 import { CanvasHandler } from "./canvasHandler";
-import { AU } from "./constants"
-import { Star } from "./star"
-import {darkenColor} from './utils.js'
+import { AU } from "./constants";
+import { Star } from "./star";
+import {darkenColor} from './utils.js';
+import * as d3 from "d3";
 
 export class OrbitAnimatorCanvasHandler extends CanvasHandler {
 
@@ -56,11 +57,11 @@ export class OrbitAnimatorCanvasHandler extends CanvasHandler {
             var z = 1 / this.units;
 
             if (faceon) {
-                y *= body.rx[i];
+                y *= -body.rx[i];
                 z *= body.rz[i];
             } else {
                 y *= body.rz[i];
-                z *= -body.rx[i];
+                z *= body.rx[i];
             }
 
             if (body instanceof Star) {
@@ -72,37 +73,36 @@ export class OrbitAnimatorCanvasHandler extends CanvasHandler {
                 const cosTheta = Math.cos(theta);
                 const sinTheta = Math.sin(theta);
                 const r = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
-                const phi = Math.acos(Math.sqrt(x ** 2 + y ** 2) / r);
-                const cosPhi = Math.cos(phi); // cosPhi determines the position of the shadow
+                const sinPhi = z / r;
+                
+                //const phi = Math.acos(Math.sqrt(x ** 2 + y ** 2) / r);
+                //const cosPhi = Math.cos(phi); // cosPhi determines the position of the shadow
 
                 // For face-on view, the gradient is vertical
                 const gradientStartX = 50 * (1 - cosTheta);
                 const gradientStartY = 50 * (1 + sinTheta); // At theta = 90 degrees, this will be 100% (bottom)
                 const gradientEndX = 50 * (1 + cosTheta);
                 const gradientEndY = 50 * (1 - sinTheta);
-               
-                //if (!faceon) {
-                  //  console.log(gradientStartX, gradientEndX, gradientStartY, gradientEndY, (theta / Math.PI * 180).toFixed(1), (phi  / Math.PI * 180).toFixed(2));
-                //}
                 
                 // Define the gradient
                 // Gradient ID is unique for each planet and view (face-on or edge-on) otherwise there are conflicts
                 const gradientId = `planet-gradient-${body.planetName.replace(/\s+/g, '')}-${faceon ? "faceon" : "edegeon"}`;
+                // y = 100% is the bottom of the planet
+                // x1 = x2 means no gradient in the horizontal direction
+                
                 const linearGradient = this.svg.append("defs").attr("class", "planet-defs").append("linearGradient").attr("id", gradientId)
                 .attr("x1",`${gradientStartX}%`)
                 .attr("y1",`${gradientStartY}%`)
                 .attr("x2",`${gradientEndX}%`)
-                .attr("y2", `${gradientEndY}%`)
-
+                .attr("y2", `${gradientEndY}%`) 
 
                 linearGradient.append("stop")
                 .attr("offset", "0%")
                 .attr("stop-color", body.color); // Bright color body.color
-                
                 linearGradient.append("stop")
-                    .attr("offset", `${ cosPhi * 100}%`) // Shadow position based on cosPhi
+                    .attr("offset", `${(1 - sinPhi) / 2  * 100}%`) // Shadow position based on cosPhi
                     .attr("stop-color", darkenColor(body.color, 85)); // Darkened color
-
+                                     
                 color = `url(#${gradientId})`
 
                 /**
@@ -173,6 +173,19 @@ export class OrbitAnimatorCanvasHandler extends CanvasHandler {
             .attr("cy", bodyY)
             .attr("r", radius)
             .style("fill", color);
+            /** TODO implement atmosphere
+            if (!(body instanceof Star)) {
+
+                this.svg.append("circle")
+                .attr("cx", bodyX)
+                .attr("cy", bodyY)
+                .attr("r", radius + 50) // Slightly larger than the planet
+                .style("fill", color)
+                .style("opacity", 0.6)
+                .style("filter", "blur(5px)"); // Add blur for the glow
+
+            }
+             */
 
         });
     }

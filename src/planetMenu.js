@@ -1,8 +1,9 @@
-import { R_sun, M_J, M_sun, AU } from './constants.js';
+import { R_sun, M_J, AU, DaysToSeconds } from './constants.js';
 import { Planet, PlanetDimensionsError, StarPlanetDistanceError } from './planet.js';
 import { linspace, } from './utils.js';
 import { ToolTipLabel } from './toolTipLabel.js';
 import { Transit } from './transit.js';
+import {Units} from './units.js'
 
 const iconPlanetsize = 15
 
@@ -13,13 +14,19 @@ export class PlanetMenu {
         this.onMenuClosed = onMenuClosed;
         this.planets = [];
         this.star = star.copy();
-        // Initialize menu elements
 
-        this.defaultColor = document.getElementById("planet-period").style.color
-        this.supressedListener = false
-        this.initPlanetMenu()
-        //this.initCanvas()
+        // default values
+        this.units = new Units("jupyter"); // Default unit for the planets
+        this.setLabelUnits();
         this.planetNameCounter = 0;
+        
+        // Initialize menu elements
+        this.defaultColor = document.getElementById("planet-period").style.color;
+        this.supressedListener = false;
+        this.initPlanetMenu();
+
+        //this.initCanvas()
+
 
     }
 
@@ -57,14 +64,26 @@ export class PlanetMenu {
             this.updateCanvas();
         }, false);
     }
+    /**
+     * Set the units to the radius and mass labels
+     */
+    setLabelUnits () {
+        // unit labels
+        const radiusLabel = document.getElementById("planet-radius-label");
+        console.log("Setting units: " + this.units.symbol);
+        radiusLabel.innerHTML = `Radius (R${this.units.symbol})`;
+        const massLabel = document.getElementById("planet-mass-label");
+        massLabel.innerHTML = `Mass (M${this.units.symbol})`;
+    }
 
     initPlanetMenu() {
+
         /* Buttons from the main window */
         this.addPlanetBtn = document.getElementById("add-planet-btn");
         this.addPlanetBtn.addEventListener("click", () => this.showPlanetForm());
-
+        
         this.planetForm = document.getElementById("planet-form");
-
+        
         /* Buttons from the pop up window */
         this.cancelPlanetBtn = document.getElementById("cancel-planet-btn");
         this.cancelPlanetBtn.addEventListener("click", () => {
@@ -73,13 +92,16 @@ export class PlanetMenu {
         });
         this.closePlanetBtn = document.getElementById("close-planet-btn");
         this.closePlanetBtn.addEventListener("click", () => this.cancelPlanetBtn.click());
-
+        
         this.planetList = document.getElementById("planet-list");
-
-        /* Error message for the add planet menu*/
+        
+        /* Error messages*/
+        // for the add planet menu*/
         this.errorLabel = document.getElementById("planet-error");
+        // for the no transit warning
         this.transitWarningLabel = document.getElementById("transit-error");
 
+        
         /* Inputs for the pop up menu */
         // Orbit
         this.planetNameInput = document.getElementById("planet-name");
@@ -90,12 +112,11 @@ export class PlanetMenu {
         this.eInput = document.getElementById("eccentricity-input");
 
         // Planet
-        this.massInput = document.getElementById("planet-mass");
-        this.radiusInput = document.getElementById("planet-radius");
+        this.massInput = document.getElementById("planet-mass-input");
+        this.radiusInput = document.getElementById("planet-radius-input");
         this.colorInput = document.getElementById("planet-color");
 
         const inputs = [this.periodInput, this.iInput, this.eInput, this.massInput, this.radiusInput, this.phaseInput, this.Omega0Input]
-
         /* Add min max functionality */
         inputs.forEach(input => {
             input.addEventListener("input", (event) => {
@@ -136,16 +157,6 @@ export class PlanetMenu {
             this.errorLabel.classList.add("hidden");
         });
 
-
-        //const logscaleInput = document.getElementById("planet-form-log-scale")
-        /* 
-        logscaleInput.addEventListener("click", (event) => {
-            this.logscale = event.target.checked
-            console.log("logscale " + event.target.checked)
-            this.updateCanvas()
-        });
-
-        */
         this.randomizeBtn = document.getElementById("randomize-planet-btn");
 
         this.randomizeBtn.addEventListener("click", () => {
@@ -163,15 +174,19 @@ export class PlanetMenu {
 
 
         // Tooltip elements
-        const OmegaLabel = new ToolTipLabel("longitude-ascending-node")
-        const phaseLabel = new ToolTipLabel("phase")
-        const eccentricityLabel = new ToolTipLabel("eccentricity")
-        const inclinationLabel = new ToolTipLabel("inclination")
+        const OmegaLabel = new ToolTipLabel("longitude-ascending-node");
+        const phaseLabel = new ToolTipLabel("phase");
+        const eccentricityLabel = new ToolTipLabel("eccentricity");
+        const inclinationLabel = new ToolTipLabel("inclination");
+        const massLabel = new ToolTipLabel("planet-mass");
+        const radiusLabel = new ToolTipLabel("planet-radius");
+        
 
-        this.labels = [OmegaLabel, phaseLabel, eccentricityLabel, inclinationLabel]
+        this.labels = [OmegaLabel, phaseLabel, eccentricityLabel, inclinationLabel, massLabel, radiusLabel];
 
         // Planet counter
-        this.planetCounter = document.getElementById("planet-title-number")
+        this.planetCounter = document.getElementById("planet-title-number");
+
 
     }
     /**
@@ -197,34 +212,33 @@ export class PlanetMenu {
         const Omega0 = parseFloat(this.Omega0Input.value);
         const color = this.colorInput.value
         const name = this.planetNameInput.value
-
+        
         try {
-            this.planet = new Planet(M, R, P, this.star, i, e, 0, Omega0, phase, color, name);
-            this.errorLabel.classList.add("hidden")
-            return true
+            this.planet = new Planet(M, R, P, this.star, i, e, 0, Omega0, phase, color, name, this.units);
+            this.errorLabel.classList.add("hidden");
+            return true;
         } catch (error) {
             if (error instanceof StarPlanetDistanceError) {
                 console.error(`Star-Planet Distance Error: ${error.message}`);
-                this.errorLabel.classList.remove("hidden")
-                this.errorLabel.textContent = "Orbit is whithin the star radius!"
-                this.planet = null
-                return false
+                this.errorLabel.classList.remove("hidden");
+                this.errorLabel.textContent = "Orbit is whithin the star radius!";
+                this.planet = null;
+                return false;
             } else if (error instanceof PlanetDimensionsError) {
-                this.errorLabel.classList.remove("hidden")
-                this.errorLabel.textContent = error.message
-                this.planet = null
-                return false
+                this.errorLabel.classList.remove("hidden");
+                this.errorLabel.textContent = error.message;
+                this.planet = null;
+                return false;
             } else {
+                console.error(`Unknown error: ${error.message}`);
                 // Possibly because the inputs are just do nothing
-                //this.errorLabel.classList.remove("hidden")
-                //this.errorLabel.textContent = error.message
-                this.planet = null
-                return false
+                this.planet = null;
+                return false;
             }
         }
     }
 
-    updateCanvas(nOrbitTimes = 6000) {
+    updateCanvas(nOrbitTimes = 10000) {
         if (this.planet != null) {
             const datapoints = Math.floor(this.planet.e + 0.01 * (this.planet.P * nOrbitTimes));
             console.log("Updating canvas for " + this.planet.planetName + "with " + datapoints + " datapoints");
@@ -233,7 +247,7 @@ export class PlanetMenu {
             this.star.setOrbitingTimes(times);
             this.drawOrbit();
             const transit = new Transit(this.star, this.planet);
-            const timesDays = times.map(t => t / (24 * 3600));
+            const timesDays = times.map(t => t / (DaysToSeconds));
             const fraction = transit.visibleFraction;
             this.drawLightcurve(fraction, timesDays);
 
@@ -404,8 +418,13 @@ export class PlanetMenu {
 
         const randomNumber = Math.random();
         // Planet
-        this.massInput.value = parseFloat(randomNumber * 100 * M_J / M_sun + M_J / M_sun).toFixed(2);
-        this.radiusInput.value = parseFloat((randomNumber * this.star.R / R_sun / 5) + 1).toFixed(2);
+        // 100 jypyter masses is the max
+        // https://www.google.com/search?q=known+exoplanets+plot&client=ubuntu&hs=pEH&sca_esv=6d30932b12437026&channel=fs&udm=2&biw=1472&bih=741&ei=HCszaIaDO7unhbIPsr2WmAg&ved=0ahUKEwiGgeuk7L6NAxW7U0EAHbKeBYMQ4dUDCBE&uact=5&oq=known+exoplanets+plot&gs_lp=EgNpbWciFWtub3duIGV4b3BsYW5ldHMgcGxvdEiHDVDXBVi0DHABeACQAQCYAckBoAHUBaoBBTAuMy4xuAEDyAEA-AEBmAICoALTAcICCBAAGBMYBxgewgIHEAAYgAQYE8ICBhAAGBMYHsICCBAAGBMYBRgemAMAiAYBkgcFMS4wLjGgB98GsgcDMi0xuAfMAQ&sclient=img#vhid=kPpXBSnE1JE7qM&vssid=mosaic
+        // max mass is around 10, so 20 more than enough
+        this.massInput.value = parseFloat((randomNumber + 1) * 20 * M_J / this.units.M).toFixed(2);
+        // radius go up to about 25 RE but we want to make it look nicer
+        // make it 5 times smaller than the star value + 1 solar radius
+        this.radiusInput.value = parseFloat((randomNumber * this.star._R / this.units.R / 5) + R_sun / this.units.R).toFixed(2);
 
         // Orbit
         this.periodInput.value = Math.floor(randomNumber * 500) + 0.01
@@ -568,7 +587,7 @@ export class PlanetMenu {
     }
 
     setStar(star) {
-        this.star = star;
+        this.star = star.copy();
         this.planets.forEach(planet => {
             planet.setStar(star);
         });

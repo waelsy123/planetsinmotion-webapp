@@ -195,6 +195,10 @@
             /* Prevent label text from wrapping */
         }
 
+        input[type="color"]:hover {
+            transform: scale(1.1);
+        }
+
         .menu input,
         .menu select {
             font-size: 16px;
