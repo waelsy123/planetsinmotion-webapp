@@ -16,13 +16,54 @@
     <link rel="stylesheet" href="./styles/about.css">
     <link rel="stylesheet" href="./styles/mcoverlay.css">
     <link rel="stylesheet" href="./styles/top_banner.css">
-    <link rel="icon" type="image/x-icon" href="/icons/favicon.png">
+    <link rel="icon" type="image/x-icon" href="/public/icons/favicon.png">
     <style>
 
     </style>
 </head>
 
 <body>
+    <div class="sun-rays" id="sunRays"></div>
+    <div class="constellation" id="constellation">
+        <svg>
+            <!-- Orion constellation -->
+            <circle class="constellation-star" cx="20%" cy="30%" r="2"/>
+            <circle class="constellation-star" cx="25%" cy="35%" r="1.5"/>
+            <circle class="constellation-star" cx="30%" cy="40%" r="2"/>
+            <circle class="constellation-star" cx="15%" cy="45%" r="1"/>
+            <circle class="constellation-star" cx="35%" cy="50%" r="2"/>
+            <line class="constellation-line" x1="20%" y1="30%" x2="25%" y2="35%"/>
+            <line class="constellation-line" x1="25%" y1="35%" x2="30%" y2="40%"/>
+            <line class="constellation-line" x1="20%" y1="30%" x2="15%" y2="45%"/>
+            <line class="constellation-line" x1="30%" y1="40%" x2="35%" y2="50%"/>
+            
+            <!-- Cassiopeia constellation -->
+            <circle class="constellation-star" cx="70%" cy="20%" r="1.5"/>
+            <circle class="constellation-star" cx="75%" cy="25%" r="2"/>
+            <circle class="constellation-star" cx="80%" cy="20%" r="1"/>
+            <circle class="constellation-star" cx="85%" cy="30%" r="1.5"/>
+            <circle class="constellation-star" cx="90%" cy="25%" r="2"/>
+            <line class="constellation-line" x1="70%" y1="20%" x2="75%" y2="25%"/>
+            <line class="constellation-line" x1="75%" y1="25%" x2="80%" y2="20%"/>
+            <line class="constellation-line" x1="80%" y1="20%" x2="85%" y2="30%"/>
+            <line class="constellation-line" x1="85%" y1="30%" x2="90%" y2="25%"/>
+            
+            <!-- Big Dipper constellation -->
+            <circle class="constellation-star" cx="10%" cy="70%" r="2"/>
+            <circle class="constellation-star" cx="15%" cy="75%" r="1.5"/>
+            <circle class="constellation-star" cx="20%" cy="80%" r="1"/>
+            <circle class="constellation-star" cx="25%" cy="85%" r="2"/>
+            <circle class="constellation-star" cx="30%" cy="75%" r="1.5"/>
+            <circle class="constellation-star" cx="35%" cy="70%" r="1"/>
+            <circle class="constellation-star" cx="40%" cy="72%" r="2"/>
+            <line class="constellation-line" x1="10%" y1="70%" x2="15%" y2="75%"/>
+            <line class="constellation-line" x1="15%" y1="75%" x2="20%" y2="80%"/>
+            <line class="constellation-line" x1="20%" y1="80%" x2="25%" y2="85%"/>
+            <line class="constellation-line" x1="25%" y1="85%" x2="30%" y2="75%"/>
+            <line class="constellation-line" x1="30%" y1="75%" x2="35%" y2="70%"/>
+            <line class="constellation-line" x1="35%" y1="70%" x2="40%" y2="72%"/>
+        </svg>
+    </div>
     <div class="main-container">
         <!-- Left Menus -->
         <div class="menu-container">
@@ -301,7 +342,7 @@
                         <label><strong>Contact:</strong> andres.gurpide.astro@gmail.com</label>
                     </div>
                     <a target="_blank" rel="noopener noreferrer" href="https://www.andresgurpide.com" target="_blank">
-                        <img src="/icons/andresg.png" style="transform: scale(0.9);" alt="Andrés Gúrpide">
+                        <img src="/public/icons/andresg.png" style="transform: scale(0.9);" alt="Andrés Gúrpide">
                     </a>
                 </div>
             </div>
@@ -325,31 +366,31 @@
                 <label class="information-title">Support This Project &lt;3</label>
                 <label id="donate-text" class="information-content"></label>
                 <div class="donate-content">
-                    <img src="/icons/bitcoin-btc-logo.svg" class="crypto-logo">
+                    <img src="/public/icons/bitcoin-btc-logo.svg" class="crypto-logo">
                     <p> Wallet Address</p>
                     <div class="wallet-box">
                         <code>bc1q4xr9agec3ldug0xezqxy252y3kvqmcz62xr6pm</code>
                     </div>
                     <button class="planet-btns" id="copyBTCWalletAddressBtn" aria-label="Copy BTC Wallet Address">
-                        <img src="/icons/copy.png" alt="Copy BTC Icon" />
+                        <img src="/public/icons/copy.png" alt="Copy BTC Icon" />
                     </button>
                     <div id="copy-feedback" class="copy-feedback">Copied!</div>
                 </div>
 
                 <div class="donate-content">
-                    <img src="/icons/ethereum-eth-logo.svg" class="crypto-logo">
+                    <img src="/public/icons/ethereum-eth-logo.svg" class="crypto-logo">
                     <p>Wallet Address</p>
                     <div class="wallet-box">
                         <code>0xaFE3DB130E71404Ed038397D25C26777d4EC8e4F</code>
                     </div>
                     <button class="planet-btns" id="copyETHWalletAddressBtn" aria-label="Copy Wallet Address">
-                        <img src="/icons/copy.png" alt="Copy ETH Icon" />
+                        <img src="/public/icons/copy.png" alt="Copy ETH Icon" />
                     </button>
                 </div>
                 <div class="donate-content">
-                    <img src="/icons/paypal_logo.png" class="crypto-logo">
+                    <img src="/public/icons/paypal_logo.png" class="crypto-logo">
                     <p>PayPal</p>
-                    <img src="/icons/paypal_QR.png" style="width: 80px; height: 80px">
+                    <img src="/public/icons/paypal_QR.png" style="width: 80px; height: 80px">
                 </div>
                 <p> </p>
                 <label id="contribute-text" class="information-content"></label>
@@ -372,6 +413,205 @@
 
 
     <script type="module" src="./src/app.js"></script>
+    
+    <script>
+        // Dynamic sun rays based on time of day
+        function updateSunRays() {
+            const now = new Date();
+            const hour = now.getHours();
+            const sunRays = document.getElementById('sunRays');
+            const body = document.body;
+            
+            // Remove existing time classes
+            sunRays.className = 'sun-rays';
+            body.classList.remove('day', 'night');
+            
+            if (hour >= 6 && hour < 10) {
+                // Morning (6-10 AM)
+                sunRays.classList.add('morning');
+                body.classList.add('day');
+            } else if (hour >= 10 && hour < 14) {
+                // Noon (10 AM - 2 PM)
+                sunRays.classList.add('noon');
+                body.classList.add('day');
+            } else if (hour >= 14 && hour < 18) {
+                // Afternoon (2-6 PM)
+                sunRays.classList.add('afternoon');
+                body.classList.add('day');
+            } else if (hour >= 18 && hour < 20) {
+                // Evening/Sunset (6-8 PM)
+                sunRays.classList.add('evening');
+                body.classList.add('day');
+            } else {
+                // Night (8 PM - 6 AM)
+                sunRays.classList.add('night');
+                body.classList.add('night');
+            }
+        }
+
+        // Parallax mouse movement
+        function initParallax() {
+            const stars = document.querySelector('body::before');
+            const particles = document.querySelector('body::after');
+            
+            document.addEventListener('mousemove', (e) => {
+                const x = (e.clientX - window.innerWidth / 2) / window.innerWidth;
+                const y = (e.clientY - window.innerHeight / 2) / window.innerHeight;
+                
+                // Apply different parallax speeds to different layers
+                document.documentElement.style.setProperty('--mouse-x', x);
+                document.documentElement.style.setProperty('--mouse-y', y);
+                
+                // Apply transforms to pseudo-elements via CSS custom properties
+                document.body.style.setProperty('--parallax-stars', `translate(${x * 10}px, ${y * 5}px)`);
+                document.body.style.setProperty('--parallax-particles', `translate(${x * -15}px, ${y * -8}px)`);
+            });
+        }
+
+        // Meteor shower effects
+        function createMeteor() {
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor';
+            meteor.style.width = Math.random() * 200 + 100 + 'px';
+            meteor.style.height = '2px';
+            meteor.style.left = Math.random() * window.innerWidth + 'px';
+            meteor.style.top = Math.random() * (window.innerHeight / 2) + 'px';
+            
+            document.body.appendChild(meteor);
+            
+            // Trigger animation
+            setTimeout(() => meteor.classList.add('active'), 50);
+            
+            // Remove meteor after animation
+            setTimeout(() => {
+                if (meteor.parentNode) {
+                    meteor.parentNode.removeChild(meteor);
+                }
+            }, 2500);
+        }
+
+        function initMeteorShower() {
+            // Create meteors at random intervals
+            setInterval(() => {
+                if (Math.random() < 0.3) { // 30% chance every 3 seconds
+                    createMeteor();
+                }
+            }, 3000);
+            
+            // Occasional meteor bursts
+            setInterval(() => {
+                if (Math.random() < 0.1) { // 10% chance every 10 seconds
+                    for (let i = 0; i < Math.floor(Math.random() * 3) + 2; i++) {
+                        setTimeout(() => createMeteor(), i * 200);
+                    }
+                }
+            }, 10000);
+        }
+
+        // Space ambient sounds
+        function initSpaceSounds() {
+            // Create audio context for space ambience
+            let audioContext;
+            let isPlaying = false;
+            
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Generate subtle space ambience
+                function createSpaceAmbience() {
+                    if (!isPlaying) return;
+                    
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // Very low frequency for deep space feel
+                    oscillator.frequency.setValueAtTime(Math.random() * 50 + 30, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    
+                    // Very quiet
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.005, audioContext.currentTime + 2);
+                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 8);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 8);
+                    
+                    // Schedule next ambience sound
+                    setTimeout(createSpaceAmbience, Math.random() * 15000 + 10000);
+                }
+                
+                // Transit whoosh sound
+                window.playTransitSound = function() {
+                    if (!audioContext) return;
+                    
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.5);
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                };
+                
+                // Start ambient sounds on first user interaction
+                document.addEventListener('click', () => {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    if (!isPlaying) {
+                        isPlaying = true;
+                        createSpaceAmbience();
+                    }
+                }, { once: true });
+                
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        // Add parallax to background elements
+        function updateParallaxCSS() {
+            const style = document.createElement('style');
+            style.textContent = `
+                body::before {
+                    transform: var(--parallax-stars, translate(0, 0)) translateY(var(--stars-y, 0px));
+                }
+                body::after {
+                    transform: var(--parallax-particles, translate(0, 0)) translateX(var(--particles-x, 0px)) translateY(var(--particles-y, 0px));
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Initialize all features
+        function init() {
+            updateSunRays();
+            setInterval(updateSunRays, 30 * 60 * 1000);
+            
+            initParallax();
+            updateParallaxCSS();
+            initMeteorShower();
+            initSpaceSounds();
+        }
+        
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
 
 </body>
 

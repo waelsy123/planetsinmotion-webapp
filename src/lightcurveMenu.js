@@ -1,6 +1,6 @@
 import {DaysToSeconds} from './constants.js'
 import {linspace, downloadBlob} from './utils.js'
-import { ToolTipLabel } from './toolTipLabel';
+import { ToolTipLabel } from './toolTipLabel.js';
 
 
 export class LightcurveMenu {

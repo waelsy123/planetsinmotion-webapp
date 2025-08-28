@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { CanvasHandler } from "./canvasHandler";
+import { CanvasHandler } from "./canvasHandler.js";
 export class LightcurveHandler extends CanvasHandler {
 
     constructor(id, margins) {

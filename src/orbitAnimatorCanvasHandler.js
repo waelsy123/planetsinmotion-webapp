@@ -1,7 +1,7 @@
 
-import { CanvasHandler } from "./canvasHandler";
-import { AU } from "./constants";
-import { Star } from "./star";
+import { CanvasHandler } from "./canvasHandler.js";
+import { AU } from "./constants.js";
+import { Star } from "./star.js";
 import {darkenColor} from './utils.js';
 
 export class OrbitAnimatorCanvasHandler extends CanvasHandler {

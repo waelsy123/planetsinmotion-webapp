@@ -1,5 +1,5 @@
-import { getBeta, circle_circle_circle_area, getDistance } from "./trigonometry";
-import { Transit } from "./transit";
+import { getBeta, circle_circle_circle_area, getDistance } from "./trigonometry.js";
+import { Transit } from "./transit.js";
 
 export class DoubleTransit {
     /**

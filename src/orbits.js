@@ -1,5 +1,5 @@
 import { pi, sqrt, sin, cos, tan, atan } from 'mathjs';
-import { Gcgs } from './constants';
+import { Gcgs } from './constants.js';
 /**
  * Computes the true anomaly.
  *
